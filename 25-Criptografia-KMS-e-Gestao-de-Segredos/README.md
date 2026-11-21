@@ -1,49 +1,49 @@
-# 25 Criptografia, KMS e Gestao de Segredos
+# 25 Encryption, KMS, and Secrets Management
 
-## Objetivos do modulo
+## Module objectives
 
-- dominar criptografia em repouso e em transito no contexto SAA-C03
-- diferenciar AWS KMS, CloudHSM, Secrets Manager, Parameter Store e ACM
-- decidir entre chaves AWS-managed e customer-managed com base em compliance
-- aplicar padroes de seguranca com menor sobrecarga operacional
+- master encryption at rest and in transit in the SAA-C03 context
+- differentiate AWS KMS, CloudHSM, Secrets Manager, Parameter Store, and ACM
+- decide between AWS-managed and customer-managed keys based on compliance
+- apply security patterns with the lowest operational overhead
 
-## Conceitos fundamentais
+## Core concepts
 
-A prova SAA-C03 cobra seguranca aplicada: nao basta saber o nome do servico, e preciso escolher a melhor combinacao de criptografia, controle de acesso e rotacao de segredos.
+The SAA-C03 exam tests applied security: knowing the service name is not enough, you need to choose the best combination of encryption, access control, and secret rotation.
 
-## KMS na pratica
+## KMS in practice
 
-- KMS gerencia chaves e operacoes criptograficas auditaveis.
-- Customer managed keys permitem controle de policy, rotacao e grants.
-- Key policy e obrigatoria para acesso correto.
-- Envelope encryption e padrao para dados em escala.
+- KMS manages keys and auditable cryptographic operations.
+- Customer managed keys allow control of policy, rotation, and grants.
+- Key policy is required for correct access.
+- Envelope encryption is the standard for data at scale.
 
-Fluxo resumido de envelope encryption:
-1. aplicacao pede data key ao KMS (GenerateDataKey)
-2. KMS retorna data key plaintext e cifrada
-3. aplicacao cifra os dados com a key plaintext
-4. armazena dados cifrados + data key cifrada
+Summary of the envelope encryption flow:
+1. the application requests a data key from KMS (GenerateDataKey)
+2. KMS returns the data key in plaintext and encrypted form
+3. the application encrypts the data with the plaintext key
+4. it stores the encrypted data + the encrypted data key
 
-## Segredos e certificados
+## Secrets and certificates
 
-- Secrets Manager: segredos com rotacao automatica (forte para credenciais de banco).
-- Parameter Store SecureString: configuracoes e segredos simples, custo menor.
-- ACM: certificados TLS para ALB, CloudFront e API Gateway.
-- ACM Private CA: emissao de certificados privados internos.
+- Secrets Manager: secrets with automatic rotation (strong for database credentials).
+- Parameter Store SecureString: simple configuration and secrets, lower cost.
+- ACM: TLS certificates for ALB, CloudFront, and API Gateway.
+- ACM Private CA: issuing internal private certificates.
 
-## Dicas de exame
+## Exam tips
 
-- se houver requisito de rotacao automatica de credencial, resposta tende a Secrets Manager.
-- se pede "full control over encryption keys", use customer managed KMS key.
-- se precisa HSM dedicado e controle criptografico especializado, considere CloudHSM.
-- para CloudFront com ACM, certificado publico deve estar em us-east-1.
-- criptografia sem controle de permissao nao resolve risco; IAM + key policy importam.
+- if there is a requirement for automatic credential rotation, the answer tends to be Secrets Manager.
+- if it asks for "full control over encryption keys", use a customer managed KMS key.
+- if you need a dedicated HSM and specialized cryptographic control, consider CloudHSM.
+- for CloudFront with ACM, the public certificate must be in us-east-1.
+- encryption without permission control does not solve the risk; IAM + key policy matter.
 
-## Links relacionados
+## Related links
 
 - [Cheatsheet](./cheatsheet.md)
-- [Casos de uso](./casos-de-uso.md)
-- [Questoes](./questoes.md)
+- [Use cases](./casos-de-uso.md)
+- [Questions](./questoes.md)
 - [Flashcards](./flashcards.md)
 - [Lab](./lab.md)
-- [Links oficiais](./links.md)
+- [Official links](./links.md)

@@ -1,52 +1,52 @@
-# Cheatsheet — Módulo 13: Machine Learning e IA
+# Cheatsheet — Module 13: Machine Learning and AI
 
-## As 3 Camadas do Framework AWS AI/ML
+## The 3 Layers of the AWS AI/ML Framework
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│       Nível 1: AI Services (sem ML knowledge necessário)            │
+│       Level 1: AI Services (no ML knowledge required)               │
 │  Rekognition | Comprehend | Polly | Transcribe | Translate | Lex    │
 │  Textract | Kendra | Bedrock | Fraud Detector | Personalize          │
 │  Forecast | Lookout for Metrics | Lookout for Vision                 │
 ├─────────────────────────────────────────────────────────────────────┤
-│       Nível 2: ML Services (build/train/deploy seus modelos)        │
+│       Level 2: ML Services (build/train/deploy your models)         │
 │  SageMaker Studio | Ground Truth | Experiments | Model Monitor      │
 │  Training Jobs | Hyperparameter Tuning | Feature Store | Pipelines  │
 ├─────────────────────────────────────────────────────────────────────┤
-│       Nível 3: Infrastructure (hardware especializado)              │
+│       Level 3: Infrastructure (specialized hardware)                │
 │  EC2 GPU (p3, p4, g4) | AWS Trainium | AWS Inferentia               │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Comparativo — Serviços de Linguagem Natural (NLP)
+## Comparison — Natural Language Services (NLP)
 
-| Serviço | Direção | Input | Output |
+| Service | Direction | Input | Output |
 |---|---|---|---|
-| **Amazon Transcribe** | Audio → Texto (STT) | Áudio (MP3, WAV, FLAC) | Texto + timestamps |
-| **Amazon Polly** | Texto → Audio (TTS) | Texto / SSML | Áudio (MP3, PCM) |
-| **Amazon Translate** | Texto → Texto | Texto em idioma X | Texto em idioma Y |
-| **Amazon Comprehend** | Texto → Análise | Texto | Entities, Sentiment, PII, Topics |
-| **Amazon Lex v2** | Conversa → Intent | Texto ou Áudio | Intent + Slots preenchidos |
-| **Amazon Kendra** | Pergunta → Resposta | Pergunta em linguagem natural | Resposta de documentos |
+| **Amazon Transcribe** | Audio → Text (STT) | Audio (MP3, WAV, FLAC) | Text + timestamps |
+| **Amazon Polly** | Text → Audio (TTS) | Text / SSML | Audio (MP3, PCM) |
+| **Amazon Translate** | Text → Text | Text in language X | Text in language Y |
+| **Amazon Comprehend** | Text → Analysis | Text | Entities, Sentiment, PII, Topics |
+| **Amazon Lex v2** | Conversation → Intent | Text or Audio | Intent + filled Slots |
+| **Amazon Kendra** | Question → Answer | Natural language question | Answer from documents |
 
 ---
 
-## Comparativo — Visão Computacional e Documentos
+## Comparison — Computer Vision and Documents
 
-| Serviço | Input | Output |
+| Service | Input | Output |
 |---|---|---|
-| **Rekognition Image** | Imagem | Objects, faces, text, moderation labels |
-| **Rekognition Video** | Vídeo (S3 ou stream) | Person tracking, activity, labels ao longo do tempo |
-| **Textract** | Imagem/PDF de documento | Texto + Tables + Forms + Keys-Values |
-| **Lookout for Vision** | Imagens de produto (factory) | Anomalia detectada: NORMAL/ANOMALY |
+| **Rekognition Image** | Image | Objects, faces, text, moderation labels |
+| **Rekognition Video** | Video (S3 or stream) | Person tracking, activity, labels over time |
+| **Textract** | Document image/PDF | Text + Tables + Forms + Key-Values |
+| **Lookout for Vision** | Product images (factory) | Anomaly detected: NORMAL/ANOMALY |
 
 ---
 
-## SageMaker — Pipeline ML
+## SageMaker — ML Pipeline
 
-| Fase | Serviço/Feature |
+| Phase | Service/Feature |
 |---|---|
 | **Data Labeling** | Ground Truth |
 | **Data Preparation** | Data Wrangler, Processing Jobs |
@@ -54,99 +54,99 @@
 | **Model Training** | Training Jobs (EC2) |
 | **Hyperparameter Tuning** | Automatic Model Tuning (HPO) |
 | **Model Evaluation** | Experiments |
-| **Model Registry** | Model Registry (versionamento) |
-| **Deployment Online** | Endpoint (real-time inference) |
-| **Deployment Batch** | Batch Transform |
+| **Model Registry** | Model Registry (versioning) |
+| **Online Deployment** | Endpoint (real-time inference) |
+| **Batch Deployment** | Batch Transform |
 | **Model Monitoring** | Model Monitor (drift detection) |
 | **No-Code** | Canvas (business users) |
 
 ---
 
-## Amazon Bedrock — Foundation Models Disponíveis
+## Amazon Bedrock — Available Foundation Models
 
-| Provedor | Modelos |
+| Provider | Models |
 |---|---|
 | **Amazon** | Titan Text, Titan Embeddings, Titan Image Generator |
 | **Anthropic** | Claude 3 (Haiku, Sonnet, Opus) |
 | **Meta** | Llama 3 |
 | **Cohere** | Command R, Embed |
 | **Mistral AI** | Mistral, Mixtral |
-| **Stability AI** | Stable Diffusion (imagens) |
+| **Stability AI** | Stable Diffusion (images) |
 
-**RAG:** Bedrock Knowledge Bases → OpenSearch Serverless (vector store) → LLM contextualizado.
+**RAG:** Bedrock Knowledge Bases → OpenSearch Serverless (vector store) → contextualized LLM.
 
 ---
 
-## Comparativo — Serviços de Recomendação e Previsão
+## Comparison — Recommendation and Forecasting Services
 
-| Serviço | Caso de Uso | Input | Output |
+| Service | Use Case | Input | Output |
 |---|---|---|---|
-| **Personalize** | Recomendações personalizadas | Interações usuário-item + metadados | Top-N items por userId |
-| **Forecast** | Previsão de séries temporais | Dados históricos + metadados | Valores futuros + intervalos |
-| **Fraud Detector** | Detecção de fraude | Eventos de transação | Score de fraude |
-| **Lookout for Metrics** | Anomalias em métricas de negócio | Métricas de S3/RDS/Redshift | Alertas de anomalia |
+| **Personalize** | Personalized recommendations | User-item interactions + metadata | Top-N items per userId |
+| **Forecast** | Time series forecasting | Historical data + metadata | Future values + intervals |
+| **Fraud Detector** | Fraud detection | Transaction events | Fraud score |
+| **Lookout for Metrics** | Anomalies in business metrics | Metrics from S3/RDS/Redshift | Anomaly alerts |
 
 ---
 
-## Comprehend — Análises Disponíveis
+## Comprehend — Available Analyses
 
-| Análise | Descrição | Exemplo |
+| Analysis | Description | Example |
 |---|---|---|
-| **Entity Recognition** | Pessoas, locais, orgs, datas | "João trabalha na Amazon em São Paulo" |
-| **Sentiment Analysis** | Positivo/Negativo/Neutro/Misto | Review de produto |
-| **Key Phrases** | Expressões principais do texto | "aws certification", "cloud computing" |
-| **Language Detection** | Identifica o idioma | pt-BR, en-US, es |
-| **PII Detection** | CPF, email, telefone, etc. | Redação de dados pessoais |
-| **Topic Modeling** | Agrupa documentos por tema | Análise de chamados de suporte |
-| **Targeted Sentiment** | Sentimento por entidade mencionada | "camera" → positivo, "battery" → negativo |
+| **Entity Recognition** | People, places, orgs, dates | "John works at Amazon in São Paulo" |
+| **Sentiment Analysis** | Positive/Negative/Neutral/Mixed | Product review |
+| **Key Phrases** | Main expressions in the text | "aws certification", "cloud computing" |
+| **Language Detection** | Identifies the language | pt-BR, en-US, es |
+| **PII Detection** | National ID, email, phone, etc. | Redaction of personal data |
+| **Topic Modeling** | Groups documents by theme | Support ticket analysis |
+| **Targeted Sentiment** | Sentiment per mentioned entity | "camera" → positive, "battery" → negative |
 
-**Comprehend Medical:** especializado em texto clínico (diagnósticos, medicamentos, procedures).
+**Comprehend Medical:** specialized in clinical text (diagnoses, medications, procedures).
 
 ---
 
-## Rekognition — Features por Tipo
+## Rekognition — Features by Type
 
-| Feature | Imagem | Vídeo |
+| Feature | Image | Video |
 |---|---|---|
-| Detecção de objetos/cenas | ✅ | ✅ (com timestamps) |
-| Reconhecimento facial | ✅ (compare, search) | ✅ (person tracking) |
-| Detecção de texto (OCR) | ✅ | ✅ |
+| Object/scene detection | ✅ | ✅ (with timestamps) |
+| Facial recognition | ✅ (compare, search) | ✅ (person tracking) |
+| Text detection (OCR) | ✅ | ✅ |
 | Content moderation | ✅ | ✅ |
-| PPE detection (EPI) | ✅ | ✅ |
-| Detecção de celebridades | ✅ | ✅ |
-| Análise de atividades | ❌ | ✅ |
+| PPE detection | ✅ | ✅ |
+| Celebrity detection | ✅ | ✅ |
+| Activity analysis | ❌ | ✅ |
 
 ---
 
 ## SageMaker Deployment Options
 
-| Opção | Latência | Uso |
+| Option | Latency | Use |
 |---|---|---|
-| **Real-time Endpoint** | Milissegundos | Inference online, um request por vez |
-| **Serverless Inference** | Segundos (cold start) | Tráfego intermitente, sem custo idle |
-| **Async Inference** | Minutos | Payload grande, filas |
-| **Batch Transform** | Horas | Inference em lote (S3 input → S3 output) |
-| **Multi-Model Endpoint** | Low | Hospedar múltiplos modelos em 1 endpoint |
+| **Real-time Endpoint** | Milliseconds | Online inference, one request at a time |
+| **Serverless Inference** | Seconds (cold start) | Intermittent traffic, no idle cost |
+| **Async Inference** | Minutes | Large payloads, queues |
+| **Batch Transform** | Hours | Batch inference (S3 input → S3 output) |
+| **Multi-Model Endpoint** | Low | Host multiple models on 1 endpoint |
 
 ---
 
-## Dicas de Prova — Qual Serviço de IA Usar
+## Exam Tips — Which AI Service to Use
 
-| Cenário | Serviço AWS |
+| Scenario | AWS Service |
 |---|---|
-| "Transcrever ligações de call center" | Amazon Transcribe (+ Call Analytics) |
-| "Gerar voz sintética para IVR" | Amazon Polly (NTTS) |
-| "Detectar conteúdo adulto em fotos de usuários" | Amazon Rekognition Content Moderation |
-| "Extrair campos de formulários escaneados" | Amazon Textract |
-| "Análise de sentimento de reviews" | Amazon Comprehend |
-| "Chatbot com linguagem natural" | Amazon Lex v2 |
-| "Busca inteligente em documentos Word/PDF" | Amazon Kendra |
-| "Recomendações de produtos personalizadas" | Amazon Personalize |
-| "Previsão de demanda de estoque" | Amazon Forecast |
-| "Detectar fraude em transações" | Amazon Fraud Detector |
-| "Detectar anomalias em métricas de receita" | Amazon Lookout for Metrics |
-| "Usar modelos LLM via API sem treinar" | Amazon Bedrock |
-| "Treinar modelo ML customizado" | Amazon SageMaker |
-| "Anotar dados de imagem para treino" | SageMaker Ground Truth |
-| "NLP em texto clínico médico" | Amazon Comprehend Medical |
-| "Scanner de qualidade de produto na fábrica" | Amazon Lookout for Vision |
+| "Transcribe call center calls" | Amazon Transcribe (+ Call Analytics) |
+| "Generate synthetic voice for IVR" | Amazon Polly (NTTS) |
+| "Detect adult content in user photos" | Amazon Rekognition Content Moderation |
+| "Extract fields from scanned forms" | Amazon Textract |
+| "Sentiment analysis of reviews" | Amazon Comprehend |
+| "Chatbot with natural language" | Amazon Lex v2 |
+| "Intelligent search in Word/PDF documents" | Amazon Kendra |
+| "Personalized product recommendations" | Amazon Personalize |
+| "Inventory demand forecasting" | Amazon Forecast |
+| "Detect fraud in transactions" | Amazon Fraud Detector |
+| "Detect anomalies in revenue metrics" | Amazon Lookout for Metrics |
+| "Use LLM models via API without training" | Amazon Bedrock |
+| "Train a custom ML model" | Amazon SageMaker |
+| "Annotate image data for training" | SageMaker Ground Truth |
+| "NLP on clinical medical text" | Amazon Comprehend Medical |
+| "Product quality scanner in the factory" | Amazon Lookout for Vision |

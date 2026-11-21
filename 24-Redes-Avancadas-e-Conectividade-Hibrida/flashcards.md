@@ -1,31 +1,31 @@
-# Flashcards - Redes Avancadas e Conectividade Hibrida
+# Flashcards - Advanced Networking and Hybrid Connectivity
 
-1. Peering e transitive?
-- Nao.
+1. Is peering transitive?
+- No.
 
-2. Hub de roteamento para muitas VPCs?
+2. Routing hub for many VPCs?
 - Transit Gateway.
 
-3. Acesso privado a servico entre contas sem abrir toda rede?
+3. Private access to a service across accounts without opening the entire network?
 - PrivateLink.
 
-4. Conexao IPSec sobre internet?
+4. IPSec connection over the internet?
 - Site-to-Site VPN.
 
-5. Link dedicado AWS-on-premises?
+5. Dedicated AWS-to-on-premises link?
 - Direct Connect.
 
-6. Melhor para poucas VPCs e topologia simples?
+6. Best for few VPCs and a simple topology?
 - VPC Peering.
 
-7. NACL e stateful?
-- Nao, e stateless.
+7. Is NACL stateful?
+- No, it is stateless.
 
-8. Security Group e stateful?
-- Sim.
+8. Is a Security Group stateful?
+- Yes.
 
-9. DNS hibrido para zona privada na AWS?
+9. Hybrid DNS for a private zone in AWS?
 - Route 53 Resolver endpoint.
 
-10. Backup comum para DX?
+10. Common backup for DX?
 - VPN.

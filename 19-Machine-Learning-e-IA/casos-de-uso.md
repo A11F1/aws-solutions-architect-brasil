@@ -1,215 +1,215 @@
-# Casos de Uso Reais — Machine Learning e IA (Módulo 13)
+# Real-World Use Cases — Machine Learning and AI (Module 13)
 
-## Caso 1 — Sistema de Recomendação de Produtos
+## Case 1 — Product Recommendation System
 
-**Contexto:** E-commerce com 10 milhões de usuários precisa de recomendações personalizadas em tempo real na página de produto ("quem comprou X também comprou Y") e em campanhas de e-mail personalizadas por segmento.
+**Context:** An e-commerce company with 10 million users needs real-time personalized recommendations on the product page ("customers who bought X also bought Y") and in segment-personalized email campaigns.
 
-**Requisitos:**
-- Recomendações em tempo real (< 200ms por request)
-- Modelo retreinado diariamente com novos dados de comportamento
-- Não exige time de ML dedicado — usar serviço gerenciado
-- Segmentação para campanhas de marketing batch
+**Requirements:**
+- Real-time recommendations (< 200ms per request)
+- Model retrained daily with new behavior data
+- No dedicated ML team required — use a managed service
+- Segmentation for batch marketing campaigns
 
-**Arquitetura:**
+**Architecture:**
 ```
-DADOS DE ENTRADA:
-Clickstream → Kinesis → S3 (interações usuário-produto)
-Pedidos     → S3 (histórico de compras)
+INPUT DATA:
+Clickstream → Kinesis → S3 (user-product interactions)
+Orders      → S3 (purchase history)
 
-TREINAMENTO (diário — batch):
-S3 (interações) → Amazon Personalize
+TRAINING (daily — batch):
+S3 (interactions) → Amazon Personalize
                   ├── Dataset Group
-                  ├── Solution (algoritmo USER_PERSONALIZATION)
-                  └── Campaign (endpoint de inferência)
+                  ├── Solution (USER_PERSONALIZATION algorithm)
+                  └── Campaign (inference endpoint)
 
-INFERÊNCIA (tempo real):
-App → Amazon Personalize Campaign → Recomendações JSON
-App → ElastiCache (cache resultado por user_id, TTL 1h)
+INFERENCE (real time):
+App → Amazon Personalize Campaign → JSON recommendations
+App → ElastiCache (cache result by user_id, TTL 1h)
 
-BATCH (campanhas email):
-EventBridge (diário) → Lambda → Personalize Batch Inference
-                                    └── S3 (recomendações por segmento)
-                                              └── SES (e-mails personalizados)
+BATCH (email campaigns):
+EventBridge (daily) → Lambda → Personalize Batch Inference
+                                    └── S3 (recommendations by segment)
+                                              └── SES (personalized emails)
 ```
 
-**Personalize vs SageMaker para este caso:**
-| Critério | Personalize | SageMaker |
+**Personalize vs SageMaker for this case:**
+| Criterion | Personalize | SageMaker |
 |---------|-------------|-----------|
-| Time ML necessário | Não | Sim |
-| Algoritmos disponíveis | Recomendação/ranking | Qualquer |
-| Tempo setup | Horas | Dias/semanas |
-| Flexibilidade | Baixa | Alta |
-| Custo | Por TPS + horas treinamento | Por instância |
+| ML team required | No | Yes |
+| Available algorithms | Recommendation/ranking | Any |
+| Setup time | Hours | Days/weeks |
+| Flexibility | Low | High |
+| Cost | Per TPS + training hours | Per instance |
 
 ---
 
-## Caso 2 — Análise de Documentos Financeiros com Textract + Comprehend
+## Case 2 — Financial Document Analysis with Textract + Comprehend
 
-**Contexto:** Seguradora precisa processar 5.000 documentos/dia (formulários de sinistro, laudos médicos, faturas) para acelerar análise de apólices. Processo manual leva 3 dias por sinistro.
+**Context:** An insurance company needs to process 5,000 documents/day (claim forms, medical reports, invoices) to speed up policy analysis. The manual process takes 3 days per claim.
 
-**Requisitos:**
-- Extrair dados estruturados de formulários (campos, tabelas)
-- Detectar informações de PII (CPF, nome, data de nascimento) para proteção
-- Classificar tipo de documento (sinistro/laudo/fatura)
-- Verificar consistência dos dados extraídos
+**Requirements:**
+- Extract structured data from forms (fields, tables)
+- Detect PII (national ID number, name, date of birth) for protection
+- Classify document type (claim/report/invoice)
+- Verify consistency of the extracted data
 
-**Arquitetura:**
+**Architecture:**
 ```
-Documentos (PDF/imagem) → S3 (sinistros-entrada)
+Documents (PDF/image) → S3 (claims-input)
                                 │ S3 Event Notification
                                 ▼
-                           Lambda (orquestrador)
+                           Lambda (orchestrator)
                            ├── Textract StartDocumentAnalysis (async)
-                           │     (extrai formulários + tabelas)
-                           │     └── SNS callback → Lambda (resultado)
+                           │     (extracts forms + tables)
+                           │     └── SNS callback → Lambda (result)
                            ├── Comprehend DetectPiiEntities
-                           │     (detecta CPF, nome, data)
+                           │     (detects ID number, name, date)
                            ├── Comprehend ClassifyDocument
-                           │     (tipo: sinistro/laudo/fatura)
+                           │     (type: claim/report/invoice)
                            └── Comprehend DetectSentiment
-                                 (urgência do cliente no texto livre)
+                                 (customer urgency in free text)
                                 │
-                           DynamoDB (metadados + campos extraídos)
-                           S3 (resultado estruturado JSON)
-                           Step Functions (fluxo aprovação humana se confiança < 80%)
+                           DynamoDB (metadata + extracted fields)
+                           S3 (structured JSON result)
+                           Step Functions (human approval flow if confidence < 80%)
                            
-A2I (Augmented AI) → Revisão humana quando Textract tem baixa confiança
+A2I (Augmented AI) → Human review when Textract has low confidence
 ```
 
-**Redução de Tempo:**
-- Antes: 3 dias (manual) → Depois: 2 horas (automatizado)
-- Taxa de automação: 85% dos documentos sem revisão humana
-- A2I cobre os 15% com baixa confiança
+**Time Reduction:**
+- Before: 3 days (manual) → After: 2 hours (automated)
+- Automation rate: 85% of documents without human review
+- A2I covers the 15% with low confidence
 
 ---
 
-## Caso 3 — Chatbot de Atendimento com Lex v2 + Lambda
+## Case 3 — Customer Service Chatbot with Lex v2 + Lambda
 
-**Contexto:** Empresa de telecomunicações quer reduzir volume de chamadas (200.000/mês) para SAC oferecendo chatbot que resolve os 5 problemas mais comuns: verificar fatura, 2ª via boleto, cancelar serviços, verificar saldo de dados, alterar plano.
+**Context:** A telecommunications company wants to reduce the volume of calls (200,000/month) to customer service by offering a chatbot that resolves the 5 most common problems: check invoice, reissue payment slip, cancel services, check data balance, change plan.
 
-**Requisitos:**
-- Compreender linguagem natural em português
-- Autenticar usuário antes de operações sensíveis
-- Escalar chamadas complexas para atendente humano
-- Integrar com sistema de CRM existente (REST API)
+**Requirements:**
+- Understand natural language in Portuguese
+- Authenticate the user before sensitive operations
+- Escalate complex calls to a human agent
+- Integrate with the existing CRM system (REST API)
 
-**Arquitetura:**
+**Architecture:**
 ```
-Usuário (WhatsApp / App / Web)
+User (WhatsApp / App / Web)
        │
        ▼
-Amazon Lex v2 (Bot em português)
+Amazon Lex v2 (Bot in Portuguese)
   Intents:
-  ├── ConsultarFatura → Lambda (consulta CRM API)
-  ├── EmitirBoleto    → Lambda (gera boleto PDF → S3 → URL)
-  ├── CancelarServico → Lambda (verifica contrato + chama CRM)
-  ├── VerificarDados  → Lambda (consulta sistema de telemetria)
-  └── AlterarPlano    → Lambda (opções plano + Step Functions workflow)
+  ├── ConsultarFatura → Lambda (queries CRM API)
+  ├── EmitirBoleto    → Lambda (generates payment slip PDF → S3 → URL)
+  ├── CancelarServico → Lambda (checks contract + calls CRM)
+  ├── VerificarDados  → Lambda (queries telemetry system)
+  └── AlterarPlano    → Lambda (plan options + Step Functions workflow)
   
-  Autenticação:
-  ├── Slot: CPF + data nascimento
-  └── Lambda validator → consulta DynamoDB (sessão autenticada)
+  Authentication:
+  ├── Slot: national ID + date of birth
+  └── Lambda validator → queries DynamoDB (authenticated session)
   
   Fallback:
-  └── Intent: TransferirAtendente → Amazon Connect (transferência)
+  └── Intent: TransferirAtendente → Amazon Connect (transfer)
   
-Amazon Connect (call center integrado)
-CloudWatch (métricas: intent recognition rate, transfer rate)
+Amazon Connect (integrated call center)
+CloudWatch (metrics: intent recognition rate, transfer rate)
 ```
 
-**Métricas de Sucesso:**
-| KPI | Antes | Depois |
+**Success Metrics:**
+| KPI | Before | After |
 |-----|-------|--------|
-| Resolução sem atendente | 0% | 65% |
-| Tempo médio resolução | 8 min | 90 seg |
-| Custo por interação | R$15 | R$0.12 |
-| Satisfação (CSAT) | 3.2/5 | 4.1/5 |
+| Resolution without an agent | 0% | 65% |
+| Average resolution time | 8 min | 90 sec |
+| Cost per interaction | R$15 | R$0.12 |
+| Satisfaction (CSAT) | 3.2/5 | 4.1/5 |
 
 ---
 
-## Caso 4 — Moderação de Conteúdo com Rekognition
+## Case 4 — Content Moderation with Rekognition
 
-**Contexto:** Plataforma de UGC (User Generated Content) com 500.000 uploads de imagem/vídeo por dia precisa remover automaticamente conteúdo impróprio (violência, nudez, drogas) antes de publicar.
+**Context:** A UGC (User Generated Content) platform with 500,000 image/video uploads per day needs to automatically remove inappropriate content (violence, nudity, drugs) before publishing.
 
-**Requisitos:**
-- Analisar 100% dos conteúdos antes de publicar
-- Falsos positivos < 5% (conteúdo válido bloqueado)
-- Revisão humana para casos border-line (confiança 50-80%)
-- Audit trail de decisões (compliance legal)
+**Requirements:**
+- Analyze 100% of content before publishing
+- False positives < 5% (valid content blocked)
+- Human review for borderline cases (50-80% confidence)
+- Audit trail of decisions (legal compliance)
 
-**Arquitetura:**
+**Architecture:**
 ```
-Upload usuário → S3 (content-pendente)
+User upload → S3 (content-pending)
                       │ Lambda trigger
                       ▼
-                 Lambda (moderador)
+                 Lambda (moderator)
                  ├── Rekognition DetectModerationLabels
-                 │     (nudez, violência, drogas, etc.)
+                 │     (nudity, violence, drugs, etc.)
                  │
-                 ├── Se score > 80% (conteúdo impróprio):
-                 │     └── Mover para S3 (content-bloqueado)
-                 │         DynamoDB (log: bloqueado + motivo)
-                 │         SNS → Email usuário (notificação)
+                 ├── If score > 80% (inappropriate content):
+                 │     └── Move to S3 (content-blocked)
+                 │         DynamoDB (log: blocked + reason)
+                 │         SNS → Email to user (notification)
                  │
-                 ├── Se score 20-80% (incerto):
-                 │     └── A2I (Augmented AI) → Fila revisão humana
-                 │         Step Functions aguarda decisão humana
+                 ├── If score 20-80% (uncertain):
+                 │     └── A2I (Augmented AI) → Human review queue
+                 │         Step Functions waits for human decision
                  │
-                 └── Se score < 20% (aprovado):
-                       └── S3 (content-aprovado) → CloudFront
+                 └── If score < 20% (approved):
+                       └── S3 (content-approved) → CloudFront
 
-Audit: DynamoDB Streams → Lambda → S3 (log compliance imutável)
+Audit: DynamoDB Streams → Lambda → S3 (immutable compliance log)
 ```
 
-**Rekognition para Vídeo:**
+**Rekognition for Video:**
 ```
-Vídeo upload → S3 → Lambda → Rekognition StartContentModeration (async)
-                                    │ SNS callback quando completo
+Video upload → S3 → Lambda → Rekognition StartContentModeration (async)
+                                    │ SNS callback when complete
                                     ▼
-                               Lambda (processar resultado)
-                               ├── Timestamps de cenas impróprias
-                               └── Decisão: aprovar/rejeitar/segmentar
+                               Lambda (process result)
+                               ├── Timestamps of inappropriate scenes
+                               └── Decision: approve/reject/segment
 ```
 
 ---
 
-## Caso 5 — Previsão de Demanda para Gestão de Estoque
+## Case 5 — Demand Forecasting for Inventory Management
 
-**Contexto:** Rede de supermercados precisa prever demanda de 50.000 SKUs nas próximas 4 semanas para otimizar pedidos de reposição e reduzir desperdício.
+**Context:** A supermarket chain needs to forecast demand for 50,000 SKUs over the next 4 weeks to optimize replenishment orders and reduce waste.
 
-**Requisitos:**
-- Previsão por SKU + loja + semana
-- Considerar sazonalidade, feriados, promoções
-- Retreinar modelo mensalmente com dados novos
-- Integrar previsões com sistema ERP de compras
+**Requirements:**
+- Forecast per SKU + store + week
+- Account for seasonality, holidays, promotions
+- Retrain the model monthly with new data
+- Integrate forecasts with the ERP purchasing system
 
-**Arquitetura:**
+**Architecture:**
 ```
-DADOS HISTÓRICOS:
-S3 (vendas diárias últimos 3 anos, por SKU/loja)
-S3 (dados externos: feriados, promoções, clima)
+HISTORICAL DATA:
+S3 (daily sales for the last 3 years, by SKU/store)
+S3 (external data: holidays, promotions, weather)
 
 AMAZON FORECAST:
-├── Dataset Group (vendas + metadados + itens relacionados)
-├── Predictor (algoritmo: AutoML seleciona melhor)
-│     (opções: DeepAR+, Prophet, NPTS, CNN-QR)
-└── Forecast (gera P10/P50/P90 para 28 dias)
+├── Dataset Group (sales + metadata + related items)
+├── Predictor (algorithm: AutoML selects the best)
+│     (options: DeepAR+, Prophet, NPTS, CNN-QR)
+└── Forecast (generates P10/P50/P90 for 28 days)
 
-INFERÊNCIA + INTEGRAÇÃO:
-EventBridge (1x/semana) → Lambda
+INFERENCE + INTEGRATION:
+EventBridge (1x/week) → Lambda
      │
-     ├── CreateForecastExportJob → S3 (previsoes.csv)
-     ├── Lambda processa CSV → DynamoDB (tabela compras_sugeridas)
-     └── API REST ERP → lê DynamoDB → gera pedidos de compra
+     ├── CreateForecastExportJob → S3 (forecasts.csv)
+     ├── Lambda processes CSV → DynamoDB (suggested_purchases table)
+     └── ERP REST API → reads DynamoDB → generates purchase orders
 
-QuickSight (dashboard: previsão vs realizado, acurácia MAPE)
-SNS → Alert se MAPE > 15% (modelo degradando)
+QuickSight (dashboard: forecast vs actual, MAPE accuracy)
+SNS → Alert if MAPE > 15% (model degrading)
 ```
 
-**Métricas de Acurácia:**
-| Métrica | Valor Típico | O que significa |
+**Accuracy Metrics:**
+| Metric | Typical Value | What it means |
 |---------|-------------|----------------|
 | MAPE | < 15% | Mean Absolute Percentage Error |
-| WAPE | < 10% | Weighted APE (considera volume) |
-| P50 | previsão mediana | 50% confiança |
-| P90 | limite otimista | Para safety stock |
+| WAPE | < 10% | Weighted APE (accounts for volume) |
+| P50 | median forecast | 50% confidence |
+| P90 | optimistic bound | For safety stock |

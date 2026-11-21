@@ -1,26 +1,26 @@
 # TEMPLATE_MODULO
 
-## Objetivo
-Descreva em 2-4 linhas o que você vai aprender neste módulo e quais decisões de arquitetura deve dominar para o exame.
+## Objective
+Describe in 2-4 lines what you will learn in this module and which architecture decisions you must master for the exam.
 
-## Serviços AWS principais
-- Serviço AWS 1
-- Serviço AWS 2
-- Serviço AWS 3
-- Serviço AWS 4
+## Main AWS services
+- AWS Service 1
+- AWS Service 2
+- AWS Service 3
+- AWS Service 4
 
-## Arquitetura e trade-offs
-Explique as arquiteturas mais comuns do tema, destacando quando escolher cada opção e quais trade-offs de custo, desempenho, segurança e resiliência devem ser considerados.
+## Architecture and trade-offs
+Explain the most common architectures for the topic, highlighting when to choose each option and which cost, performance, security, and resilience trade-offs should be considered.
 
-## Armadilhas comuns na prova
-Liste as armadilhas frequentes de prova para este tema, incluindo pares de serviços que costumam confundir e palavras-chave que mudam a resposta correta.
+## Common exam pitfalls
+List the frequent exam pitfalls for this topic, including pairs of services that are often confused and keywords that change the correct answer.
 
-## Lab hands-on
-Descreva o laboratório recomendado e o objetivo prático.
-Inclua observações de custo: região sugerida, recursos que precisam ser desligados e estimativa de baixo custo.
+## Hands-on lab
+Describe the recommended lab and its practical objective.
+Include cost notes: suggested region, resources that must be shut down, and a low-cost estimate.
 
-## Questões práticas
-Indique o arquivo de questões e como usar (resolver primeiro, corrigir depois, revisar erros recorrentes).
+## Practice questions
+Point to the questions file and how to use it (solve first, check afterward, review recurring mistakes).
 
-## Revisão rápida / cheatsheet
-Indique cheatsheet, flashcards e um roteiro rápido de revisão de 10-15 minutos.
+## Quick review / cheatsheet
+Point to the cheatsheet, flashcards, and a quick 10-15 minute review routine.

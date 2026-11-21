@@ -1,209 +1,209 @@
-# Módulo 17 — Casos de Uso Reais: Arquiteturas Multi-Serviço
+# Module 17 — Real-World Use Cases: Multi-Service Architectures
 
-## Sobre Este Módulo
+## About This Module
 
-Arquiteturas reais integram múltiplos serviços AWS. Este módulo apresenta padrões arquiteturais recorrentes no exame SAA-C03, onde a combinação certa de serviços determina a solução ótima.
+Real architectures integrate multiple AWS services. This module presents recurring architectural patterns on the SAA-C03 exam, where the right combination of services determines the optimal solution.
 
 ---
 
-## Caso 1: E-commerce de Alta Disponibilidade
+## Case 1: High-Availability E-commerce
 
-**Requisitos**: Aplicação web global, escalável, com pagamentos seguros e catálogo de produtos.
+**Requirements**: A global, scalable web application with secure payments and a product catalog.
 
 ```
-Usuários Globais
+Global Users
     ↓
 Route 53 (DNS + Health Checks + failover/latency routing)
     ↓
-CloudFront (CDN — assets estáticos em edge locations)
+CloudFront (CDN — static assets at edge locations)
     ↓
-WAF + Shield Standard (proteção DDoS na borda)
+WAF + Shield Standard (DDoS protection at the edge)
     ↓
-ALB (Application Load Balancer — distribui para múltiplas AZs)
+ALB (Application Load Balancer — distributes across multiple AZs)
     ↓
-Auto Scaling Group → EC2 (app tier) ou ECS Fargate
+Auto Scaling Group → EC2 (app tier) or ECS Fargate
     │
-    ├── RDS Aurora MySQL (Multi-AZ para pedidos/usuários)
-    │     └── Aurora Read Replicas (leitura pesada)
-    ├── ElastiCache Redis (cache de sessão e catálogo)
-    ├── DynamoDB (carrinho de compras — latência baixa)
+    ├── RDS Aurora MySQL (Multi-AZ for orders/users)
+    │     └── Aurora Read Replicas (heavy reads)
+    ├── ElastiCache Redis (session and catalog cache)
+    ├── DynamoDB (shopping cart — low latency)
     │
-    └── S3 (imagens de produto) → CloudFront origin
-         └── SQS (filas de pedidos) → Lambda (processamento async)
-              └── SNS (notificações) → SES (email confirmação)
+    └── S3 (product images) → CloudFront origin
+         └── SQS (order queues) → Lambda (async processing)
+              └── SNS (notifications) → SES (confirmation email)
 ```
 
-**Serviços-chave e justificativas:**
-- Aurora Multi-AZ: disponibilidade para dados transacionais  
-- ElastiCache: reduz latência e carga no banco de dados
-- SQS desacopla processamento de pedidos (tolerância a falha na integração)
-- CloudFront reduz latência mundial e custo de transferência
+**Key services and rationale:**
+- Aurora Multi-AZ: availability for transactional data  
+- ElastiCache: reduces latency and load on the database
+- SQS decouples order processing (fault tolerance in the integration)
+- CloudFront reduces worldwide latency and data transfer cost
 
 ---
 
-## Caso 2: Pipeline de Dados em Tempo Real
+## Case 2: Real-Time Data Pipeline
 
-**Requisitos**: Ingestão de eventos de IoT, processamento em tempo real, analytics e alertas.
+**Requirements**: IoT event ingestion, real-time processing, analytics, and alerts.
 
 ```
-Dispositivos IoT
+IoT Devices
     ↓
-IoT Core (MQTT) ou Kinesis Data Streams
+IoT Core (MQTT) or Kinesis Data Streams
     ↓
-Lambda (transformação de eventos) ─── DynamoDB (estado atual dispositivo)
+Lambda (event transformation) ─── DynamoDB (current device state)
     │
     ├── Kinesis Firehose → S3 (raw data lake, Parquet)
     │         └── Glue Crawlers → Glue Catalog
-    │               └── Athena (queries ad-hoc analistas)
+    │               └── Athena (ad-hoc analyst queries)
     │
     └── Kinesis Data Analytics (Apache Flink)
           └── Anomaly detection → SNS → Lambda → PagerDuty
                                 → CloudWatch Alarms
 ```
 
-**Serviços-chave e justificativas:**
-- Kinesis Data Streams: ingestão de alto volume em tempo real
-- Kinesis Firehose: near real-time delivery para S3 (zero código de gerenciamento)
-- Lambda ESM: processa eventos de Kinesis em batches  
-- Athena: análise sem servidor dos dados no S3
+**Key services and rationale:**
+- Kinesis Data Streams: high-volume real-time ingestion
+- Kinesis Firehose: near real-time delivery to S3 (zero management code)
+- Lambda ESM: processes Kinesis events in batches  
+- Athena: serverless analysis of the data in S3
 
 ---
 
-## Caso 3: Aplicação Serverless com Autenticação
+## Case 3: Serverless Application with Authentication
 
-**Requisitos**: API REST serverless, autenticação de usuários, dados variáveis.
+**Requirements**: Serverless REST API, user authentication, variable data.
 
 ```
 Mobile/Web App
     ↓
-Amazon Cognito User Pool (signup/login/MFA/tokens JWT)
+Amazon Cognito User Pool (signup/login/MFA/JWT tokens)
     ↓
-API Gateway HTTP API (+ JWT Authorizer com Cognito)
+API Gateway HTTP API (+ JWT Authorizer with Cognito)
     ↓
 Lambda Functions:
-    ├── GET /products   → DynamoDB (leitura, DAX para cache)
+    ├── GET /products   → DynamoDB (read, DAX for cache)
     ├── POST /orders    → DynamoDB + EventBridge
-    ├── GET /files      → Pre-signed URL S3 retornada ao cliente
-    └── POST /files     → Pre-signed URL S3 para upload direto
+    ├── GET /files      → S3 pre-signed URL returned to the client
+    └── POST /files     → S3 pre-signed URL for direct upload
 
 EventBridge:
-    └── Rule: order.created → Lambda (enviar email) → SES
-    └── Rule: order.created → SQS → Lambda (processar pagamento)
+    └── Rule: order.created → Lambda (send email) → SES
+    └── Rule: order.created → SQS → Lambda (process payment)
 
-Monitoramento:
+Monitoring:
     X-Ray (tracing API GW → Lambda → DynamoDB)
     CloudWatch Logs (structured logging)
     CloudWatch Alarms (Lambda errors, throttles)
 ```
 
-**Serviços-chave e justificativas:**
-- Cognito User Pool: auth completo (OAuth2/OIDC) sem código próprio
-- API GW HTTP API: custo 71% menor que REST API para endpoints simples
-- Pre-signed URLs S3: clientes fazem upload/download direto no S3 (não passa pela Lambda)
-- DAX: cache in-memory para DynamoDB (µs para leituras repetidas)
+**Key services and rationale:**
+- Cognito User Pool: complete auth (OAuth2/OIDC) without custom code
+- API GW HTTP API: 71% cheaper than REST API for simple endpoints
+- S3 pre-signed URLs: clients upload/download directly to S3 (does not go through Lambda)
+- DAX: in-memory cache for DynamoDB (µs for repeated reads)
 
 ---
 
-## Caso 4: Disaster Recovery Multi-Region
+## Case 4: Multi-Region Disaster Recovery
 
-**Requisitos**: RTO < 15 min, RPO < 5 min para aplicação crítica.
+**Requirements**: RTO < 15 min, RPO < 5 min for a critical application.
 
 ```
-Região Primária (us-east-1)
-    ├── RDS Aurora (primary)     ──[global database]──→  Região DR (us-west-2)
+Primary Region (us-east-1)
+    ├── RDS Aurora (primary)     ──[global database]──→  DR Region (us-west-2)
     ├── DynamoDB Global Tables   ──[multi-master]──────→  DynamoDB Global Table
-    ├── S3 (dados aplicação)     ──[CRR]──────────────→  S3 réplica
+    ├── S3 (application data)    ──[CRR]──────────────→  S3 replica
     └── EC2 ASG (app)
 
 Route 53:
     ├── Health Check → ALB us-east-1 (primary, weight 100)
     └── Failover Record → ALB us-west-2 (DR, weight 0)
-           └── Trigger: health check falha → DNS TTL flip para us-west-2
+           └── Trigger: health check fails → DNS TTL flip to us-west-2
 
 DR Region (us-west-2) — Warm Standby:
     ├── Aurora Secondary (read, promotes to primary on failover)
-    ├── DynamoDB Global Table (já ativo — leitura local disponível)
-    ├── EC2 ASG (capacidade reduzida — escala ao receber tráfego)
+    ├── DynamoDB Global Table (already active — local reads available)
+    ├── EC2 ASG (reduced capacity — scales when receiving traffic)
     └── ALB
 ```
 
-**Estratégia: Warm Standby** → RTO ~10-15 min, RPO ~1-5 min (replicação assíncrona Aurora ~1s)
+**Strategy: Warm Standby** → RTO ~10-15 min, RPO ~1-5 min (Aurora asynchronous replication ~1s)
 
 ---
 
-## Caso 5: Migração de Monolito para Microserviços
+## Case 5: Migrating a Monolith to Microservices
 
-**Requisitos**: Migrar aplicação legada .NET para arquitetura moderna, sem downtime.
+**Requirements**: Migrate a legacy .NET application to a modern architecture, with no downtime.
 
 ```
-Fase 1 — Strangler Fig Pattern:
-  Monolito original → Route 53 (via path-based routing no ALB)
-      ├── /api/auth → Novo serviço auth (Fargate + Cognito)
-      ├── /api/catalog → Novo serviço catálogo (Lambda + DynamoDB)
-      └── /* → Monolito (EC2) ainda em produção
+Phase 1 — Strangler Fig Pattern:
+  Original monolith → Route 53 (via path-based routing on the ALB)
+      ├── /api/auth → New auth service (Fargate + Cognito)
+      ├── /api/catalog → New catalog service (Lambda + DynamoDB)
+      └── /* → Monolith (EC2) still in production
 
-Fase 2 — Async Decoupling:
-  Monolito emite eventos → SNS/EventBridge
-    └── Microserviços consomem eventos (substituindo chamadas síncronas)
+Phase 2 — Async Decoupling:
+  Monolith emits events → SNS/EventBridge
+    └── Microservices consume events (replacing synchronous calls)
 
-Fase 3 — Complete Migration:
-  ECS/EKS (containers) ou Lambda (serverless) por domínio de negócio
-  API Gateway (facade única para todos microserviços)
-  Service Connect ou App Mesh (comunicação inter-serviços)
+Phase 3 — Complete Migration:
+  ECS/EKS (containers) or Lambda (serverless) per business domain
+  API Gateway (single facade for all microservices)
+  Service Connect or App Mesh (inter-service communication)
 ```
 
-**Padrões usados:**
-- **Strangler Fig**: substitui partes incrementalmente, nunca cutover total de uma vez
-- **Event-driven**: desacopla serviços com EventBridge/SNS/SQS
-- **API Gateway as facade**: clientes não precisam conhecer topologia interna
+**Patterns used:**
+- **Strangler Fig**: replaces parts incrementally, never a full cutover all at once
+- **Event-driven**: decouples services with EventBridge/SNS/SQS
+- **API Gateway as facade**: clients do not need to know the internal topology
 
 ---
 
-## Caso 6: Analytics de Big Data com Lake House
+## Case 6: Big Data Analytics with a Lake House
 
-**Requisitos**: Data lake escalável para analytics em batch e em tempo real.
+**Requirements**: A scalable data lake for batch and real-time analytics.
 
 ```
-Fontes Diversas:
+Various Sources:
   ├── RDS/Aurora → DMS (CDC) → S3 (raw) 
   ├── SaaS APIs → Lambda → S3
   ├── Clickstream → Kinesis Firehose → S3
   └── Files → DataSync → S3
 
-S3 Lake (zonas):
-  raw/ → bronze/ (Glue ETL) → silver/ (Parquet + particionado) → gold/ (aggregated)
+S3 Lake (zones):
+  raw/ → bronze/ (Glue ETL) → silver/ (Parquet + partitioned) → gold/ (aggregated)
 
-Catálogo:
+Catalog:
   Glue Crawlers → Glue Data Catalog → Lake Formation (FGA permissions)
 
-Consumo:
-  Athena → reporting ad-hoc (paga por scan)
-  Redshift Spectrum → DW queries misturando S3 + Redshift
-  QuickSight (SPICE) → dashboards executivos
-  SageMaker → modelos ML sobre dados gold/
+Consumption:
+  Athena → ad-hoc reporting (pay per scan)
+  Redshift Spectrum → DW queries mixing S3 + Redshift
+  QuickSight (SPICE) → executive dashboards
+  SageMaker → ML models on gold/ data
 ```
 
 ---
 
-## Padrões Recorrentes no Exame
+## Recurring Exam Patterns
 
-| Padrão | Serviços | Contexto |
+| Pattern | Services | Context |
 |---|---|---|
-| Fan-out | SNS → múltiplos SQS | Notificar vários sistemas ao mesmo tempo |
-| Desacoplamento | SQS entre producer/consumer | Buffer, tolerar picos, retry |
-| CQRS | DynamoDB (write) + ElastiCache (read) | Separar leituras de escritas para otimizar |
-| Event Sourcing | Kinesis/EventBridge → Lambda → DynamoDB | Audit trail + processamento assíncrono |
-| Cache-aside | Lambda → ElastiCache miss → DynamoDB | Reduzir latência de leituras repetidas |
-| Blue/Green | CodeDeploy ou R53 weighted | Zero-downtime deployment |
+| Fan-out | SNS → multiple SQS | Notify several systems at the same time |
+| Decoupling | SQS between producer/consumer | Buffer, tolerate spikes, retry |
+| CQRS | DynamoDB (write) + ElastiCache (read) | Separate reads from writes to optimize |
+| Event Sourcing | Kinesis/EventBridge → Lambda → DynamoDB | Audit trail + asynchronous processing |
+| Cache-aside | Lambda → ElastiCache miss → DynamoDB | Reduce latency of repeated reads |
+| Blue/Green | CodeDeploy or R53 weighted | Zero-downtime deployment |
 
 ---
 
-## Dicas de Prova
+## Exam Tips
 
-- Questões de arquitetura: procure o serviço **mais gerenciado** que satisfaz os requisitos
-- "Alta disponibilidade" → Multi-AZ (RDS Multi-AZ, ASG em múltiplas AZs, ELB)
-- "Baixa latência global" → CloudFront (assets), Global Accelerator (TCP/UDP), Aurora Global DB
-- "Desacoplamento" → SQS (ponto-a-ponto) ou SNS (fan-out)
-- "Processamento assíncrono" → SQS + Lambda ou EventBridge + Lambda
-- "Econômico para cargas variáveis" → Lambda (serverless), Fargate On-Demand, Spot ASG
-- "Segurança em camadas" → WAF + Shield + SG + NACL + KMS + Macie
+- Architecture questions: look for the **most managed** service that meets the requirements
+- "High availability" → Multi-AZ (RDS Multi-AZ, ASG across multiple AZs, ELB)
+- "Low global latency" → CloudFront (assets), Global Accelerator (TCP/UDP), Aurora Global DB
+- "Decoupling" → SQS (point-to-point) or SNS (fan-out)
+- "Asynchronous processing" → SQS + Lambda or EventBridge + Lambda
+- "Cost-effective for variable workloads" → Lambda (serverless), Fargate On-Demand, Spot ASG
+- "Layered security" → WAF + Shield + SG + NACL + KMS + Macie

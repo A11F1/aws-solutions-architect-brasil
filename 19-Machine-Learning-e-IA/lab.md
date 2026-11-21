@@ -1,17 +1,17 @@
-# Lab Prático — Machine Learning: Comprehend + Rekognition + Textract (Módulo 13)
+# Hands-On Lab — Machine Learning: Comprehend + Rekognition + Textract (Module 13)
 
-> **Região:** us-east-1 | **Custo estimado:** < $1.00 (Free Tier inclui 5K unidades/mês Comprehend, 5K imagens Rekognition)  
-> **Pré-requisitos:** AWS CLI configurado, Python 3.12, boto3
-
----
-
-## Objetivo
-
-Explorar os três principais serviços de IA "pré-treinada" da AWS — sem treinar modelos, só consumindo APIs.
+> **Region:** us-east-1 | **Estimated cost:** < $1.00 (Free Tier includes 5K units/month Comprehend, 5K images Rekognition)  
+> **Prerequisites:** AWS CLI configured, Python 3.12, boto3
 
 ---
 
-## Parte 1 — Comprehend: Análise de Texto
+## Objective
+
+Explore the three main "pre-trained" AI services from AWS — without training models, just consuming APIs.
+
+---
+
+## Part 1 — Comprehend: Text Analysis
 
 ```python
 #!/usr/bin/env python3
@@ -22,84 +22,84 @@ import json
 
 client = boto3.client('comprehend', region_name='us-east-1')
 
-textos = [
-    "O produto chegou rápido e a qualidade é excelente! Recomendo muito.",
-    "Péssimo atendimento, demorou 30 dias para entregar e veio quebrado.",
-    "Entrega normal, produto conforme descrito. Nada de especial.",
-    "O CPF do cliente é 123.456.789-00 e o email é joao@exemplo.com.br",
-    "A Amazon Web Services lançou novos serviços de inteligência artificial em São Paulo.",
+texts = [
+    "The product arrived quickly and the quality is excellent! Highly recommended.",
+    "Terrible service, it took 30 days to deliver and arrived broken.",
+    "Normal delivery, product as described. Nothing special.",
+    "The customer's SSN is 123-45-6789 and the email is john@example.com",
+    "Amazon Web Services launched new artificial intelligence services in São Paulo.",
 ]
 
 print("=" * 60)
-print("ANÁLISE DE SENTIMENTO")
+print("SENTIMENT ANALYSIS")
 print("=" * 60)
 
-for texto in textos[:3]:
+for text in texts[:3]:
     response = client.detect_sentiment(
-        Text=texto,
-        LanguageCode='pt'
+        Text=text,
+        LanguageCode='en'
     )
     sentiment = response['Sentiment']
     scores = response['SentimentScore']
-    print(f"\nTexto: {texto[:50]}...")
-    print(f"Sentimento: {sentiment}")
-    print(f"Confiança: POSITIVE={scores['Positive']:.2%}, NEGATIVE={scores['Negative']:.2%}")
+    print(f"\nText: {text[:50]}...")
+    print(f"Sentiment: {sentiment}")
+    print(f"Confidence: POSITIVE={scores['Positive']:.2%}, NEGATIVE={scores['Negative']:.2%}")
 
 print("\n" + "=" * 60)
-print("DETECÇÃO DE PII (Dados Pessoais)")
+print("PII DETECTION (Personal Data)")
 print("=" * 60)
 
 response = client.detect_pii_entities(
-    Text=textos[3],
-    LanguageCode='pt'
+    Text=texts[3],
+    LanguageCode='en'
 )
 
-print(f"\nTexto: {textos[3]}")
-print("Entidades PII encontradas:")
+print(f"\nText: {texts[3]}")
+print("PII entities found:")
 for entity in response['Entities']:
-    inicio = entity['BeginOffset']
-    fim = entity['EndOffset']
-    valor = textos[3][inicio:fim]
-    print(f"  Tipo: {entity['Type']} | Valor detectado: {valor} | Score: {entity['Score']:.2%}")
+    start = entity['BeginOffset']
+    end = entity['EndOffset']
+    value = texts[3][start:end]
+    print(f"  Type: {entity['Type']} | Detected value: {value} | Score: {entity['Score']:.2%}")
 
 print("\n" + "=" * 60)
-print("EXTRAÇÃO DE ENTIDADES")
+print("ENTITY EXTRACTION")
 print("=" * 60)
 
 response = client.detect_entities(
-    Text=textos[4],
-    LanguageCode='pt'
+    Text=texts[4],
+    LanguageCode='en'
 )
 
-print(f"\nTexto: {textos[4]}")
-print("Entidades encontradas:")
+print(f"\nText: {texts[4]}")
+print("Entities found:")
 for entity in response['Entities']:
     print(f"  {entity['Type']}: {entity['Text']} (score: {entity['Score']:.2%})")
 
 print("\n" + "=" * 60)
-print("DETECÇÃO DE IDIOMA")
+print("LANGUAGE DETECTION")
 print("=" * 60)
 
-textos_idioma = [
+language_texts = [
     "This is an English sentence about cloud computing.",
     "Esta frase está em português sobre computação em nuvem.",
     "Este es un texto en español sobre servicios en la nube.",
 ]
 
-for texto in textos_idioma:
-    response = client.detect_dominant_language(Text=texto)
+for text in language_texts:
+    response = client.detect_dominant_language(Text=text)
     lang = response['Languages'][0]
-    print(f"  '{texto[:40]}...' → {lang['LanguageCode']} ({lang['Score']:.2%})")
+    print(f"  '{text[:40]}...' → {lang['LanguageCode']} ({lang['Score']:.2%})")
 ```
 
 ```bash
-# Executar
+# Run
 python3 comprehend_demo.py
 ```
 
 ---
 
-## Parte 2 — Rekognition: Análise de Imagens
+## Part 2 — Rekognition: Image Analysis
 
 ```python
 #!/usr/bin/env python3
@@ -112,30 +112,30 @@ import json
 client = boto3.client('rekognition', region_name='us-east-1')
 s3 = boto3.client('s3', region_name='us-east-1')
 
-# Usar imagem pública via URL (Rekognition pode receber bytes diretamente)
-# Para o lab, vamos criar uma imagem de teste via S3
+# Use a public image via URL (Rekognition can receive bytes directly)
+# For the lab, we will create a test image via S3
 
 import boto3, os
 
 ACCOUNT_ID = boto3.client('sts').get_caller_identity()['Account']
 BUCKET = f"lab-rekognition-{ACCOUNT_ID}"
 
-# Criar bucket temporário
+# Create temporary bucket
 s3_resource = boto3.resource('s3', region_name='us-east-1')
 try:
     s3_resource.create_bucket(Bucket=BUCKET)
 except Exception as e:
-    print(f"Bucket já existe ou erro: {e}")
+    print(f"Bucket already exists or error: {e}")
 
-# Download de imagem pública de teste (foto de pessoas em paisagem)
+# Download a public test image (photo of people in a landscape)
 test_image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Cute_dog.jpg/320px-Cute_dog.jpg"
 urllib.request.urlretrieve(test_image_url, "/tmp/test_image.jpg")
 
-# Upload para S3
+# Upload to S3
 s3.upload_file("/tmp/test_image.jpg", BUCKET, "test_image.jpg")
 
 print("=" * 60)
-print("DETECÇÃO DE LABELS (objetos/cenas)")
+print("LABEL DETECTION (objects/scenes)")
 print("=" * 60)
 
 response = client.detect_labels(
@@ -145,10 +145,10 @@ response = client.detect_labels(
 )
 
 for label in response['Labels']:
-    print(f"  {label['Name']:30} Confiança: {label['Confidence']:.1f}%")
+    print(f"  {label['Name']:30} Confidence: {label['Confidence']:.1f}%")
 
 print("\n" + "=" * 60)
-print("MODERAÇÃO DE CONTEÚDO")
+print("CONTENT MODERATION")
 print("=" * 60)
 
 response = client.detect_moderation_labels(
@@ -158,28 +158,28 @@ response = client.detect_moderation_labels(
 
 if response['ModerationLabels']:
     for label in response['ModerationLabels']:
-        print(f"  ALERTA: {label['Name']} (Pai: {label['ParentName']}) — {label['Confidence']:.1f}%")
+        print(f"  ALERT: {label['Name']} (Parent: {label['ParentName']}) — {label['Confidence']:.1f}%")
 else:
-    print("  Nenhum conteúdo impróprio detectado ✓")
+    print("  No inappropriate content detected ✓")
 
 print("\n" + "=" * 60)
-print("COMPARAÇÃO DE FACES (simulação com mesma imagem)")
+print("FACE COMPARISON (simulation with the same image)")
 print("=" * 60)
 
-# Simular com mesma imagem (mesma face)
+# Simulate with the same image (same face)
 response = client.compare_faces(
     SourceImage={'S3Object': {'Bucket': BUCKET, 'Name': 'test_image.jpg'}},
     TargetImage={'S3Object': {'Bucket': BUCKET, 'Name': 'test_image.jpg'}},
     SimilarityThreshold=80
 )
 
-print(f"  Faces encontradas na fonte: {len(response.get('SourceImageFace', {})) > 0}")
-print(f"  Comparações: {len(response.get('FaceMatches', []))} matches encontrados")
+print(f"  Faces found in the source: {len(response.get('SourceImageFace', {})) > 0}")
+print(f"  Comparisons: {len(response.get('FaceMatches', []))} matches found")
 
-# Limpeza S3
+# S3 cleanup
 s3.delete_object(Bucket=BUCKET, Key='test_image.jpg')
 s3.delete_bucket(Bucket=BUCKET)
-print("\nBucket de teste removido.")
+print("\nTest bucket removed.")
 ```
 
 ```bash
@@ -188,7 +188,7 @@ python3 rekognition_demo.py
 
 ---
 
-## Parte 3 — Textract: Extração de Documentos
+## Part 3 — Textract: Document Extraction
 
 ```python
 #!/usr/bin/env python3
@@ -199,45 +199,45 @@ import json
 
 client = boto3.client('textract', region_name='us-east-1')
 
-# Criar um documento PDF simples para Textract analisar
-# (Textract aceita PNG/JPEG/PDF/TIFF)
-# Para o lab, criamos uma imagem PNG com texto
+# Create a simple document for Textract to analyze
+# (Textract accepts PNG/JPEG/PDF/TIFF)
+# For the lab, we create a PNG image with text
 
 from PIL import Image, ImageDraw, ImageFont
 import io
 
-# Criar imagem com texto simulando formulário
+# Create image with text simulating a form
 img = Image.new('RGB', (600, 400), color='white')
 draw = ImageDraw.Draw(img)
 
-draw.text((50, 30), "FORMULÁRIO DE CADASTRO", fill='black')
-draw.text((50, 80), "Nome: João Silva Santos", fill='black')
-draw.text((50, 120), "CPF: 000.000.000-00", fill='black')
-draw.text((50, 160), "Data de Nascimento: 15/06/1985", fill='black')
-draw.text((50, 200), "Email: joao.silva@empresa.com.br", fill='black')
-draw.text((50, 240), "Telefone: (11) 99999-0000", fill='black')
-draw.text((50, 300), "Valor Total: R$ 1.500,00", fill='black')
-draw.text((50, 340), "Status: Aprovado", fill='black')
+draw.text((50, 30), "REGISTRATION FORM", fill='black')
+draw.text((50, 80), "Name: John Smith Santos", fill='black')
+draw.text((50, 120), "ID Number: 000.000.000-00", fill='black')
+draw.text((50, 160), "Date of Birth: 15/06/1985", fill='black')
+draw.text((50, 200), "Email: john.smith@company.com", fill='black')
+draw.text((50, 240), "Phone: (11) 99999-0000", fill='black')
+draw.text((50, 300), "Total Amount: R$ 1.500,00", fill='black')
+draw.text((50, 340), "Status: Approved", fill='black')
 
 img_bytes = io.BytesIO()
 img.save(img_bytes, format='PNG')
 img_bytes.seek(0)
 
 print("=" * 60)
-print("EXTRAÇÃO DE TEXTO (DetectDocumentText)")
+print("TEXT EXTRACTION (DetectDocumentText)")
 print("=" * 60)
 
 response = client.detect_document_text(
     Document={'Bytes': img_bytes.getvalue()}
 )
 
-print("Texto extraído linha por linha:")
+print("Text extracted line by line:")
 for block in response['Blocks']:
     if block['BlockType'] == 'LINE':
         print(f"  [{block['Confidence']:.1f}%] {block['Text']}")
 
 print("\n" + "=" * 60)
-print("ANÁLISE DE FORMULÁRIO (AnalyzeDocument FORMS)")
+print("FORM ANALYSIS (AnalyzeDocument FORMS)")
 print("=" * 60)
 
 img_bytes.seek(0)
@@ -256,9 +256,9 @@ for block in response['Blocks']:
         else:
             value_blocks[block['Id']] = block
 
-print("Pares chave-valor detectados:")
+print("Key-value pairs detected:")
 for key_id, key_block in key_blocks.items():
-    # Extrair texto da chave
+    # Extract the key text
     key_text = ' '.join([
         w['Text'] for w in [
             next((b for b in response['Blocks'] if b['Id'] == rel['Ids'][0]), None)
@@ -266,7 +266,7 @@ for key_id, key_block in key_blocks.items():
         ] if w and w.get('BlockType') == 'WORD'
     ])
     
-    # Extrair texto do valor
+    # Extract the value text
     value_text = ''
     for rel in key_block.get('Relationships', []):
         if rel['Type'] == 'VALUE':
@@ -284,7 +284,7 @@ for key_id, key_block in key_blocks.items():
 ```
 
 ```bash
-# Instalar dependências
+# Install dependencies
 pip3 install boto3 Pillow
 
 python3 textract_demo.py
@@ -292,10 +292,10 @@ python3 textract_demo.py
 
 ---
 
-## Parte 4 — Pipeline Completo: Moderação Automática com Lambda
+## Part 4 — Complete Pipeline: Automatic Moderation with Lambda
 
 ```bash
-# Criar Lambda que modera imagens automaticamente
+# Create a Lambda that moderates images automatically
 cat > moderacao_lambda.py << 'EOF'
 import boto3
 import json
@@ -317,11 +317,11 @@ def lambda_handler(event, context):
         labels = response['ModerationLabels']
         
         if labels:
-            print(f"CONTEÚDO IMPRÓPRIO em s3://{bucket}/{key}")
+            print(f"INAPPROPRIATE CONTENT in s3://{bucket}/{key}")
             for label in labels:
                 print(f"  - {label['Name']}: {label['Confidence']:.1f}%")
             
-            # Mover para bucket quarentena
+            # Move to quarantine bucket
             quarantine_bucket = os.environ.get('QUARANTINE_BUCKET', bucket + '-quarantine')
             s3.copy_object(
                 Bucket=quarantine_bucket,
@@ -331,7 +331,7 @@ def lambda_handler(event, context):
             s3.delete_object(Bucket=bucket, Key=key)
             return {'status': 'blocked', 'labels': [l['Name'] for l in labels]}
         else:
-            print(f"Conteúdo aprovado: s3://{bucket}/{key}")
+            print(f"Content approved: s3://{bucket}/{key}")
             return {'status': 'approved'}
 EOF
 
@@ -349,22 +349,22 @@ aws lambda create-function \
 
 ---
 
-## Limpeza
+## Cleanup
 
 ```bash
-# Remover Lambda
+# Remove Lambda
 aws lambda delete-function --function-name lab-moderacao-imagens
 
-# Remover arquivos locais
+# Remove local files
 rm -f *.zip *.py /tmp/test_image.jpg
 ```
 
 ---
 
-## O Que Você Aprendeu
+## What You Learned
 
-- Comprehend detecta sentimento, PII, entidades e idioma sem treinar modelos
-- Rekognition detecta objetos, rostos, celebridades e conteúdo impróprio
-- Textract extrai texto e pares chave-valor de formulários (muito além de OCR simples)
-- Todos os 3 serviços: pay-per-use, sem provisionamento, integram nativamente com S3
-- Free Tier permite experimentar sem custo: Comprehend 5K unidades/mês, Rekognition 5K imagens
+- Comprehend detects sentiment, PII, entities, and language without training models
+- Rekognition detects objects, faces, celebrities, and inappropriate content
+- Textract extracts text and key-value pairs from forms (far beyond simple OCR)
+- All 3 services: pay-per-use, no provisioning, native integration with S3
+- Free Tier lets you experiment at no cost: Comprehend 5K units/month, Rekognition 5K images

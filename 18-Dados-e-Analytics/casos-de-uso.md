@@ -1,42 +1,42 @@
-# Casos de Uso Reais — Dados e Analytics (Módulo 12)
+# Real-World Use Cases — Data and Analytics (Module 12)
 
-## Caso 1 — Data Lake Centralizado para Empresa de Varejo
+## Case 1 — Centralized Data Lake for a Retail Company
 
-**Contexto:** Rede de varejo com 500 lojas precisa centralizar dados de vendas (POS), estoque (ERP), comportamento web (clickstream) e dados externos (clima, feriados) para análise integrada.
+**Context:** A retail chain with 500 stores needs to centralize sales (POS), inventory (ERP), web behavior (clickstream), and external data (weather, holidays) for integrated analysis.
 
-**Requisitos:**
-- Ingestão de múltiplas fontes com diferentes formatos e frequências
-- Isolamento de acesso por departamento (financeiro não vê dados de RH)
-- Query ad hoc pelos analistas sem provisionamento de clusters
-- Custo proporcional à quantidade de dados analisados
+**Requirements:**
+- Ingestion from multiple sources with different formats and frequencies
+- Access isolation per department (finance can't see HR data)
+- Ad hoc queries by analysts without provisioning clusters
+- Cost proportional to the amount of data analyzed
 
-**Arquitetura:**
+**Architecture:**
 ```
-FONTES DE DADOS:
-POS (batch diário CSV) ──────────────────┐
-ERP (batch noturno JSON) ────────────────┤ → S3 Raw Zone
-Clickstream (real-time) → KDF ──────────┤    (dados brutos)
-APIs externas (Lambda agendada) ─────────┘
+DATA SOURCES:
+POS (daily CSV batch) ───────────────────┐
+ERP (nightly JSON batch) ────────────────┤ → S3 Raw Zone
+Clickstream (real-time) → KDF ──────────┤    (raw data)
+External APIs (scheduled Lambda) ────────┘
                                          │
                                     AWS Glue ETL
-                                    (job diário)
+                                    (daily job)
                                          │
                                     S3 Processed Zone
-                                    (Parquet + particionado)
+                                    (Parquet + partitioned)
                                          │
                               ┌──────────┴──────────┐
                               │                     │
                            Athena                Redshift Spectrum
-                        (query ad hoc)          (dashboards BI)
+                        (ad hoc queries)         (BI dashboards)
                               │
                      Lake Formation
-                     (controle acesso por coluna/tabela)
+                     (column/table access control)
                      
-Glue Data Catalog (metadados centralizados)
+Glue Data Catalog (centralized metadata)
 CloudWatch → Glue Job alerts
 ```
 
-**Estratégia de Particionamento S3:**
+**S3 Partitioning Strategy:**
 ```
 s3://data-lake/processed/vendas/
   year=2024/
@@ -45,172 +45,172 @@ s3://data-lake/processed/vendas/
         loja=SP001/
           dados.parquet
 ```
-→ Athena filtra apenas as partições necessárias (reduz custo de scan)
+→ Athena filters only the necessary partitions (reduces scan cost)
 
-**Controle de Acesso Lake Formation:**
-| Perfil | Acesso |
+**Lake Formation Access Control:**
+| Profile | Access |
 |--------|--------|
-| Analista Financeiro | vendas.*, faturamento.* (sem PII) |
-| Analista Marketing | clickstream.*, campanhas.* |
-| Data Scientist | Todas as tabelas (read-only) |
-| ETL Service Role | Todas (leitura raw + escrita processed) |
+| Financial Analyst | vendas.*, faturamento.* (no PII) |
+| Marketing Analyst | clickstream.*, campanhas.* |
+| Data Scientist | All tables (read-only) |
+| ETL Service Role | All (raw read + processed write) |
 
 ---
 
-## Caso 2 — Pipeline de Análise de Fraudes em Tempo Real
+## Case 2 — Real-Time Fraud Analysis Pipeline
 
-**Contexto:** Fintech precisa detectar transações fraudulentas em tempo real (<1 segundo) durante o processamento de pagamentos.
+**Context:** A fintech needs to detect fraudulent transactions in real time (<1 second) during payment processing.
 
-**Requisitos:**
-- Análise de cada transação em < 500ms
-- Enriquecer transação com histórico do usuário
-- Score de risco via modelo ML
-- Armazenar todas as transações para treinamento futuro
+**Requirements:**
+- Analyze each transaction in < 500ms
+- Enrich the transaction with the user's history
+- Risk score via an ML model
+- Store all transactions for future training
 
-**Arquitetura:**
+**Architecture:**
 ```
-App Pagamento
+Payment App
      │ PUT record
      ▼
-Kinesis Data Streams (shard por região)
+Kinesis Data Streams (shard per region)
      │ Lambda trigger (batch 100, window 1s)
      ▼
 Lambda (fraud-scorer)
-├── Lê histórico em DynamoDB (< 5ms com DAX)
-├── Calcula features (freq, valor, geolocalização)
-├── Invoca SageMaker Endpoint (scoring ML)
-└── Se score > 0.8: publica em SNS (alerta fraude)
+├── Reads history from DynamoDB (< 5ms with DAX)
+├── Computes features (frequency, amount, geolocation)
+├── Invokes SageMaker Endpoint (ML scoring)
+└── If score > 0.8: publishes to SNS (fraud alert)
 │
-├── Kinesis Data Firehose (todas transações)
-│        └── S3 (treino futuro + compliance)
+├── Kinesis Data Firehose (all transactions)
+│        └── S3 (future training + compliance)
 │
-└── DynamoDB (atualiza perfil usuário)
+└── DynamoDB (updates user profile)
 
-SNS → Lambda → bloquear transação + notificar usuário
-CloudWatch → Alarm (latência > 300ms ou error rate > 1%)
+SNS → Lambda → block transaction + notify user
+CloudWatch → Alarm (latency > 300ms or error rate > 1%)
 ```
 
-**Kinesis vs SQS para este caso:**
-- **Kinesis:** múltiplos consumidores do mesmo stream, ordenação por shard, replay de eventos
-- **SQS:** 1 consumidor por mensagem, sem ordenação garantida (Standard), sem replay
+**Kinesis vs SQS for this case:**
+- **Kinesis:** multiple consumers of the same stream, ordering per shard, event replay
+- **SQS:** 1 consumer per message, no guaranteed ordering (Standard), no replay
 
 ---
 
-## Caso 3 — Warehouse Analítico para Relatórios de Negócio
+## Case 3 — Analytical Warehouse for Business Reports
 
-**Contexto:** Empresa de logística precisa de dashboards de performance (entregas no prazo, custo por rota, produtividade motoristas) para diretoria, com dados atualizados a cada hora.
+**Context:** A logistics company needs performance dashboards (on-time deliveries, cost per route, driver productivity) for the board, with data refreshed every hour.
 
-**Requisitos:**
-- Relatórios complexos com JOINs entre múltiplas tabelas
-- Dados consolidados de 5 anos históricos
-- Atualização a cada 1 hora
-- QuickSight para visualização dos executivos
+**Requirements:**
+- Complex reports with JOINs across multiple tables
+- Consolidated data from 5 years of history
+- Refresh every 1 hour
+- QuickSight for executive visualization
 
-**Arquitetura:**
+**Architecture:**
 ```
-RDS Aurora (sistema operacional)
+RDS Aurora (operational system)
      │ DMS (Change Data Capture - CDC)
      ▼
 S3 (staging zone — Parquet)
-     │ Redshift COPY (a cada 1h)
+     │ Redshift COPY (every 1h)
      ▼
 Redshift Cluster (Warehousing)
-├── Tabelas dimensão: dim_motorista, dim_rota, dim_veiculo
-├── Tabelas fato: fato_entrega, fato_custo
-└── Materialized Views (KPIs pré-calculados)
+├── Dimension tables: dim_motorista, dim_rota, dim_veiculo
+├── Fact tables: fato_entrega, fato_custo
+└── Materialized Views (pre-computed KPIs)
      │
      ▼
-Amazon QuickSight (dashboards diretoria)
+Amazon QuickSight (board dashboards)
      │
-Redshift Spectrum → S3 (consultar dados históricos >2 anos sem mover para Redshift)
+Redshift Spectrum → S3 (query historical data >2 years without moving it into Redshift)
 ```
 
-**Distribuição Redshift:**
-| Tabela | Distribution Key | Sort Key |
+**Redshift Distribution:**
+| Table | Distribution Key | Sort Key |
 |--------|-----------------|---------|
-| fato_entrega | motorista_id (JOIN freq) | data_entrega |
+| fato_entrega | motorista_id (frequent JOIN) | data_entrega |
 | fato_custo | rota_id | data |
-| dim_motorista | ALL (pequena tabela) | — |
+| dim_motorista | ALL (small table) | — |
 
 ---
 
-## Caso 4 — Análise de Logs de Aplicação com Athena
+## Case 4 — Application Log Analysis with Athena
 
-**Contexto:** Startup de SaaS precisa analisar logs de API (erros, latência, usuários ativos) sem manter um cluster Elasticsearch. Volume: 10 GB de logs/dia.
+**Context:** A SaaS startup needs to analyze API logs (errors, latency, active users) without maintaining an Elasticsearch cluster. Volume: 10 GB of logs/day.
 
-**Requisitos:**
-- Análise de logs dos últimos 90 dias
-- Queries por data, endpoint, código de erro
-- Custo controlado (Elasticsearch cluster ~$500/mês)
-- Alertas de anomalias de erro
+**Requirements:**
+- Analysis of logs from the last 90 days
+- Queries by date, endpoint, error code
+- Controlled cost (Elasticsearch cluster ~$500/month)
+- Error anomaly alerts
 
-**Arquitetura:**
+**Architecture:**
 ```
-ALB Access Logs → S3 (logs-brutos/alb/year=../month=../day=..)
-CloudWatch Logs → Kinesis Data Firehose → Conversão Parquet → S3 (logs-processados/)
+ALB Access Logs → S3 (raw-logs/alb/year=../month=../day=..)
+CloudWatch Logs → Kinesis Data Firehose → Parquet Conversion → S3 (processed-logs/)
 Lambda → Custom Logs → CloudWatch → KDF → S3
 
-S3 (logs-processados, particionado por data)
+S3 (processed-logs, partitioned by date)
      │
-Glue Crawler (atualiza partições diariamente)
+Glue Crawler (updates partitions daily)
      │
 Glue Data Catalog
      │
-Athena (queries ad hoc)
+Athena (ad hoc queries)
      │
-QuickSight (dashboards de erro rate, p99 latência)
+QuickSight (error rate, p99 latency dashboards)
 
-CloudWatch Logs Insights → Queries rápidas (últimas hrs)
-EventBridge → Lambda (alerta se error rate > 5% em 5 min)
+CloudWatch Logs Insights → Quick queries (last few hours)
+EventBridge → Lambda (alert if error rate > 5% in 5 min)
 ```
 
-**Custo Athena vs Elasticsearch:**
+**Athena vs Elasticsearch Cost:**
 | Item | Athena | Elasticsearch |
 |------|--------|--------------|
 | 10GB scan/query | $0.05 | — |
-| 100 queries/dia | ~$5/dia | cluster fixo |
-| Cluster base | $0 | ~$500/mês |
-| Break-even | favorável se < 100 queries/dia complexas | — |
+| 100 queries/day | ~$5/day | fixed cluster |
+| Base cluster | $0 | ~$500/month |
+| Break-even | favorable if < 100 complex queries/day | — |
 
 ---
 
-## Caso 5 — ETL em Tempo Real com Kinesis + Glue Streaming
+## Case 5 — Real-Time ETL with Kinesis + Glue Streaming
 
-**Contexto:** Empresa de marketplaces recebe 50.000 eventos/minuto de cliques, impressões e conversões. Precisa ter dados disponíveis para análise de campanhas com atraso máximo de 5 minutos.
+**Context:** A marketplace company receives 50,000 events/minute of clicks, impressions, and conversions. It needs data available for campaign analysis with a maximum delay of 5 minutes.
 
-**Requisitos:**
-- Latência de ingestão a análise: < 5 minutos
-- Enriquecimento de evento (adicionar dados de produto do catálogo)
-- Deduplicação (mesmo evento pode chegar duplicado)
-- Custo controlado (sem cluster sempre ligado)
+**Requirements:**
+- Ingestion-to-analysis latency: < 5 minutes
+- Event enrichment (add product data from the catalog)
+- Deduplication (the same event may arrive duplicated)
+- Controlled cost (no always-on cluster)
 
-**Arquitetura:**
+**Architecture:**
 ```
-App (tracker JS/mobile)
+App (JS/mobile tracker)
      │ POST /track
      ▼
 API Gateway → Kinesis Data Streams (10 shards)
                      │
               Glue Streaming ETL
-              ├── Lê do KDS a cada 60s
-              ├── Enriquece com catálogo (DynamoDB lookup)
-              ├── Deduplica por event_id (janela 5min)
-              ├── Converte para Parquet
-              └── Escreve em S3 (particionado por hora)
+              ├── Reads from KDS every 60s
+              ├── Enriches with catalog (DynamoDB lookup)
+              ├── Deduplicates by event_id (5min window)
+              ├── Converts to Parquet
+              └── Writes to S3 (partitioned by hour)
                      │
               S3 (processed/events/)
                      │
-              Athena (query por campanha/produto — até 5min atrás)
-              QuickSight (dashboard tempo quase-real)
+              Athena (query by campaign/product — up to 5min ago)
+              QuickSight (near-real-time dashboard)
               
-EventBridge → Glue Job (trigger a cada 5min como alternativa simpler)
+EventBridge → Glue Job (trigger every 5min as a simpler alternative)
 ```
 
 **Glue Streaming vs Kinesis Data Analytics (Flink):**
-| Critério | Glue Streaming | KDA / Flink |
+| Criterion | Glue Streaming | KDA / Flink |
 |---------|---------------|-------------|
-| Complexidade setup | Baixa | Alta |
-| Latência mínima | ~60s | Ms–segundos |
-| Janelas de tempo | Básico | Avançado (sliding, tumbling) |
-| Custo | DPU/hora | KPU/hora |
-| Quando usar | ETL near-real-time simples | CEP, anomaly detection real-time |
+| Setup complexity | Low | High |
+| Minimum latency | ~60s | Ms–seconds |
+| Time windows | Basic | Advanced (sliding, tumbling) |
+| Cost | DPU/hour | KPU/hour |
+| When to use | Simple near-real-time ETL | CEP, real-time anomaly detection |

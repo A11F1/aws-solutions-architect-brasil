@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Execute na raiz do repositório.
-# Objetivo: remover duplicidades de numeração e manter trilha sequencial 01..27.
+# Run from the repository root.
+# Goal: remove numbering duplicates and keep a sequential track 01..27.
 
 BASE_DIR="${1:-.}"
 cd "$BASE_DIR"
 
-# Mapeamento origem -> destino (trilha lógica SAA-C03).
+# Source -> destination mapping (logical SAA-C03 track).
 declare -a MAP=(
   "01-Introducao-SAA-C03|01-Introducao-SAA-C03"
   "02-IAM-e-Seguranca|02-IAM-e-Seguranca"
@@ -38,19 +38,19 @@ declare -a MAP=(
   "21-Recursos-e-Links|27-Recursos-e-Links"
 )
 
-echo "[1/2] Renomeando para nomes temporarios..."
+echo "[1/2] Renaming to temporary names..."
 for pair in "${MAP[@]}"; do
   src="${pair%%|*}"
   dst="${pair##*|}"
 
   if [[ ! -d "$src" ]]; then
-    echo "  - Aviso: pasta de origem nao encontrada: $src"
+    echo "  - Warning: source folder not found: $src"
     continue
   fi
 
   tmp="__tmp__${dst}"
   if [[ -e "$tmp" ]]; then
-    echo "  - Erro: nome temporario ja existe: $tmp"
+    echo "  - Error: temporary name already exists: $tmp"
     exit 1
   fi
 
@@ -58,18 +58,18 @@ for pair in "${MAP[@]}"; do
   echo "  - $src -> $tmp"
 done
 
-echo "[2/2] Aplicando nomes finais..."
+echo "[2/2] Applying final names..."
 for pair in "${MAP[@]}"; do
   dst="${pair##*|}"
   tmp="__tmp__${dst}"
 
   if [[ ! -d "$tmp" ]]; then
-    echo "  - Aviso: pasta temporaria nao encontrada: $tmp"
+    echo "  - Warning: temporary folder not found: $tmp"
     continue
   fi
 
   if [[ -e "$dst" ]]; then
-    echo "  - Erro: destino final ja existe: $dst"
+    echo "  - Error: final destination already exists: $dst"
     exit 1
   fi
 
@@ -77,4 +77,4 @@ for pair in "${MAP[@]}"; do
   echo "  - $tmp -> $dst"
 done
 
-echo "Concluido. Estrutura renumerada sem duplicidades."
+echo "Done. Structure renumbered without duplicates."

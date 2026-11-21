@@ -1,30 +1,30 @@
-# Cheatsheet — Introdução SAA-C03
+# Cheatsheet — Introduction to SAA-C03
 
-## 📌 Pesos do Exame
+## 📌 Exam Weights
 
-| Domínio | Peso | Foco prático |
+| Domain | Weight | Practical focus |
 |---|---:|---|
-| Design Resilient Architectures | 30% | HA, DR, desacoplamento, tolerância a falhas |
-| Design High-Performing Architectures | 28% | Compute, performance de storage, banco, cache, rede |
-| Design Secure Applications and Architectures | 24% | IAM, KMS, isolamento, auditoria, criptografia |
-| Design Cost-Optimized Architectures | 18% | Rightsizing, serviços gerenciados, classes e modelos de compra |
+| Design Resilient Architectures | 30% | HA, DR, decoupling, fault tolerance |
+| Design High-Performing Architectures | 28% | Compute, storage performance, database, cache, networking |
+| Design Secure Applications and Architectures | 24% | IAM, KMS, isolation, auditing, encryption |
+| Design Cost-Optimized Architectures | 18% | Rightsizing, managed services, classes and purchase models |
 
-## 🧠 Palavras-Chave do Enunciado
+## 🧠 Question Statement Keywords
 
-| Termo | O que normalmente sinaliza |
+| Term | What it usually signals |
 |---|---|
-| least operational overhead | serviço gerenciado |
-| cost-effective | menor custo total coerente com o requisito |
-| highly available | multi-AZ, redundância, failover |
-| fault tolerant | tolerância a falha sem indisponibilidade percebida |
-| near real-time | streaming, evento, baixa latência |
-| minimal changes | evitar refatoração grande |
-| securely | IAM, KMS, endpoint privado, menor privilégio |
+| least operational overhead | managed service |
+| cost-effective | lowest total cost consistent with the requirement |
+| highly available | multi-AZ, redundancy, failover |
+| fault tolerant | fault tolerance without perceived downtime |
+| near real-time | streaming, events, low latency |
+| minimal changes | avoid major refactoring |
+| securely | IAM, KMS, private endpoint, least privilege |
 | global users | CloudFront, Route 53, Global Accelerator |
 
-## 🧱 Serviços Mais Frequentes
+## 🧱 Most Frequent Services
 
-| Grupo | Serviços |
+| Group | Services |
 |---|---|
 | Compute | EC2, Auto Scaling, ELB, Lambda |
 | Storage | S3, EBS, EFS |
@@ -34,33 +34,33 @@
 | Messaging | SQS, SNS, EventBridge |
 | Observability | CloudWatch, CloudTrail, Config |
 
-## ⚖️ Comparações que Mais Caem
+## ⚖️ Most Commonly Tested Comparisons
 
-| Comparação | Regra rápida |
+| Comparison | Quick rule |
 |---|---|
-| CloudFront vs Global Accelerator | cache HTTP vs aceleração global de tráfego |
-| RDS vs DynamoDB | relacional/transacional vs NoSQL altamente escalável |
-| SQS vs SNS | fila desacoplada vs pub/sub fan-out |
-| Secrets Manager vs Parameter Store | rotação de segredos vs configuração/segredo simples |
-| Lambda vs EC2 | serverless elástico vs controle granular |
-| Multi-AZ vs Multi-Region | HA regional vs DR regional completo |
+| CloudFront vs Global Accelerator | HTTP caching vs global traffic acceleration |
+| RDS vs DynamoDB | relational/transactional vs highly scalable NoSQL |
+| SQS vs SNS | decoupled queue vs pub/sub fan-out |
+| Secrets Manager vs Parameter Store | secret rotation vs simple configuration/secret |
+| Lambda vs EC2 | elastic serverless vs granular control |
+| Multi-AZ vs Multi-Region | regional HA vs full regional DR |
 
-## ⏱️ Gestão de Tempo de Prova
+## ⏱️ Exam Time Management
 
-| Item | Referência |
+| Item | Reference |
 |---|---|
-| Questões | 65 |
-| Tempo total | 130 minutos |
-| Meta média por questão | ~2 minutos |
-| Questões longas | marcar, avançar e voltar |
-| Revisão final | reservar 10 a 15 minutos |
+| Questions | 65 |
+| Total time | 130 minutes |
+| Average target per question | ~2 minutes |
+| Long questions | flag, move on, and come back |
+| Final review | reserve 10 to 15 minutes |
 
-## 🚫 Armadilhas Comuns
+## 🚫 Common Pitfalls
 
-| Armadilha | Correção |
+| Pitfall | Fix |
 |---|---|
-| escolher a solução mais complexa | escolha a mais aderente ao requisito |
-| ignorar operação | inclua esforço administrativo na decisão |
-| confundir HA com DR | HA não substitui plano multi-region |
-| superestimar serviço raro | concentre-se no núcleo do exame |
-| decorar sem contexto | pratique cenários completos |
+| choosing the most complex solution | choose the one that best fits the requirement |
+| ignoring operations | include administrative effort in the decision |
+| confusing HA with DR | HA does not replace a multi-region plan |
+| overestimating a rare service | focus on the core of the exam |
+| memorizing without context | practice complete scenarios |

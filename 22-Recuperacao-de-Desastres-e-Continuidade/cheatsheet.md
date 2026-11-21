@@ -1,33 +1,33 @@
-# Cheatsheet - Recuperacao de Desastres e Continuidade
+# Cheatsheet - Disaster Recovery and Continuity
 
-## Mapa rapido de decisao
+## Quick decision map
 
-| Requisito | Melhor padrao | Observacao de prova |
+| Requirement | Best pattern | Exam note |
 |---|---|---|
-| Menor custo, aceita horas de indisponibilidade | Backup and Restore | Foco em snapshots, backups e restore automatizado |
-| RTO de minutos com custo controlado | Pilot Light | Banco e dados replicados, compute sobe no desastre |
-| Baixo downtime com operacao simples | Warm Standby | Ambiente reduzido sempre ativo em segunda regiao |
-| Quase zero downtime e perda de dados | Active/Active | Usa roteamento global e dados replicados em tempo quase real |
+| Lowest cost, accepts hours of unavailability | Backup and Restore | Focus on snapshots, backups, and automated restore |
+| RTO of minutes with controlled cost | Pilot Light | Database and data replicated, compute spins up during the disaster |
+| Low downtime with simple operation | Warm Standby | Scaled-down environment always running in a second region |
+| Near-zero downtime and data loss | Active/Active | Uses global routing and near-real-time replicated data |
 
-## Servicos chave
+## Key services
 
 - Route 53: failover, health checks, latency routing
-- AWS Backup: backup centralizado, vault lock, cross-account
-- Elastic Disaster Recovery: replicacao continua de servidores
+- AWS Backup: centralized backup, vault lock, cross-account
+- Elastic Disaster Recovery: continuous server replication
 - S3: versioning, CRR, lifecycle, object lock
-- RDS/Aurora: backups automaticos, snapshots, global database
+- RDS/Aurora: automated backups, snapshots, global database
 - DynamoDB: PITR, global tables
 
-## Armadilhas comuns
+## Common pitfalls
 
-- confundir alta disponibilidade (multi-AZ) com DR regional
-- ignorar custo de replicacao cross-region
-- escolher arquitetura complexa sem necessidade de negocio
-- esquecer de testar runbooks de failover/failback
+- confusing high availability (multi-AZ) with regional DR
+- ignoring the cost of cross-region replication
+- choosing a complex architecture without a business need
+- forgetting to test failover/failback runbooks
 
-## Frases gatilho do exame
+## Exam trigger phrases
 
 - "regional disaster" => multi-region
-- "least operational overhead" => servico gerenciado
-- "recover quickly" => warm standby ou active/active
-- "cost-effective" => backup and restore ou pilot light
+- "least operational overhead" => managed service
+- "recover quickly" => warm standby or active/active
+- "cost-effective" => backup and restore or pilot light

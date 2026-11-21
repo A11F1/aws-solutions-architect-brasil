@@ -1,42 +1,42 @@
-# Casos de Uso - Criptografia, KMS e Gestao de Segredos
+# Use Cases - Encryption, KMS, and Secrets Management
 
-## Caso 1: Banco relacional com rotacao de senha
+## Case 1: Relational database with password rotation
 
-Cenario:
-- aplicacao em ECS acessa Aurora
-- auditoria exige rotacao automatica
+Scenario:
+- ECS application accesses Aurora
+- audit requires automatic rotation
 
-Arquitetura:
-- Secrets Manager com rotacao
-- task role do ECS para ler segredo
-- KMS customer-managed key para criptografia do segredo
+Architecture:
+- Secrets Manager with rotation
+- ECS task role to read the secret
+- KMS customer-managed key to encrypt the secret
 
-## Caso 2: API publica com TLS gerenciado
+## Case 2: Public API with managed TLS
 
-Cenario:
+Scenario:
 - API Gateway + CloudFront
-- sem gerenciamento manual de certificados
+- no manual certificate management
 
-Arquitetura:
-- ACM publico com renovacao automatica
-- certificado em us-east-1 para CloudFront
+Architecture:
+- Public ACM with automatic renewal
+- certificate in us-east-1 for CloudFront
 
-## Caso 3: Empresa com exigencia de chave sob controle estrito
+## Case 3: Company requiring strictly controlled keys
 
-Cenario:
-- compliance exige segregacao de acesso a chaves
+Scenario:
+- compliance requires segregation of access to keys
 
-Arquitetura:
-- customer-managed keys no KMS
-- key policy minima + grants para aplicacoes
-- trilha de auditoria via CloudTrail
+Architecture:
+- customer-managed keys in KMS
+- minimal key policy + grants for applications
+- audit trail via CloudTrail
 
-## Caso 4: Aplicacao legado com segredo em arquivo
+## Case 4: Legacy application with a secret in a file
 
-Cenario:
-- senha hardcoded no codigo
+Scenario:
+- password hardcoded in the code
 
-Arquitetura:
-- migrar para Parameter Store/Secrets Manager
-- remover credencial do repositorio
-- uso de IAM role no runtime
+Architecture:
+- migrate to Parameter Store/Secrets Manager
+- remove the credential from the repository
+- use an IAM role at runtime

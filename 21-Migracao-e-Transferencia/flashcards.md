@@ -1,129 +1,129 @@
-# Flashcards — Módulo 15: Migração e Transferência
+# Flashcards — Module 15: Migration and Transfer
 
-> **Formato:** P = Pergunta | R = Resposta  
+> **Format:** Q = Question | A = Answer  
 > **Total:** 25 flashcards
 
 ---
 
-**P:** Quais são os 7 Rs da estratégia de migração cloud?  
-**R:** **Retire** (descomissionar), **Retain** (manter on-premises), **Rehost** (lift-and-shift, mínima mudança), **Relocate** (mover VMware para VMware Cloud on AWS), **Replatform** (otimização pontual sem refactoring — ex: RDS em vez de MySQL self-managed), **Repurchase** (mudar para SaaS), **Refactor/Rearchitect** (redesign para cloud-native).
+**Q:** What are the 7 Rs of cloud migration strategy?  
+**A:** **Retire** (decommission), **Retain** (keep on-premises), **Rehost** (lift-and-shift, minimal change), **Relocate** (move VMware to VMware Cloud on AWS), **Replatform** (targeted optimization without refactoring — e.g., RDS instead of self-managed MySQL), **Repurchase** (switch to SaaS), **Refactor/Rearchitect** (redesign for cloud-native).
 
 ---
 
-**P:** O que é AWS MGN (Application Migration Service) e como funciona?  
-**R:** Servilho de **rehosting** (lift-and-shift) para EC2. Agente instalado no servidor de origem faz **replicação contínua** (bloco a bloco) para a AWS. No cutover: servidor origin para, AWS lança instância EC2 do snapshot mais recente. Minimiza downtime (~minutos). Substitui SMS (Server Migration Service).
+**Q:** What is AWS MGN (Application Migration Service) and how does it work?  
+**A:** A **rehosting** (lift-and-shift) service to EC2. An agent installed on the source server performs **continuous replication** (block by block) to AWS. At cutover: the source server stops, and AWS launches an EC2 instance from the most recent snapshot. Minimizes downtime (~minutes). Replaces SMS (Server Migration Service).
 
 ---
 
-**P:** Qual é a capacidade do Snowmobile?  
-**R:** **100 PB** por viagem (caminhão físico com container de storage). Para migração de datacenters inteiros (100 PB+). Mais rápido que transferência pela internet quando volume é > 10 PB (regra geral: Snowball quando > 10 TB, Snowmobile quando > 10 PB). 
+**Q:** What is the capacity of Snowmobile?  
+**A:** **100 PB** per trip (physical truck with a storage container). For migrating entire datacenters (100 PB+). Faster than internet transfer when the volume is > 10 PB (general rule: Snowball when > 10 TB, Snowmobile when > 10 PB). 
 
 ---
 
-**P:** Quais são as diferenças entre as 3 variantes Snow Family?  
-**R:** **Snowcone Small (8 TB SSD) / Large (14 TB SSD):** portátil, locais remotos, edge computing, 2 vCPUs. **Snowball Edge Storage Optimized (80 TB HDD):** migração em escala, 40 vCPUs, transferência para S3. **Snowball Edge Compute Optimized (42 TB HDD):** edge computing pesado, 52 vCPUs, GPU opcional. **Snowmobile:** 100 PB, datacenters inteiros.
+**Q:** What are the differences between the Snow Family variants?  
+**A:** **Snowcone Small (8 TB SSD) / Large (14 TB SSD):** portable, remote locations, edge computing, 2 vCPUs. **Snowball Edge Storage Optimized (80 TB HDD):** large-scale migration, 40 vCPUs, transfer to S3. **Snowball Edge Compute Optimized (42 TB HDD):** heavy edge computing, 52 vCPUs, optional GPU. **Snowmobile:** 100 PB, entire datacenters.
 
 ---
 
-**P:** O que é AWS DataSync e quais fontes suporta?  
-**R:** Serviço de transferência de dados **online** (pela rede). Fontes: NFS, SMB (on-premises ou outros clouds), HDFS, S3 on-premises, self-managed object storage. Destinos: S3 (qualquer classe), EFS, FSx for Windows/Lustre/ONTAP. Features: **preserva metadata** (permissões, timestamps), verificação de integridade, transferência agendada ou on-demand.
+**Q:** What is AWS DataSync and which sources does it support?  
+**A:** An **online** data transfer service (over the network). Sources: NFS, SMB (on-premises or other clouds), HDFS, on-premises S3, self-managed object storage. Destinations: S3 (any class), EFS, FSx for Windows/Lustre/ONTAP. Features: **preserves metadata** (permissions, timestamps), integrity verification, scheduled or on-demand transfer.
 
 ---
 
-**P:** Qual é a diferença entre AWS DataSync e AWS Storage Gateway?  
-**R:** **DataSync:** migração/transferência de dados em lote (one-time ou agendado). Move arquivos de A para B. **Storage Gateway:** integração **híbrida contínua** — extensão de armazenamento on-premises para AWS. File GW: NFS/SMB → S3. Volume GW: iSCSI → EBS/S3. Tape GW: emula tape library → S3/Glacier. DataSync = mover dados; Storage Gateway = extensão permanente.
+**Q:** What is the difference between AWS DataSync and AWS Storage Gateway?  
+**A:** **DataSync:** batch data migration/transfer (one-time or scheduled). Moves files from A to B. **Storage Gateway:** **continuous hybrid** integration — an extension of on-premises storage to AWS. File GW: NFS/SMB → S3. Volume GW: iSCSI → EBS/S3. Tape GW: emulates a tape library → S3/Glacier. DataSync = move data; Storage Gateway = permanent extension.
 
 ---
 
-**P:** O que é AWS DMS e quando é necessário também usar SCT?  
-**R:** **DMS (Database Migration Service):** migra dados com CDC (Change Data Capture) para mínimo downtime. **SCT (Schema Conversion Tool):** converte schema e código PL/SQL entre engines incompatíveis. **Regra:** migração **homogênea** (Oracle → Oracle RDS): apenas DMS. Migração **heterogênea** (Oracle → Aurora PostgreSQL): SCT primeiro (converte schema) + DMS (migra dados).
+**Q:** What is AWS DMS and when is it also necessary to use SCT?  
+**A:** **DMS (Database Migration Service):** migrates data with CDC (Change Data Capture) for minimal downtime. **SCT (Schema Conversion Tool):** converts schema and PL/SQL code between incompatible engines. **Rule:** **homogeneous** migration (Oracle → Oracle RDS): DMS only. **Heterogeneous** migration (Oracle → Aurora PostgreSQL): SCT first (converts schema) + DMS (migrates data).
 
 ---
 
-**P:** O que é replicação contínua no AWS DMS (CDC)?  
-**R:** **CDC (Change Data Capture):** após a carga inicial completa, DMS captura e aplica mudanças do banco de origem em tempo real (inserts, updates, deletes). Mantém os bancos sincronizados durante a migração. Permite cutover com mínima janela de manutenção — fonte pode continuar recebendo transações até o cutover.
+**Q:** What is continuous replication in AWS DMS (CDC)?  
+**A:** **CDC (Change Data Capture):** after the initial full load, DMS captures and applies changes from the source database in real time (inserts, updates, deletes). Keeps the databases in sync during the migration. Allows cutover with a minimal maintenance window — the source can keep receiving transactions until cutover.
 
 ---
 
-**P:** O que é o AWS Migration Hub?  
-**R:** Dashboard centralizado para rastrear o progresso de migração de múltiplas aplicações e servidores. Integra com MGN, DMS, CloudEndure. Categoriza servidores discovered e rastreia status (Discovered → Not Started → In Progress → Migrated). Não executa migrações — é apenas tracking e visibilidade multi-ferramenta.
+**Q:** What is AWS Migration Hub?  
+**A:** A centralized dashboard to track the migration progress of multiple applications and servers. Integrates with MGN, DMS, CloudEndure. Categorizes discovered servers and tracks status (Discovered → Not Started → In Progress → Migrated). Does not perform migrations — it is only tracking and multi-tool visibility.
 
 ---
 
-**P:** O que é AWS Application Discovery Service?  
-**R:** Descobre e avalia workloads on-premises para planejamento de migração. **Agentless Discovery (VMware only):** via VMware vCenter, coleta VM specs (CPU, memória, storage) sem instalar agentes. **Agent-based Discovery:** instala agente em cada servidor, coleta: CPU, memória, processos, conexões de rede (mapeamento de dependências). Dados enviados para Migration Hub.
+**Q:** What is AWS Application Discovery Service?  
+**A:** Discovers and assesses on-premises workloads for migration planning. **Agentless Discovery (VMware only):** via VMware vCenter, collects VM specs (CPU, memory, storage) without installing agents. **Agent-based Discovery:** installs an agent on each server, collects: CPU, memory, processes, network connections (dependency mapping). Data is sent to Migration Hub.
 
 ---
 
-**P:** O que é AWS Transfer Family?  
-**R:** Serviço gerenciado para transferência segura de arquivos usando protocolos legados: **SFTP, FTPS, FTP e AS2**. Armazenamento backend: S3 ou EFS. Casos de uso: B2B file exchange, parceiros que precisam de SFTP, migração de servidores FTP legados para AWS. Mantém os clientes existentes sem mudar de protocolo.
+**Q:** What is AWS Transfer Family?  
+**A:** A managed service for secure file transfer using legacy protocols: **SFTP, FTPS, FTP, and AS2**. Backend storage: S3 or EFS. Use cases: B2B file exchange, partners that need SFTP, migrating legacy FTP servers to AWS. Keeps existing clients without changing protocol.
 
 ---
 
-**P:** Como calcular se devo usar Snowball ou transferência de rede?  
-**R:** Regra de thumb: **Snowball** quando a transferência pela internet levaria > 1 semana. Fórmula: `tempo = tamanho_dados / largura_banda_disponível`. Ex: 100 TB / 100 Mbps = ~100 dias. Use Snowball. 1 TB / 1 Gbps = ~2,2 horas. Use internet. Considerar também: custo de banda, segurança dos dados in-transit.
+**Q:** How do I calculate whether to use Snowball or network transfer?  
+**A:** Rule of thumb: **Snowball** when the internet transfer would take > 1 week. Formula: `time = data_size / available_bandwidth`. E.g.: 100 TB / 100 Mbps = ~100 days. Use Snowball. 1 TB / 1 Gbps = ~2.2 hours. Use the internet. Also consider: bandwidth cost, security of data in transit.
 
 ---
 
-**P:** Qual é o benefício do Direct Connect para migração em vez de VPN?  
-**R:** **Direct Connect:** conexão privada dedicada entre data center e AWS via parceiro (10 Gbps ou 100 Gbps). Latência consistente, banda dedicada, mais caro, leva semanas para provisionar. **VPN:** criptografado sobre internet pública, variação de latência, mais barato, provisionado em horas. Para migração de grandes volumes: Direct Connect é mais eficiente (bandwidth constante).
+**Q:** What is the benefit of Direct Connect for migration instead of VPN?  
+**A:** **Direct Connect:** dedicated private connection between the data center and AWS via a partner (10 Gbps or 100 Gbps). Consistent latency, dedicated bandwidth, more expensive, takes weeks to provision. **VPN:** encrypted over the public internet, latency variation, cheaper, provisioned in hours. For migrating large volumes: Direct Connect is more efficient (constant bandwidth).
 
 ---
 
-**P:** O que é o AWS Snowball Edge com computação e quando usar?  
-**R:** **Snowball Edge Compute Optimized:** 52 vCPUs, GPU opcional (NVIDIA Tesla), 42 TB HDD. Use quando: precisa processar dados **no edge** (fábricas, navios, locais sem conectividade estável) antes de enviar — pre-processing, compressão, ML inference no campo. Roda EC2 instances (sbe-c, sbe-m família) e Lambda functions.
+**Q:** What is AWS Snowball Edge with compute and when should I use it?  
+**A:** **Snowball Edge Compute Optimized:** 52 vCPUs, optional GPU (NVIDIA Tesla), 42 TB HDD. Use when: you need to process data **at the edge** (factories, ships, locations without stable connectivity) before sending — pre-processing, compression, ML inference in the field. Runs EC2 instances (sbe-c, sbe-m family) and Lambda functions.
 
 ---
 
-**P:** O que é AWS DataSync Location?  
-**R:** Endpoint configurado no DataSync representando ou a origem ou o destino de uma transferência. Tipos: NFS Server, SMB Share, Hadoop HDFS, Amazon S3, Amazon EFS, Amazon FSx, object storage. Uma **Task** conecta dois Locations (source → destination) e define as configurações de transferência (schedule, filter, verification).
+**Q:** What is an AWS DataSync Location?  
+**A:** An endpoint configured in DataSync representing either the source or the destination of a transfer. Types: NFS Server, SMB Share, Hadoop HDFS, Amazon S3, Amazon EFS, Amazon FSx, object storage. A **Task** connects two Locations (source → destination) and defines the transfer settings (schedule, filter, verification).
 
 ---
 
-**P:** O que é a fase de "Discovery" na metodologia de migração AWS?  
-**R:** Fase inicial: inventariar e avaliar workloads on-premises. Ferramentas: Application Discovery Service, Migration Evaluator (TCO analysis — calcula quanto custa manter on-premises vs migrar para AWS). Output: lista de servidores/apps com specs, dependências mapeadas, priorização por complexidade e impacto.
+**Q:** What is the "Discovery" phase in the AWS migration methodology?  
+**A:** Initial phase: inventory and assess on-premises workloads. Tools: Application Discovery Service, Migration Evaluator (TCO analysis — calculates how much it costs to keep on-premises vs migrate to AWS). Output: list of servers/apps with specs, mapped dependencies, prioritization by complexity and impact.
 
 ---
 
-**P:** Quantas horas leva o provisionamento de um Snowball após solicitação?  
-**R:** Tipicamente **5-7 dias úteis** para entrega após pedido. Processo: solicitar no console → AWS ships Snowball → empresa carrega dados → devolve para AWS → AWS importa para S3 (1-3 dias após recebimento). Total: típico de 2-3 semanas. Para urgências: múltiplos Snowballs em paralelo.
+**Q:** How long does it take to provision a Snowball after requesting it?  
+**A:** Typically **5-7 business days** for delivery after the order. Process: request in the console → AWS ships the Snowball → the company loads data → returns it to AWS → AWS imports into S3 (1-3 days after receipt). Total: typically 2-3 weeks. For urgent cases: multiple Snowballs in parallel.
 
 ---
 
-**P:** O que é o VMware Cloud on AWS e quando usar Relocate?  
-**R:** **VMware Cloud on AWS:** run VMware SDDC (Software-Defined Data Center) em hardware dedicado AWS. Para migrações de VMs VMware sem precisar refatorar. Você gerencia via vCenter como on-premises. **Relocate:** migrar VMs VMware para VMware Cloud on AWS sem conversão — migration quase zero-touch, mantendo o mesmo stack VMware.
+**Q:** What is VMware Cloud on AWS and when should I use Relocate?  
+**A:** **VMware Cloud on AWS:** runs the VMware SDDC (Software-Defined Data Center) on dedicated AWS hardware. For migrating VMware VMs without refactoring. You manage it via vCenter as on-premises. **Relocate:** migrate VMware VMs to VMware Cloud on AWS without conversion — near zero-touch migration, keeping the same VMware stack.
 
 ---
 
-**P:** Como o DMS suporta Oracle para Amazon Aurora PostgreSQL?  
-**R:** Processo em 2 passos: **(1) SCT:** converte schema Oracle (tabelas, constraints, views, procedures PL/SQL → PL/pgSQL). Relatório de conversão indica complexidade manual. **(2) DMS:** carga inicial full-load dos dados + CDC ongoing. DMS suporta Oracle como source com LogMiner (para CDC), capturando redo logs.
+**Q:** How does DMS support Oracle to Amazon Aurora PostgreSQL?  
+**A:** 2-step process: **(1) SCT:** converts the Oracle schema (tables, constraints, views, PL/SQL procedures → PL/pgSQL). The conversion report indicates manual complexity. **(2) DMS:** initial full-load of the data + ongoing CDC. DMS supports Oracle as a source with LogMiner (for CDC), capturing redo logs.
 
 ---
 
-**P:** O que é AWS DataSync preservation de metadata e por que importa?  
-**R:** DataSync preserva: **POSIX permissions** (owner, group, permissions), **timestamps** (creation, modification, access), **ACLs** (para SMB/NFS). Por que importa: arquivos migrados mantêm permissões originais — aplicações que dependem de permissões de arquivo continuam funcionando sem reconfiguração manual. S3 Object Metadata também é preservado.
+**Q:** What is AWS DataSync metadata preservation and why does it matter?  
+**A:** DataSync preserves: **POSIX permissions** (owner, group, permissions), **timestamps** (creation, modification, access), **ACLs** (for SMB/NFS). Why it matters: migrated files keep their original permissions — applications that depend on file permissions keep working without manual reconfiguration. S3 Object Metadata is also preserved.
 
 ---
 
-**P:** O que são as Snowball Edge "job types"?  
-**R:** **Import to S3:** transferir dados de on-premises para S3 (uso mais comum). **Export from S3:** extrair dados do S3 para on-premises (dado sai da AWS). **Local Compute and Storage:** usar Snowball em edge para processamento sem enviar dados — runs EC2/Lambda localmente. Cada job type tem processo de shipping diferente.
+**Q:** What are the Snowball Edge "job types"?  
+**A:** **Import to S3:** transfer data from on-premises to S3 (most common use). **Export from S3:** extract data from S3 to on-premises (data leaves AWS). **Local Compute and Storage:** use Snowball at the edge for processing without sending data — runs EC2/Lambda locally. Each job type has a different shipping process.
 
 ---
 
-**P:** O que é AWS Migration Evaluator?  
-**R:** Ferramenta gratuita de análise de TCO (Total Cost of Ownership) on-premises vs AWS. Instala agentes ou usa importação de dados de utilização. Gera relatório: "business case" mostrando custo estimado na AWS vs custo atual on-premises. Base para aprovação executiva de migração.
+**Q:** What is AWS Migration Evaluator?  
+**A:** A free TCO (Total Cost of Ownership) analysis tool for on-premises vs AWS. Installs agents or uses imported utilization data. Generates a report: a "business case" showing estimated cost on AWS vs current on-premises cost. The basis for executive approval of a migration.
 
 ---
 
-**P:** O que é Server Migration Service (SMS) e qual é seu substituto?  
-**R:** SMS: serviço legado de replicação de VMs on-premises para AMIs na AWS. **Substituído pelo AWS MGN (Application Migration Service)** — mais moderno, replicação contínua incremental em vez de snapshot periódico, menor downtime. SMS foi descontinuado para novos usuários. MGN é o serviço recomendado.
+**Q:** What is Server Migration Service (SMS) and what is its replacement?  
+**A:** SMS: a legacy service for replicating on-premises VMs to AMIs on AWS. **Replaced by AWS MGN (Application Migration Service)** — more modern, continuous incremental replication instead of periodic snapshots, lower downtime. SMS was discontinued for new users. MGN is the recommended service.
 
 ---
 
-**P:** Como o Snowball protege os dados físicos?  
-**R:** Proteção física e lógica: criptografia AES-256 automática, **Trusted Platform Module (TPM)** para verificação de integridade do hardware, case tamper-evident, não é possível acessar os dados sem as chaves do KMS associadas ao job. Após importar para S3, os dados são apagados do Snowball conforme NIST 800-88.
+**Q:** How does Snowball protect the physical data?  
+**A:** Physical and logical protection: automatic AES-256 encryption, **Trusted Platform Module (TPM)** for hardware integrity verification, tamper-evident case, data cannot be accessed without the KMS keys associated with the job. After importing to S3, the data is erased from the Snowball per NIST 800-88.
 
 ---
 
-**P:** O que é o AWS DataSync Task Schedule vs Task Execution?  
-**R:** **Task:** configuração persistente da transferência (source, destination, options). **Task Execution:** uma rodada de execução da task. **Schedule:** execução periódica automática (cron/rate). Uma Task pode ter múltiplas Executions. Cada execution pode ser: LAUNCHING → PREPARING → TRANSFERRING → VERIFYING → SUCCESS/ERROR.
+**Q:** What is the AWS DataSync Task Schedule vs Task Execution?  
+**A:** **Task:** persistent transfer configuration (source, destination, options). **Task Execution:** a single run of the task. **Schedule:** automatic periodic execution (cron/rate). A Task can have multiple Executions. Each execution can be: LAUNCHING → PREPARING → TRANSFERRING → VERIFYING → SUCCESS/ERROR.

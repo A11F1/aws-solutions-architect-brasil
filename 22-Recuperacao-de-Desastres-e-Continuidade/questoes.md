@@ -1,56 +1,56 @@
-# Questoes - Recuperacao de Desastres e Continuidade
+# Questions - Disaster Recovery and Continuity
 
 ## 1)
-Uma empresa exige RTO de minutos e RPO de segundos para aplicacao global. Qual estrategia e mais adequada?
+A company requires an RTO of minutes and an RPO of seconds for a global application. Which strategy is most appropriate?
 
 A. Backup and Restore
 B. Pilot Light
 C. Warm Standby
 D. Multi-Site Active/Active
 
-Resposta: D
-Motivo: menor RTO/RPO, apesar de maior custo.
+Answer: D
+Reason: lowest RTO/RPO, despite higher cost.
 
 ## 2)
-A aplicacao roda em uma unica regiao com RDS Multi-AZ. Qual risco permanece?
+The application runs in a single region with RDS Multi-AZ. Which risk remains?
 
-A. Falha de instancia
-B. Falha de AZ
-C. Desastre regional
-D. Falha de disco
+A. Instance failure
+B. AZ failure
+C. Regional disaster
+D. Disk failure
 
-Resposta: C
-Motivo: Multi-AZ nao cobre perda total da regiao.
+Answer: C
+Reason: Multi-AZ does not cover the total loss of the region.
 
 ## 3)
-Qual servico simplifica replicacao continua de servidores para DR com baixa mudanca na aplicacao?
+Which service simplifies continuous server replication for DR with little change to the application?
 
 A. AWS Backup
 B. AWS Elastic Disaster Recovery
 C. AWS DataSync
 D. CloudEndure Migration
 
-Resposta: B
-Motivo: servico especifico para DR de servidores.
+Answer: B
+Reason: a service specifically for server DR.
 
 ## 4)
-Para objetos S3 criticos, qual combinacao aumenta resiliencia e recuperacao de versoes apagadas acidentalmente?
+For critical S3 objects, which combination increases resilience and allows recovery of accidentally deleted versions?
 
 A. S3 Standard + Glacier
 B. Versioning + CRR
 C. Intelligent-Tiering + MFA
 D. Transfer Acceleration + ACL
 
-Resposta: B
-Motivo: versioning protege contra delete/logica e CRR protege contra falha regional.
+Answer: B
+Reason: versioning protects against logical delete and CRR protects against regional failure.
 
 ## 5)
-Em prova, a frase "least operational overhead" normalmente favorece:
+On the exam, the phrase "least operational overhead" usually favors:
 
-A. Solucao self-managed em EC2
-B. Processo manual de restore
-C. Servicos gerenciados com automacao
-D. Ferramentas third-party sem integracao
+A. Self-managed solution on EC2
+B. Manual restore process
+C. Managed services with automation
+D. Third-party tools without integration
 
-Resposta: C
-Motivo: AWS privilegia operacao simplificada quando explicitado.
+Answer: C
+Reason: AWS favors simplified operation when explicitly stated.

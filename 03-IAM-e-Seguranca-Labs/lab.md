@@ -1,25 +1,25 @@
-# Lab Prático — IAM Avançado: Roles, SCPs e STS (Módulo 09)
+# Hands-On Lab — Advanced IAM: Roles, SCPs, and STS (Module 09)
 
-> **Região:** us-east-1 | **Custo estimado:** ~$0 (IAM e STS são gratuitos)  
-> **Pré-requisitos:** AWS CLI configurado
-
----
-
-## Objetivo
-
-Praticar IAM avançado: criar roles com trust policies, SCPs em Organizations, AssumeRole cross-account, e usar Policy Simulator para validar permissões.
+> **Region:** us-east-1 | **Estimated cost:** ~$0 (IAM and STS are free)  
+> **Prerequisites:** AWS CLI configured
 
 ---
 
-## Parte 1 — Roles IAM: Trust Policy e Permission Policy
+## Objective
+
+Practice advanced IAM: create roles with trust policies, SCPs in Organizations, cross-account AssumeRole, and use the Policy Simulator to validate permissions.
+
+---
+
+## Part 1 — IAM Roles: Trust Policy and Permission Policy
 
 ```bash
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-# 1. Role para EC2 acessar S3 e DynamoDB
+# 1. Role for EC2 to access S3 and DynamoDB
 EC2_ROLE_ARN=$(aws iam create-role \
   --role-name "lab-ec2-app-role" \
-  --description "Role para aplicação EC2 — acesso S3 e DynamoDB" \
+  --description "Role for EC2 application — S3 and DynamoDB access" \
   --assume-role-policy-document '{
     "Version": "2012-10-17",
     "Statement": [{
@@ -30,20 +30,20 @@ EC2_ROLE_ARN=$(aws iam create-role \
   }' \
   --query 'Role.Arn' --output text)
 
-# Criar customer managed policy com least privilege
+# Create a customer managed policy with least privilege
 APP_POLICY_ARN=$(aws iam create-policy \
   --policy-name "lab-app-policy" \
-  --description "Acesso mínimo necessário para app de e-commerce" \
+  --description "Minimum required access for an e-commerce app" \
   --policy-document "{
     \"Version\": \"2012-10-17\",
     \"Statement\": [
       {
-        \"Sid\": \"S3LeituraEscrita\",
+        \"Sid\": \"S3ReadWrite\",
         \"Effect\": \"Allow\",
         \"Action\": [\"s3:GetObject\", \"s3:PutObject\", \"s3:DeleteObject\", \"s3:ListBucket\"],
         \"Resource\": [
-          \"arn:aws:s3:::app-dados-${ACCOUNT_ID}\",
-          \"arn:aws:s3:::app-dados-${ACCOUNT_ID}/*\"
+          \"arn:aws:s3:::app-data-${ACCOUNT_ID}\",
+          \"arn:aws:s3:::app-data-${ACCOUNT_ID}/*\"
         ]
       },
       {
@@ -53,10 +53,10 @@ APP_POLICY_ARN=$(aws iam create-policy \
           \"dynamodb:GetItem\", \"dynamodb:PutItem\", \"dynamodb:UpdateItem\",
           \"dynamodb:DeleteItem\", \"dynamodb:Query\", \"dynamodb:BatchWriteItem\"
         ],
-        \"Resource\": \"arn:aws:dynamodb:us-east-1:${ACCOUNT_ID}:table/pedidos\"
+        \"Resource\": \"arn:aws:dynamodb:us-east-1:${ACCOUNT_ID}:table/orders\"
       },
       {
-        \"Sid\": \"LogsEscrita\",
+        \"Sid\": \"LogsWrite\",
         \"Effect\": \"Allow\",
         \"Action\": [\"logs:CreateLogGroup\", \"logs:CreateLogStream\", \"logs:PutLogEvents\"],
         \"Resource\": \"arn:aws:logs:us-east-1:${ACCOUNT_ID}:log-group:/app/*\"
@@ -69,18 +69,18 @@ aws iam attach-role-policy \
   --role-name "lab-ec2-app-role" \
   --policy-arn "$APP_POLICY_ARN"
 
-# Criar Instance Profile para EC2
+# Create Instance Profile for EC2
 aws iam create-instance-profile --instance-profile-name "lab-ec2-app-profile"
 aws iam add-role-to-instance-profile \
   --instance-profile-name "lab-ec2-app-profile" \
   --role-name "lab-ec2-app-role"
 
-echo "Instance Profile criado: lab-ec2-app-profile"
+echo "Instance Profile created: lab-ec2-app-profile"
 
-# 2. Role cross-account (para CI/CD em outra conta assumir)
+# 2. Cross-account role (for CI/CD in another account to assume)
 CICD_ROLE_ARN=$(aws iam create-role \
   --role-name "lab-cicd-deploy-role" \
-  --description "Role assumida pelo pipeline CI/CD para deploy" \
+  --description "Role assumed by the CI/CD pipeline for deployment" \
   --assume-role-policy-document "{
     \"Version\": \"2012-10-17\",
     \"Statement\": [{
@@ -106,10 +106,10 @@ echo "CICD Deploy Role: $CICD_ROLE_ARN"
 
 ---
 
-## Parte 2 — STS AssumeRole
+## Part 2 — STS AssumeRole
 
 ```bash
-# Assumir a role CI/CD com ExternalId
+# Assume the CI/CD role with ExternalId
 CREDS=$(aws sts assume-role \
   --role-arn "$CICD_ROLE_ARN" \
   --role-session-name "pipeline-deploy-session" \
@@ -122,39 +122,39 @@ SK=$(echo "$CREDS" | python3 -c "import json,sys; c=json.load(sys.stdin); print(
 ST=$(echo "$CREDS" | python3 -c "import json,sys; c=json.load(sys.stdin); print(c['SessionToken'])")
 EXP=$(echo "$CREDS" | python3 -c "import json,sys; c=json.load(sys.stdin); print(c['Expiration'])")
 
-echo "Credenciais temporárias (expire em: $EXP)"
+echo "Temporary credentials (expire at: $EXP)"
 
-# Verificar que a identidade mudou
+# Verify that the identity changed
 AWS_ACCESS_KEY_ID="$AK" \
 AWS_SECRET_ACCESS_KEY="$SK" \
 AWS_SESSION_TOKEN="$ST" \
 aws sts get-caller-identity
 
-# STS GetCallerIdentity sem assumir role (quem sou eu agora)
+# STS GetCallerIdentity without assuming a role (who am I now)
 aws sts get-caller-identity
 
-# STS com session tags (para ABAC)
+# STS with session tags (for ABAC)
 CREDS_TAGGED=$(aws sts assume-role \
   --role-arn "$CICD_ROLE_ARN" \
-  --role-session-name "session-com-tags" \
+  --role-session-name "session-with-tags" \
   --external-id "pipeline-secret-xyz" \
   --tags '[
-    {"Key": "Ambiente", "Value": "staging"},
-    {"Key": "Equipe", "Value": "backend"},
-    {"Key": "Projeto", "Value": "ecommerce"}
+    {"Key": "Environment", "Value": "staging"},
+    {"Key": "Team", "Value": "backend"},
+    {"Key": "Project", "Value": "ecommerce"}
   ]' \
   --query 'Credentials.AccessKeyId' --output text)
 
-echo "Session com tags: $CREDS_TAGGED"
+echo "Session with tags: $CREDS_TAGGED"
 ```
 
 ---
 
-## Parte 3 — Policy Simulator
+## Part 3 — Policy Simulator
 
 ```bash
-# Simular permissões da role EC2
-echo "=== Simulação de permissões da role EC2 ==="
+# Simulate the EC2 role's permissions
+echo "=== EC2 role permissions simulation ==="
 
 aws iam simulate-principal-policy \
   --policy-source-arn "arn:aws:iam::${ACCOUNT_ID}:role/lab-ec2-app-role" \
@@ -167,13 +167,13 @@ aws iam simulate-principal-policy \
     "ec2:RunInstances" \
     "iam:CreateRole" \
     "logs:PutLogEvents" \
-  --resource-arns "arn:aws:s3:::app-dados-${ACCOUNT_ID}/*" \
+  --resource-arns "arn:aws:s3:::app-data-${ACCOUNT_ID}/*" \
   --query 'EvaluationResults[*].[EvalActionName, EvalDecision]' \
   --output table
 
-# Simular com condições de contexto
+# Simulate with context conditions
 echo ""
-echo "=== Simulação com contexto MFA ==="
+echo "=== Simulation with MFA context ==="
 aws iam simulate-principal-policy \
   --policy-source-arn "arn:aws:iam::${ACCOUNT_ID}:role/lab-ec2-app-role" \
   --action-names "iam:DeleteRole" \
@@ -189,16 +189,16 @@ aws iam simulate-principal-policy \
 
 ---
 
-## Parte 4 — IAM Conditions Comuns
+## Part 4 — Common IAM Conditions
 
 ```bash
-# Policy com condições avançadas para estudo
+# Policy with advanced conditions for study
 cat << 'JSON'
 {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "DenyFora-Horario",
+      "Sid": "DenyOutsideAllowedIPs",
       "Effect": "Deny",
       "Action": "ec2:RunInstances",
       "Resource": "*",
@@ -209,7 +209,7 @@ cat << 'JSON'
       }
     },
     {
-      "Sid": "RequireMFAParaIAM",
+      "Sid": "RequireMFAForIAM",
       "Effect": "Deny",
       "Action": ["iam:*", "sts:*"],
       "Resource": "*",
@@ -220,7 +220,7 @@ cat << 'JSON'
       }
     },
     {
-      "Sid": "ForcarHTTPS",
+      "Sid": "EnforceHTTPS",
       "Effect": "Deny",
       "Action": "s3:*",
       "Resource": "*",
@@ -235,31 +235,31 @@ cat << 'JSON'
 JSON
 
 echo ""
-echo "=== Conditions mais usadas no exame ==="
-echo "aws:SourceIp          — origem por IP"
-echo "aws:SourceVpc         — origem por VPC"
-echo "aws:RequestedRegion   — região da requisição"
-echo "aws:SecureTransport   — forçar HTTPS"
-echo "aws:MultiFactorAuthPresent — exige MFA"
-echo "sts:ExternalId        — parceiros cross-account (confused deputy)"
-echo "aws:PrincipalTag/X    — ABAC: tag da identidade"
-echo "aws:ResourceTag/X     — ABAC: tag do recurso"
-echo "s3:prefix             — prefix de objetos S3"
-echo "ec2:InstanceType      — limitar tipos de instância"
+echo "=== Most commonly used conditions on the exam ==="
+echo "aws:SourceIp          — origin by IP"
+echo "aws:SourceVpc         — origin by VPC"
+echo "aws:RequestedRegion   — region of the request"
+echo "aws:SecureTransport   — enforce HTTPS"
+echo "aws:MultiFactorAuthPresent — require MFA"
+echo "sts:ExternalId        — cross-account partners (confused deputy)"
+echo "aws:PrincipalTag/X    — ABAC: identity tag"
+echo "aws:ResourceTag/X     — ABAC: resource tag"
+echo "s3:prefix             — S3 object prefix"
+echo "ec2:InstanceType      — limit instance types"
 ```
 
 ---
 
-## Limpeza
+## Cleanup
 
 ```bash
-# Remover instance profile
+# Remove instance profile
 aws iam remove-role-from-instance-profile \
   --instance-profile-name "lab-ec2-app-profile" \
   --role-name "lab-ec2-app-role"
 aws iam delete-instance-profile --instance-profile-name "lab-ec2-app-profile"
 
-# Desanexar políticas e deletar roles
+# Detach policies and delete roles
 aws iam detach-role-policy \
   --role-name "lab-ec2-app-role" \
   --policy-arn "$APP_POLICY_ARN"
@@ -274,11 +274,11 @@ aws iam delete-role --role-name "lab-cicd-deploy-role"
 
 ---
 
-## O Que Você Aprendeu
+## What You Learned
 
-- **Trust Policy:** quem PODE assumir a role (Principal); **Permission Policy:** o que a role PODE fazer
-- **ExternalId:** proteção contra confused deputy attack em roles cross-account
-- **Instance Profile:** wrapper obrigatório para anexar IAM Role a EC2
-- **Session Tags:** passadas no AssumeRole; usadas em políticas ABAC com `aws:PrincipalTag`
-- **STS duration:** máximo 12h para roles humanas; padrão 1h para roles de serviço
-- **simulate-principal-policy:** único jeito seguro de testar permissões sem fazer chamadas reais
+- **Trust Policy:** who CAN assume the role (Principal); **Permission Policy:** what the role CAN do
+- **ExternalId:** protection against the confused deputy attack in cross-account roles
+- **Instance Profile:** mandatory wrapper to attach an IAM Role to EC2
+- **Session Tags:** passed in AssumeRole; used in ABAC policies with `aws:PrincipalTag`
+- **STS duration:** maximum 12h for human roles; default 1h for service roles
+- **simulate-principal-policy:** the only safe way to test permissions without making real calls

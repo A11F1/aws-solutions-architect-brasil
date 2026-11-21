@@ -1,60 +1,60 @@
-# Cheatsheet — Módulo 16: Well-Architected Framework
+# Cheatsheet — Module 16: Well-Architected Framework
 
-## Os 6 Pilares — Resumo
+## The 6 Pillars — Summary
 
-| Pilar | Foco | Princípio-Chave |
+| Pillar | Focus | Key Principle |
 |---|---|---|
-| **Operational Excellence** | Operar e melhorar | IaC, mudanças pequenas e reversíveis |
-| **Security** | Proteger | Identity como base, encrypt tudo |
-| **Reliability** | Recuperar de falhas | Design for failure, horizontal scaling |
-| **Performance Efficiency** | Usar recursos bem | Serverless, serviços gerenciados |
-| **Cost Optimization** | Evitar gastos | Pay-per-use, eliminar ociosidade |
-| **Sustainability** | Impacto ambiental | Graviton, serverless, utilização alta |
+| **Operational Excellence** | Operate and improve | IaC, small and reversible changes |
+| **Security** | Protect | Identity as the foundation, encrypt everything |
+| **Reliability** | Recover from failures | Design for failure, horizontal scaling |
+| **Performance Efficiency** | Use resources well | Serverless, managed services |
+| **Cost Optimization** | Avoid spending | Pay-per-use, eliminate idle resources |
+| **Sustainability** | Environmental impact | Graviton, serverless, high utilization |
 
 ---
 
-## Estratégias de Disaster Recovery — Comparativo
+## Disaster Recovery Strategies — Comparison
 
-| Estratégia | RPO | RTO | Custo | Como Funciona |
+| Strategy | RPO | RTO | Cost | How It Works |
 |---|---|---|---|---|
-| **Backup & Restore** | Horas | Horas | $ | Backups periódicos; restore quando necessário |
-| **Pilot Light** | Minutos | 10-30 min | $$ | Core mínimo rodando; escalar na DR |
-| **Warm Standby** | Segundos/Minutos | Minutos | $$$ | Versão reduzida sempre ativa |
-| **Active-Active** | Zero | Segundos | $$$$ | Multi-region com tráfego ativo em ambas |
+| **Backup & Restore** | Hours | Hours | $ | Periodic backups; restore when needed |
+| **Pilot Light** | Minutes | 10-30 min | $$ | Minimal core running; scale up during DR |
+| **Warm Standby** | Seconds/Minutes | Minutes | $$$ | Scaled-down version always active |
+| **Active-Active** | Zero | Seconds | $$$$ | Multi-region with active traffic in both |
 
-**RPO** = Recovery Point Objective = perda máxima de dados  
-**RTO** = Recovery Time Objective = tempo máximo de downtime
+**RPO** = Recovery Point Objective = maximum data loss  
+**RTO** = Recovery Time Objective = maximum downtime
 
 ---
 
-## Tabela de Disponibilidade
+## Availability Table
 
-| SLA | Downtime/Ano | Downtime/Mês | Arquitetura Típica |
+| SLA | Downtime/Year | Downtime/Month | Typical Architecture |
 |---|---|---|---|
-| **99%** | ~87,6 horas | ~7,3 horas | Única AZ, sem redundância |
-| **99.9%** | ~8,76 horas | ~43,8 minutos | Multi-AZ básico |
-| **99.99%** | ~52,6 minutos | ~4,4 minutos | Multi-AZ + Auto Scaling |
-| **99.999%** | ~5,26 minutos | ~26 segundos | Active-Active, redundância total |
+| **99%** | ~87.6 hours | ~7.3 hours | Single AZ, no redundancy |
+| **99.9%** | ~8.76 hours | ~43.8 minutes | Basic Multi-AZ |
+| **99.99%** | ~52.6 minutes | ~4.4 minutes | Multi-AZ + Auto Scaling |
+| **99.999%** | ~5.26 minutes | ~26 seconds | Active-Active, full redundancy |
 
 ---
 
-## EC2 Pricing Models — Comparativo
+## EC2 Pricing Models — Comparison
 
-| Modelo | Desconto vs On-Demand | Comprometimento | Melhor Para |
+| Model | Discount vs On-Demand | Commitment | Best For |
 |---|---|---|---|
-| **On-Demand** | — | Nenhum | Cargas imprevisíveis, teste |
-| **Savings Plans (Compute)** | Até 66% | $ por hora (1 ou 3 anos) | Qualquer EC2/Fargate/Lambda, flexível |
-| **Savings Plans (EC2)** | Até 72% | Família + região (1 ou 3 anos) | Família específica, maior desconto |
-| **Reserved (Standard)** | Até 72% | Específico (tipo+região+OS) | Carga estável e previsível |
-| **Reserved (Convertible)** | Até 54% | Pode trocar tipo/OS | Carga estável, mais flexibilidade |
-| **Spot** | Até 90% | Nenhum (interruptível!) | Batch, fault-tolerant, dev/test |
-| **Dedicated Host** | Varia | Por hora ou 1/3 anos | Licenças BYOL, compliance regulatório |
+| **On-Demand** | — | None | Unpredictable workloads, testing |
+| **Savings Plans (Compute)** | Up to 66% | $ per hour (1 or 3 years) | Any EC2/Fargate/Lambda, flexible |
+| **Savings Plans (EC2)** | Up to 72% | Family + region (1 or 3 years) | Specific family, bigger discount |
+| **Reserved (Standard)** | Up to 72% | Specific (type+region+OS) | Steady, predictable workloads |
+| **Reserved (Convertible)** | Up to 54% | Can change type/OS | Steady workloads, more flexibility |
+| **Spot** | Up to 90% | None (interruptible!) | Batch, fault-tolerant, dev/test |
+| **Dedicated Host** | Varies | Per hour or 1/3 years | BYOL licenses, regulatory compliance |
 
 ---
 
-## Well-Architected Pillars — Ferramentas AWS
+## Well-Architected Pillars — AWS Tools
 
-| Pilar | Ferramentas AWS Associadas |
+| Pillar | Associated AWS Tools |
 |---|---|
 | **Operational Excellence** | CloudFormation, CodePipeline, CloudWatch, Systems Manager |
 | **Security** | IAM, KMS, CloudTrail, GuardDuty, Config, Shield, WAF, Cognito |
@@ -65,7 +65,7 @@
 
 ---
 
-## Pilares — Design Principles Resumidos
+## Pillars — Design Principles Summary
 
 ### Operational Excellence
 - Perform operations as code (IaC)
@@ -110,29 +110,29 @@
 
 ---
 
-## Well-Architected Tool — Processo
+## Well-Architected Tool — Process
 
 ```
-1. CRIAR Workload → nome, região, tipo
-2. RESPONDER perguntas por pilar (cada pilar: ~10-20 perguntasS)
-3. VER resultados: High Risk Issues (HRI) e Medium Risk Issues (MRI)
-4. CRIAR Improvement Plan → priorizar e atribuir items
-5. REVISAR periodicamente (a cada 6-12 meses ou após mudanças grandes)
+1. CREATE Workload → name, region, type
+2. ANSWER questions per pillar (each pillar: ~10-20 questions)
+3. VIEW results: High Risk Issues (HRI) and Medium Risk Issues (MRI)
+4. CREATE Improvement Plan → prioritize and assign items
+5. REVIEW periodically (every 6-12 months or after major changes)
 ```
 
 ---
 
-## Dicas de Prova — Well-Architected
+## Exam Tips — Well-Architected
 
-| Pista no Enunciado | Pilar Relevante | Resposta Típica |
+| Clue in the Question | Relevant Pillar | Typical Answer |
 |---|---|---|
-| "Aplicação sem downtime durante deploys" | Reliability | Blue/Green Deploy, Rolling Update |
-| "Reduzir custo de EC2 sempre ligado" | Cost Optimization | Reserved ou Savings Plans |
-| "Ambiente de dev ligado 8h por dia" | Cost Optimization | Scheduled On/Off via Lambda+EventBridge |
-| "Acesso a dados de auditoria" | Security | CloudTrail + S3 + Object Lock |
-| "Detectar e corrigir drift de configuração" | Operational Excellence | AWS Config + SSM Remediation |
-| "Instância parou de responder, recuperar mesmo IP" | Reliability | EC2 Recovery Alarm (StatusCheckFailed_System) |
-| "Menor carbono na arquitetura" | Sustainability | Graviton, Lambda, gerenciar scheduling |
-| "Revisar arquitetura contra boas práticas" | Todos os pilares | AWS Well-Architected Tool (WAT) |
-| "RTO < 1 minuto multi-região" | Reliability | Active-Active + Aurora Global Database |
-| "RTO de horas é aceitável para DR" | Reliability | Backup & Restore strategy |
+| "Application with no downtime during deploys" | Reliability | Blue/Green Deploy, Rolling Update |
+| "Reduce cost of always-on EC2" | Cost Optimization | Reserved or Savings Plans |
+| "Dev environment running 8h per day" | Cost Optimization | Scheduled On/Off via Lambda+EventBridge |
+| "Access to audit data" | Security | CloudTrail + S3 + Object Lock |
+| "Detect and fix configuration drift" | Operational Excellence | AWS Config + SSM Remediation |
+| "Instance stopped responding, recover with same IP" | Reliability | EC2 Recovery Alarm (StatusCheckFailed_System) |
+| "Lowest carbon footprint in the architecture" | Sustainability | Graviton, Lambda, manage scheduling |
+| "Review architecture against best practices" | All pillars | AWS Well-Architected Tool (WAT) |
+| "RTO < 1 minute multi-region" | Reliability | Active-Active + Aurora Global Database |
+| "RTO of hours is acceptable for DR" | Reliability | Backup & Restore strategy |

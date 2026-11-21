@@ -1,101 +1,101 @@
-# Flashcards — Módulo 10: Containers (ECS, EKS, Fargate)
+# Flashcards — Module 10: Containers (ECS, EKS, Fargate)
 
 ---
 
-**P:** Qual é a hierarquia de objetos no ECS?
-**R:** Cluster → Service → Task → Container. Task Definition define o blueprint (imagem, CPU, RAM, vars, volumes, IAM). Service mantém N tasks rodando. Cluster é o agrupamento lógico de recursos
+**Q:** What is the object hierarchy in ECS?
+**A:** Cluster → Service → Task → Container. The Task Definition defines the blueprint (image, CPU, RAM, vars, volumes, IAM). The Service keeps N tasks running. The Cluster is the logical grouping of resources
 
 ---
 
-**P:** O que é Task Role vs Task Execution Role no ECS?
-**R:** Task Role: IAM role para a **aplicação** dentro do container (permissão para acessar S3, DynamoDB, etc.). Task Execution Role: IAM role para o **ECS Agent** (pull imagem do ECR, push logs para CloudWatch, ler Secrets Manager/SSM)
+**Q:** What is Task Role vs Task Execution Role in ECS?
+**A:** Task Role: IAM role for the **application** inside the container (permission to access S3, DynamoDB, etc.). Task Execution Role: IAM role for the **ECS Agent** (pull the image from ECR, push logs to CloudWatch, read Secrets Manager/SSM)
 
 ---
 
-**P:** Qual é o único modo de rede suportado pelo Fargate?
-**R:** **awsvpc mode**. Cada task Fargate recebe uma ENI dedicada com IP privado da VPC. Permite Security Groups individuais por task. Bridge e host modes só funcionam no EC2 Launch Type
+**Q:** What is the only network mode supported by Fargate?
+**A:** **awsvpc mode**. Each Fargate task receives a dedicated ENI with a private VPC IP. Allows individual Security Groups per task. Bridge and host modes only work on the EC2 Launch Type
 
 ---
 
-**P:** Qual a vantagem do awsvpc mode no ECS EC2?
-**R:** Cada task recebe ENI própria com IP da VPC → pode ter SG individual por task (não por instância). Facilita controle de acesso granular e compatibilidade com ALB target type "ip". Desvantagem: limite de ENIs por instância EC2
+**Q:** What is the advantage of awsvpc mode on ECS EC2?
+**A:** Each task receives its own ENI with a VPC IP → can have an individual SG per task (not per instance). Facilitates granular access control and compatibility with ALB target type "ip". Downside: ENI limit per EC2 instance
 
 ---
 
-**P:** Qual o limite de CPU e RAM que pode ser configurado em uma task Fargate?
-**R:** CPU: 0,25 vCPU a 16 vCPU. RAM: proporcional ao CPU (ex: 0,25 vCPU → 0,5-2 GB; 16 vCPU → 32-120 GB). Cobrado por vCPU-segundo e GB-segundo enquanto a task está ativa
+**Q:** What are the CPU and RAM limits that can be configured on a Fargate task?
+**A:** CPU: 0.25 vCPU to 16 vCPU. RAM: proportional to CPU (e.g., 0.25 vCPU → 0.5-2 GB; 16 vCPU → 32-120 GB). Billed per vCPU-second and GB-second while the task is active
 
 ---
 
-**P:** Quais são os 3 Launch Types disponíveis no ECS?
-**R:** EC2 (você gerencia as instâncias EC2 do cluster), Fargate (serverless, AWS gerencia o host), External/ECS Anywhere (servidores on-premises ou edge registrados como cluster ECS)
+**Q:** What are the 3 Launch Types available in ECS?
+**A:** EC2 (you manage the cluster's EC2 instances), Fargate (serverless, AWS manages the host), External/ECS Anywhere (on-premises or edge servers registered as an ECS cluster)
 
 ---
 
-**P:** O que é ECS Capacity Provider?
-**R:** Gerencia automaticamente o Auto Scaling Group de instâncias EC2 do cluster baseado em tasks pendentes, otimizando bin packing. Com "Managed Scaling" habilitado, o ECS aumenta/diminui instâncias automaticamente antes de tasks ficarem queued
+**Q:** What is an ECS Capacity Provider?
+**A:** Automatically manages the cluster's EC2 instance Auto Scaling Group based on pending tasks, optimizing bin packing. With "Managed Scaling" enabled, ECS scales instances up/down automatically before tasks become queued
 
 ---
 
-**P:** Qual é o custo do control plane de um cluster EKS?
-**R:** $0,10/hora por cluster EKS (~$72/mês). ECS não cobra pelo cluster (apenas pelo compute: EC2 ou Fargate). Considere este custo fixo para workloads pequenos em EKS
+**Q:** What is the control plane cost of an EKS cluster?
+**A:** $0.10/hour per EKS cluster (~$72/month). ECS does not charge for the cluster (only for compute: EC2 or Fargate). Consider this fixed cost for small workloads on EKS
 
 ---
 
-**P:** O que são EKS Managed Node Groups?
-**R:** AWS gerencia o lifecycle dos EC2 worker nodes (provisioning, patching, updates com zero downtime, draining). Você escolhe o tipo de instância e AMI. Diferente do Fargate (sem nodes) e Self-managed nodes (você gerencia tudo manualmente)
+**Q:** What are EKS Managed Node Groups?
+**A:** AWS manages the lifecycle of the EC2 worker nodes (provisioning, patching, zero-downtime updates, draining). You choose the instance type and AMI. Different from Fargate (no nodes) and Self-managed nodes (you manage everything manually)
 
 ---
 
-**P:** O que é IRSA (IAM Roles for Service Accounts) no EKS?
-**R:** Permite associar IAM Roles a Kubernetes Service Accounts. Pods que usam o Service Account recebem credenciais temporárias AWS via OIDC (sem hardcode). Equivalente ao ECS Task Role mas para pods Kubernetes — granularidade por pod/deployment
+**Q:** What is IRSA (IAM Roles for Service Accounts) in EKS?
+**A:** Lets you associate IAM Roles with Kubernetes Service Accounts. Pods that use the Service Account receive temporary AWS credentials via OIDC (no hardcoding). Equivalent to the ECS Task Role but for Kubernetes pods — per-pod/deployment granularity
 
 ---
 
-**P:** O que é Amazon VPC CNI no EKS?
-**R:** Plugin de rede padrão do EKS. Aloca IPs diretamente da VPC para cada pod (não usa overlay network). Resultado: pods têm IPs nativos da VPC, comunicam diretamente com outros recursos AWS, podem ter SGs aplicados diretamente (EKS Security Groups for Pods)
+**Q:** What is the Amazon VPC CNI in EKS?
+**A:** The default EKS network plugin. Allocates IPs directly from the VPC to each pod (no overlay network). Result: pods have native VPC IPs, communicate directly with other AWS resources, and can have SGs applied directly (EKS Security Groups for Pods)
 
 ---
 
-**P:** O que é o ECR Lifecycle Policy e como funciona?
-**R:** Regras que apagam automaticamente imagens baseado em critérios: age (dias), count (manter N mais recentes), tag status (tagged/untagged). Exemplos: "apagar imagens untagged com mais de 7 dias" ou "manter apenas as 5 imagens mais recentes por tag prefix"
+**Q:** What is an ECR Lifecycle Policy and how does it work?
+**A:** Rules that automatically delete images based on criteria: age (days), count (keep the N most recent), tag status (tagged/untagged). Examples: "delete untagged images older than 7 days" or "keep only the 5 most recent images per tag prefix"
 
 ---
 
-**P:** Qual a diferença entre ECR Image Scanning Basic e Enhanced?
-**R:** Basic (Clair): verifica CVEs do SO (OS packages). Enhanced (Amazon Inspector): verifica CVEs no SO E em linguagens de programação (Python, Node.js, Java packages). Enhanced = mais detalhado. Resultados disponíveis no Inspector Console + EventBridge events
+**Q:** What is the difference between ECR Image Scanning Basic and Enhanced?
+**A:** Basic (Clair): checks OS CVEs (OS packages). Enhanced (Amazon Inspector): checks CVEs in the OS AND in programming languages (Python, Node.js, Java packages). Enhanced = more detailed. Results available in the Inspector Console + EventBridge events
 
 ---
 
-**P:** Como containers ECS acessam segredos (credenciais de DB) de forma segura?
-**R:** Na Task Definition, campo `secrets`: referencie ARN do Secrets Manager ou SSM Parameter Store. O ECS Agent (via Task Execution Role) busca o segredo no momento do launch e injeta como variável de ambiente ou arquivo. Nenhuma credencial hardcoded
+**Q:** How do ECS containers access secrets (DB credentials) securely?
+**A:** In the Task Definition, `secrets` field: reference the ARN of Secrets Manager or SSM Parameter Store. The ECS Agent (via the Task Execution Role) fetches the secret at launch and injects it as an environment variable or file. No hardcoded credentials
 
 ---
 
-**P:** O que é AWS App Runner?
-**R:** PaaS serverless para containers web. Você fornece imagem ECR ou código fonte → App Runner cria automaticamente load balancer, HTTPS, auto-scaling, custom domain. Zero configuração de ECS/Fargate/ALB. Mais simples que ECS, menos controle
+**Q:** What is AWS App Runner?
+**A:** A serverless PaaS for web containers. You provide an ECR image or source code → App Runner automatically creates the load balancer, HTTPS, auto-scaling, and custom domain. Zero ECS/Fargate/ALB configuration. Simpler than ECS, less control
 
 ---
 
-**P:** O que é ECS Service Connect?
-**R:** Service Mesh gerenciado pela AWS para comunicação service-to-service dentro de um ECS cluster. Oferece service discovery, roteamento, retries, timeouts e observabilidade (métricas, tracing) sem configurar App Mesh ou Envoy manualmente
+**Q:** What is ECS Service Connect?
+**A:** An AWS-managed Service Mesh for service-to-service communication inside an ECS cluster. Provides service discovery, routing, retries, timeouts, and observability (metrics, tracing) without configuring App Mesh or Envoy manually
 
 ---
 
-**P:** Qual é o modo de scaling no EKS para pods e para nodes?
-**R:** Pods: **HPA** (Horizontal Pod Autoscaler) — escala número de pods baseado em CPU/RAM/métricas custom. Nodes: **Cluster Autoscaler** (escala node groups) ou **Karpenter** (provisionamento de nodes mais rápido e eficiente, AWS-native). Fargate nodes: escalam automaticamente por pod
+**Q:** What is the scaling mode in EKS for pods and for nodes?
+**A:** Pods: **HPA** (Horizontal Pod Autoscaler) — scales the number of pods based on CPU/RAM/custom metrics. Nodes: **Cluster Autoscaler** (scales node groups) or **Karpenter** (faster and more efficient node provisioning, AWS-native). Fargate nodes: scale automatically per pod
 
 ---
 
-**P:** O que é EKS Fargate Profile?
-**R:** Seletor que define quais pods rodam no Fargate (por namespace e labels). Pod que corresponde ao profile é automaticamente agendado no Fargate (sem instâncias EC2). Pods que não correspondem vão para node groups. Cada pod Fargate = micro-VM isolada
+**Q:** What is an EKS Fargate Profile?
+**A:** A selector that defines which pods run on Fargate (by namespace and labels). A pod matching the profile is automatically scheduled on Fargate (no EC2 instances). Pods that do not match go to node groups. Each Fargate pod = an isolated micro-VM
 
 ---
 
-**P:** Como funciona a autenticação no Amazon ECR para Docker pull?
-**R:** Usa o AWS CLI: `aws ecr get-login-password --region ... | docker login --username AWS --password-stdin <account>.dkr.ecr.<region>.amazonaws.com`. Token válido por 12 horas. Kubernetes/EKS: usa ECR credential helper ou IRSA para renovação automática
+**Q:** How does authentication to Amazon ECR work for Docker pull?
+**A:** Uses the AWS CLI: `aws ecr get-login-password --region ... | docker login --username AWS --password-stdin <account>.dkr.ecr.<region>.amazonaws.com`. Token valid for 12 hours. Kubernetes/EKS: uses the ECR credential helper or IRSA for automatic renewal
 
 ---
 
-**P:** O que é AWS Copilot CLI?
-**R:** CLI que automatiza deploy de aplicações containerizadas no ECS/Fargate seguindo best practices. Cria automaticamente: ECR, Task Definition, ECS Service, ALB, VPC, CodePipeline, SSM/Secrets. Abstrai a complexidade sem remover controle como o App Runner faz
+**Q:** What is the AWS Copilot CLI?
+**A:** A CLI that automates deployment of containerized applications on ECS/Fargate following best practices. Automatically creates: ECR, Task Definition, ECS Service, ALB, VPC, CodePipeline, SSM/Secrets. Abstracts complexity without removing control the way App Runner does

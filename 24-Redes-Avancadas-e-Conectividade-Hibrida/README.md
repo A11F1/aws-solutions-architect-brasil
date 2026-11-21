@@ -1,46 +1,46 @@
-# 24 Redes Avancadas e Conectividade Hibrida
+# 24 Advanced Networking and Hybrid Connectivity
 
-## Objetivos do modulo
+## Module objectives
 
-- dominar conectividade entre VPCs, contas e datacenter on-premises
-- diferenciar VPC Peering, Transit Gateway, PrivateLink, VPN e Direct Connect
-- desenhar redes com resiliencia, seguranca e baixa latencia
-- resolver questoes de prova com foco em roteamento, isolamento e custo de transferencia
+- master connectivity between VPCs, accounts, and the on-premises datacenter
+- differentiate VPC Peering, Transit Gateway, PrivateLink, VPN, and Direct Connect
+- design networks with resilience, security, and low latency
+- solve exam questions focused on routing, isolation, and transfer cost
 
-## Conceitos fundamentais
+## Core concepts
 
-No SAA-C03, redes avancadas aparecem quando o cenario envolve multiplas VPCs, multiplas contas, conectividade hibrida e servicos privados.
+In the SAA-C03, advanced networking appears when the scenario involves multiple VPCs, multiple accounts, hybrid connectivity, and private services.
 
-## Componentes chave
+## Key components
 
-- VPC Peering: conecta duas VPCs diretamente; nao suporta transitive routing.
-- AWS Transit Gateway (TGW): hub-and-spoke para muitas VPCs e VPNs.
-- AWS PrivateLink: expor/consumir servico privado sem peering completo.
-- Site-to-Site VPN: tunel IPSec pela internet.
-- AWS Direct Connect (DX): link dedicado de baixa variabilidade para on-premises.
-- Route 53 Resolver endpoints: DNS hibrido entre AWS e on-premises.
+- VPC Peering: connects two VPCs directly; does not support transitive routing.
+- AWS Transit Gateway (TGW): hub-and-spoke for many VPCs and VPNs.
+- AWS PrivateLink: expose/consume a private service without full peering.
+- Site-to-Site VPN: IPSec tunnel over the internet.
+- AWS Direct Connect (DX): dedicated link with low variability to on-premises.
+- Route 53 Resolver endpoints: hybrid DNS between AWS and on-premises.
 
-## Quando usar cada um
+## When to use each
 
-- poucas VPCs e topologia simples: VPC Peering
-- muitas VPCs/contas com roteamento central: TGW
-- publicar servico interno para outras contas com menor superficie: PrivateLink
-- conectividade rapida sem circuito dedicado: VPN
-- conectividade estavel de alto throughput: Direct Connect (com VPN de backup)
+- few VPCs and a simple topology: VPC Peering
+- many VPCs/accounts with central routing: TGW
+- publish an internal service to other accounts with a smaller attack surface: PrivateLink
+- quick connectivity without a dedicated circuit: VPN
+- stable high-throughput connectivity: Direct Connect (with backup VPN)
 
-## Dicas de exame
+## Exam tips
 
-- peering nao e transitive; TGW resolve isso.
-- se o enunciado pede acesso a servico privado sem abrir CIDR completo, pense em PrivateLink.
-- DX costuma aparecer com requisito de latencia mais previsivel e trafego alto.
-- para alta disponibilidade hibrida, combine DX + VPN backup.
-- Security Group e stateful; NACL e stateless (armadilha recorrente).
+- peering is not transitive; TGW solves that.
+- if the question asks for access to a private service without opening the full CIDR, think PrivateLink.
+- DX often appears with a more predictable latency requirement and high traffic.
+- for hybrid high availability, combine DX + backup VPN.
+- Security Group is stateful; NACL is stateless (recurring pitfall).
 
-## Links relacionados
+## Related links
 
 - [Cheatsheet](./cheatsheet.md)
-- [Casos de uso](./casos-de-uso.md)
-- [Questoes](./questoes.md)
+- [Use cases](./casos-de-uso.md)
+- [Questions](./questoes.md)
 - [Flashcards](./flashcards.md)
 - [Lab](./lab.md)
-- [Links oficiais](./links.md)
+- [Official links](./links.md)

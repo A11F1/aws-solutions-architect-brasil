@@ -1,60 +1,60 @@
-# Casos de Uso - Recuperacao de Desastres e Continuidade
+# Use Cases - Disaster Recovery and Continuity
 
-## Caso 1: E-commerce com pico sazonal
+## Case 1: E-commerce with seasonal peaks
 
-Cenario:
-- 99.95% de disponibilidade
-- RTO menor que 15 minutos
-- RPO menor que 5 minutos
+Scenario:
+- 99.95% availability
+- RTO under 15 minutes
+- RPO under 5 minutes
 
-Arquitetura recomendada:
-- Warm Standby em segunda regiao
+Recommended architecture:
+- Warm Standby in a second region
 - Aurora Global Database
-- S3 com CRR
-- Route 53 failover com health checks
+- S3 with CRR
+- Route 53 failover with health checks
 
-Por que funciona:
-- atende RTO/RPO baixos sem custo extremo de active/active
+Why it works:
+- meets low RTO/RPO without the extreme cost of active/active
 
-## Caso 2: ERP interno com baixo orcamento
+## Case 2: Internal ERP on a low budget
 
-Cenario:
-- pode ficar ate 4 horas indisponivel
-- aceita perda de ate 1 hora de dados
+Scenario:
+- can be unavailable for up to 4 hours
+- accepts losing up to 1 hour of data
 
-Arquitetura recomendada:
+Recommended architecture:
 - Backup and Restore
-- AWS Backup com politicas diarias e retencao
-- snapshots EBS e RDS cross-region
+- AWS Backup with daily policies and retention
+- cross-region EBS and RDS snapshots
 
-Por que funciona:
-- menor custo para requisito de negocio menos restritivo
+Why it works:
+- lowest cost for a less restrictive business requirement
 
-## Caso 3: Plataforma de pagamentos
+## Case 3: Payments platform
 
-Cenario:
-- indisponibilidade quase zero
-- compliance e trilha de auditoria
+Scenario:
+- near-zero unavailability
+- compliance and audit trail
 
-Arquitetura recomendada:
+Recommended architecture:
 - Active/Active multi-region
 - DynamoDB Global Tables
-- API Gateway + Lambda em duas regioes
+- API Gateway + Lambda in two regions
 - Route 53 latency/failover
 
-Por que funciona:
-- reduz impacto de falha regional e melhora latencia global
+Why it works:
+- reduces the impact of a regional failure and improves global latency
 
-## Caso 4: Migracao de datacenter para AWS
+## Case 4: Datacenter migration to AWS
 
-Cenario:
-- recuperar rapidamente VMs legadas
-- pouca mudanca na aplicacao
+Scenario:
+- quickly recover legacy VMs
+- little change to the application
 
-Arquitetura recomendada:
+Recommended architecture:
 - AWS Elastic Disaster Recovery
-- replicacao continua on-premises -> AWS
-- runbook de cutover e failback
+- continuous replication on-premises -> AWS
+- cutover and failback runbook
 
-Por que funciona:
-- acelera estrategia de DR sem refatoracao imediata
+Why it works:
+- accelerates the DR strategy without immediate refactoring

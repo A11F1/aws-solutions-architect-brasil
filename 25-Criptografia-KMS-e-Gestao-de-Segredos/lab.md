@@ -1,24 +1,24 @@
 # Lab - KMS + Secrets Manager + IAM Role
 
-## Objetivo
-Proteger credenciais de aplicacao usando segredo rotacionavel e acesso por role.
+## Objective
+Protect application credentials using a rotatable secret and role-based access.
 
-## Passos
+## Steps
 
-1. Crie uma KMS customer-managed key para segredos.
-2. Crie um segredo no Secrets Manager (usuario/senha de teste) usando a chave.
-3. Crie role IAM para workload (EC2/Lambda) com permissao `secretsmanager:GetSecretValue` e `kms:Decrypt`.
-4. Associe a role ao recurso de compute.
-5. Leia o segredo via SDK/CLI sem credenciais estaticas.
-6. Ative rotacao automatica (quando aplicavel).
+1. Create a KMS customer-managed key for secrets.
+2. Create a secret in Secrets Manager (test username/password) using the key.
+3. Create an IAM role for the workload (EC2/Lambda) with the `secretsmanager:GetSecretValue` and `kms:Decrypt` permissions.
+4. Associate the role with the compute resource.
+5. Read the secret via SDK/CLI without static credentials.
+6. Enable automatic rotation (when applicable).
 
-## Validacao
+## Validation
 
-- workload le segredo com role
-- acesso negado para principal sem permissao
-- eventos de acesso aparecem no CloudTrail
+- workload reads the secret with the role
+- access denied for a principal without permission
+- access events appear in CloudTrail
 
-## Limpeza
+## Cleanup
 
-- remover segredo de laboratorio
-- remover role/policies e chave criada
+- remove the lab secret
+- remove the role/policies and the created key

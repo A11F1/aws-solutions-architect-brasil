@@ -1,6 +1,6 @@
-# Links — Introdução SAA-C03
+# Links — Introduction to SAA-C03
 
-## 📘 Documentação Oficial AWS
+## 📘 Official AWS Documentation
 
 - [AWS Certified Solutions Architect - Associate](https://aws.amazon.com/certification/certified-solutions-architect-associate/)
 - [Exam Guide SAA-C03](https://d1.awsstatic.com/training-and-certification/docs-sa-assoc/AWS-Certified-Solutions-Architect-Associate_Exam-Guide.pdf)
@@ -8,24 +8,24 @@
 - [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html)
 - [AWS Architecture Center](https://aws.amazon.com/architecture/)
 
-## 📄 Whitepapers e Guias
+## 📄 Whitepapers and Guides
 
 - [Overview of Amazon Web Services](https://docs.aws.amazon.com/whitepapers/latest/aws-overview/introduction.html)
 - [AWS Cloud Adoption Framework](https://docs.aws.amazon.com/whitepapers/latest/aws-caf-introduction/welcome.html)
 - [Architecting for the Cloud: AWS Best Practices](https://docs.aws.amazon.com/whitepapers/latest/architecting-for-the-cloud/architecting-for-the-cloud.html)
 - [Disaster Recovery of Workloads on AWS](https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-workloads-on-aws.html)
 
-## 🎥 Recursos de Aprendizado
+## 🎥 Learning Resources
 
 - [AWS Training and Certification YouTube](https://www.youtube.com/@AWSTrainingCertification)
 - [AWS Events and Webinars](https://aws.amazon.com/events/)
 - [AWS re:Invent Video Catalog](https://www.youtube.com/@AWSEventsChannel)
 
-## 🔗 Navegação Interna
+## 🔗 Internal Navigation
 
-- [README do módulo](./README.md)
-- [Questões](./questoes.md)
+- [Module README](./README.md)
+- [Questions](./questoes.md)
 - [Flashcards](./flashcards.md)
 - [Cheatsheet](./cheatsheet.md)
-- [Casos de uso](./casos-de-uso.md)
-- [Lab prático](./lab.md)
+- [Use cases](./casos-de-uso.md)
+- [Hands-on lab](./lab.md)

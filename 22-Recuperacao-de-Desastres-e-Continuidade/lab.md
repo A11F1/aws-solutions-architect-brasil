@@ -1,28 +1,28 @@
-# Lab - DR Multi-Region Basico
+# Lab - Basic Multi-Region DR
 
-## Objetivo
-Implementar um failover simples com Route 53 e replicacao de dados em S3.
+## Objective
+Implement a simple failover with Route 53 and S3 data replication.
 
-## Passos
+## Steps
 
-1. Crie dois buckets S3 em regioes diferentes.
-2. Habilite versioning em ambos.
-3. Configure CRR do bucket primario para o secundario.
-4. Publique uma pagina estatica em duas regioes (S3 static website ou EC2 minima).
-5. Configure Route 53 Failover Record:
-- Primary apontando para workload principal
-- Secondary apontando para workload secundaria
-6. Crie Health Check para o endpoint primario.
-7. Simule falha (interromper endpoint primario) e valide failover.
-8. Documente RTO observado.
+1. Create two S3 buckets in different regions.
+2. Enable versioning on both.
+3. Configure CRR from the primary bucket to the secondary.
+4. Publish a static page in two regions (S3 static website or minimal EC2).
+5. Configure a Route 53 Failover Record:
+- Primary pointing to the main workload
+- Secondary pointing to the secondary workload
+6. Create a Health Check for the primary endpoint.
+7. Simulate a failure (stop the primary endpoint) and validate the failover.
+8. Document the observed RTO.
 
-## Validacao
+## Validation
 
-- Objetos replicam para segunda regiao
-- DNS muda para endpoint secundario apos falha
-- Aplicacao volta ao primario apos recuperacao
+- Objects replicate to the second region
+- DNS switches to the secondary endpoint after the failure
+- Application returns to the primary after recovery
 
-## Limpeza
+## Cleanup
 
-- remover records/health checks Route 53
-- excluir recursos e buckets para evitar custo
+- remove Route 53 records/health checks
+- delete resources and buckets to avoid cost

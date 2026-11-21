@@ -1,29 +1,29 @@
-# Trilhas por Domínio (SAA-C03)
+# Tracks by Domain (SAA-C03)
 
-## Segurança
-- [02-IAM-e-Seguranca](./02-IAM-e-Seguranca/README.md): consolida políticas, identidades, permission boundaries e decisões de acesso que caem com frequência no domínio de segurança.
-- [08-VPC-e-Redes](./08-VPC-e-Redes/README.md): cobre isolamento de rede, controles de tráfego e escolhas entre Security Groups, NACLs e endpoints privados.
-- [20-Monitoramento-CloudWatch-CloudTrail](./20-Monitoramento-CloudWatch-CloudTrail/README.md): conecta auditoria, observabilidade e rastreabilidade para requisitos de segurança operacional.
-- [23-AWS-Organizations-Governanca-e-Custos](./23-AWS-Organizations-Governanca-e-Custos/README.md): aborda governança multi-conta, SCPs e padronização de controles em escala.
-- [25-Criptografia-KMS-e-Gestao-de-Segredos](./25-Criptografia-KMS-e-Gestao-de-Segredos/README.md): detalha criptografia em repouso/em trânsito e gestão de segredos para arquiteturas seguras.
+## Security
+- [02-IAM-e-Seguranca](./02-IAM-e-Seguranca/README.md): consolidates policies, identities, permission boundaries, and access decisions that frequently appear in the security domain.
+- [08-VPC-e-Redes](./08-VPC-e-Redes/README.md): covers network isolation, traffic controls, and choices between Security Groups, NACLs, and private endpoints.
+- [20-Monitoramento-CloudWatch-CloudTrail](./20-Monitoramento-CloudWatch-CloudTrail/README.md): connects auditing, observability, and traceability for operational security requirements.
+- [23-AWS-Organizations-Governanca-e-Custos](./23-AWS-Organizations-Governanca-e-Custos/README.md): addresses multi-account governance, SCPs, and standardization of controls at scale.
+- [25-Criptografia-KMS-e-Gestao-de-Segredos](./25-Criptografia-KMS-e-Gestao-de-Segredos/README.md): details encryption at rest/in transit and secrets management for secure architectures.
 
-## Otimização de custos
-- [04-Computacao-EC2](./04-Computacao-EC2/README.md): ajuda a escolher família de instância e modelo de compra (On-Demand, RI, Savings Plans, Spot).
-- [06-Amazon-S3-e-Armazenamento](./06-Amazon-S3-e-Armazenamento/README.md): foca em classes de armazenamento e ciclo de vida para reduzir custo sem perder durabilidade.
-- [17-Serverless-Lambda-API-Gateway](./17-Serverless-Lambda-API-Gateway/README.md): mostra como usar arquitetura sob demanda para pagar por execução e evitar superprovisionamento.
-- [21-Migracao-e-Transferencia](./21-Migracao-e-Transferencia/README.md): compara estratégias de migração e transferência considerando custo, janela e volume.
-- [23-AWS-Organizations-Governanca-e-Custos](./23-AWS-Organizations-Governanca-e-Custos/README.md): traz práticas de FinOps, visibilidade e alocação de custos por conta e carga de trabalho.
+## Cost optimization
+- [04-Computacao-EC2](./04-Computacao-EC2/README.md): helps choose instance family and purchase model (On-Demand, RI, Savings Plans, Spot).
+- [06-Amazon-S3-e-Armazenamento](./06-Amazon-S3-e-Armazenamento/README.md): focuses on storage classes and lifecycle to reduce cost without losing durability.
+- [17-Serverless-Lambda-API-Gateway](./17-Serverless-Lambda-API-Gateway/README.md): shows how to use on-demand architecture to pay per execution and avoid over-provisioning.
+- [21-Migracao-e-Transferencia](./21-Migracao-e-Transferencia/README.md): compares migration and transfer strategies considering cost, window, and volume.
+- [23-AWS-Organizations-Governanca-e-Custos](./23-AWS-Organizations-Governanca-e-Custos/README.md): brings FinOps practices, visibility, and cost allocation by account and workload.
 
-## Confiabilidade e resiliência
-- [05-Alta-Disponibilidade-e-Escalabilidade](./05-Alta-Disponibilidade-e-Escalabilidade/README.md): cobre padrões de HA com ELB, ASG e health checks para reduzir indisponibilidade.
-- [06-Amazon-S3-e-Armazenamento](./06-Amazon-S3-e-Armazenamento/README.md): inclui versionamento, replicação e classes adequadas para estratégias de continuidade.
-- [10-Banco-de-Dados](./10-Banco-de-Dados/README.md): diferencia Multi-AZ, réplicas de leitura e opções de recuperação para bancos críticos.
-- [14-Desacoplamento-SQS-SNS-EventBridge](./14-Desacoplamento-SQS-SNS-EventBridge/README.md): reforça arquitetura desacoplada para tolerância a falhas e absorção de picos.
-- [22-Recuperacao-de-Desastres-e-Continuidade](./22-Recuperacao-de-Desastres-e-Continuidade/README.md): aprofunda RTO/RPO e estratégias de DR cobradas no exame.
+## Reliability and resilience
+- [05-Alta-Disponibilidade-e-Escalabilidade](./05-Alta-Disponibilidade-e-Escalabilidade/README.md): covers HA patterns with ELB, ASG, and health checks to reduce unavailability.
+- [06-Amazon-S3-e-Armazenamento](./06-Amazon-S3-e-Armazenamento/README.md): includes versioning, replication, and appropriate classes for continuity strategies.
+- [10-Banco-de-Dados](./10-Banco-de-Dados/README.md): differentiates Multi-AZ, read replicas, and recovery options for critical databases.
+- [14-Desacoplamento-SQS-SNS-EventBridge](./14-Desacoplamento-SQS-SNS-EventBridge/README.md): reinforces decoupled architecture for fault tolerance and absorbing spikes.
+- [22-Recuperacao-de-Desastres-e-Continuidade](./22-Recuperacao-de-Desastres-e-Continuidade/README.md): deepens RTO/RPO and DR strategies tested on the exam.
 
-## Performance e excelência operacional
-- [04-Computacao-EC2](./04-Computacao-EC2/README.md): orienta escolhas de compute, storage e placement para atender requisitos de desempenho.
-- [10-Banco-de-Dados](./10-Banco-de-Dados/README.md): compara engines e arquiteturas para throughput, latência e escala de leitura/escrita.
-- [13-DNS-Route53-e-CloudFront](./13-DNS-Route53-e-CloudFront/README.md): cobre roteamento inteligente, cache global e distribuição de conteúdo com baixa latência.
-- [16-Containers-ECS-EKS-Fargate](./16-Containers-ECS-EKS-Fargate/README.md): trata orquestração e operação de cargas de trabalho com foco em eficiência operacional.
-- [18-Dados-e-Analytics](./18-Dados-e-Analytics/README.md): explora pipelines e serviços analíticos para desempenho em processamento de dados em escala.
+## Performance and operational excellence
+- [04-Computacao-EC2](./04-Computacao-EC2/README.md): guides compute, storage, and placement choices to meet performance requirements.
+- [10-Banco-de-Dados](./10-Banco-de-Dados/README.md): compares engines and architectures for throughput, latency, and read/write scaling.
+- [13-DNS-Route53-e-CloudFront](./13-DNS-Route53-e-CloudFront/README.md): covers intelligent routing, global caching, and low-latency content delivery.
+- [16-Containers-ECS-EKS-Fargate](./16-Containers-ECS-EKS-Fargate/README.md): addresses orchestration and operation of workloads with a focus on operational efficiency.
+- [18-Dados-e-Analytics](./18-Dados-e-Analytics/README.md): explores pipelines and analytics services for performance in large-scale data processing.

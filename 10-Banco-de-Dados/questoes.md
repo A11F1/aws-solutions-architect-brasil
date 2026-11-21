@@ -1,175 +1,175 @@
-# Questões de Prova — Módulo 06: Banco de Dados
+# Exam Questions — Module 06: Databases
 
-<!-- Domínio SAA-C03: Design Resilient Architectures / High-Performing Architectures -->
+<!-- SAA-C03 Domain: Design Resilient Architectures / High-Performing Architectures -->
 
 ---
 
-**1.** Uma aplicação web de e-commerce precisa de um banco de dados relacional com failover automático dentro da mesma região sem perda de dados. Qual configuração RDS usar?
+**1.** An e-commerce web application needs a relational database with automatic failover within the same Region and no data loss. Which RDS configuration should be used?
 
-- A) RDS com Read Replica em outra AZ
+- A) RDS with a Read Replica in another AZ
 - B) RDS Multi-AZ Deployment
-- C) RDS com backup automatizado habilitado
-- D) Aurora com Multi-Master
+- C) RDS with automated backup enabled
+- D) Aurora with Multi-Master
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — RDS Multi-AZ Deployment**
-Multi-AZ mantém réplica **síncrona** standby em outra AZ com failover automático (1-2 minutos). Read Replicas são **assíncronas** e servem para leitura, não failover automático sem intervenção. Backup automatizado não oferece failover.
+Multi-AZ maintains a **synchronous** standby replica in another AZ with automatic failover (1-2 minutes). Read Replicas are **asynchronous** and serve reads; they do not provide automatic failover without intervention. Automated backup does not provide failover.
 </details>
 
 ---
 
-**2.** Qual a diferença crítica entre Multi-AZ e Read Replicas no RDS?
+**2.** What is the critical difference between Multi-AZ and Read Replicas in RDS?
 
-- A) Multi-AZ usa replicação síncrona; Read Replicas usam replicação assíncrona
-- B) Multi-AZ é para leitura e escrita; Read Replicas apenas para escrita
-- C) Read Replicas garantem zero RPO; Multi-AZ tem RPO de minutos
-- D) Multi-AZ pode ser cross-region; Read Replicas são apenas na mesma AZ
+- A) Multi-AZ uses synchronous replication; Read Replicas use asynchronous replication
+- B) Multi-AZ is for reads and writes; Read Replicas are for writes only
+- C) Read Replicas guarantee zero RPO; Multi-AZ has an RPO of minutes
+- D) Multi-AZ can be cross-region; Read Replicas are only in the same AZ
 
 <details>
-<summary>Resposta</summary>
-**A — Correto**
-Multi-AZ: síncrono → zero RPO, failover automático, standby não recebe tráfego de leitura. Read Replicas: assíncrono → pode ter lag (pequeno RPO), para offload de leituras, pode ser promovida a standalone DB. Read Replicas podem ser cross-region! Multi-AZ é apenas na mesma região.
+<summary>Answer</summary>
+**A — Correct**
+Multi-AZ: synchronous → zero RPO, automatic failover, the standby does not receive read traffic. Read Replicas: asynchronous → can have lag (small RPO), for offloading reads, can be promoted to a standalone DB. Read Replicas can be cross-region! Multi-AZ is only within the same Region.
 </details>
 
 ---
 
-**3.** Uma startup usa RDS MySQL com Aurora e percebe spike de latência quando funções Lambda escalam de 0 para 1.000 instâncias simultâneas, esgotando conexões RDS. Qual solução?
+**3.** A startup uses RDS MySQL with Aurora and notices a latency spike when Lambda functions scale from 0 to 1,000 concurrent instances, exhausting RDS connections. Which solution?
 
-- A) Aumentar max_connections no parameter group
-- B) Usar RDS Proxy entre as funções Lambda e o banco
-- C) Escalar verticalmente para db.r6g.16xlarge
-- D) Habilitar Enhanced Monitoring no RDS
+- A) Increase max_connections in the parameter group
+- B) Use RDS Proxy between the Lambda functions and the database
+- C) Scale vertically to db.r6g.16xlarge
+- D) Enable Enhanced Monitoring on RDS
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — RDS Proxy**
-RDS Proxy gerencia um pool de conexões entre a aplicação (Lambda, ECS, etc.) e o RDS/Aurora, reutilizando conexões e evitando que cada Lambda abra sua própria conexão. É a solução arquitetural para o problema de "connection exhaustion" com Lambda. Aumentar max_connections é paliativo e tem limite.
+RDS Proxy manages a connection pool between the application (Lambda, ECS, etc.) and RDS/Aurora, reusing connections and preventing each Lambda from opening its own. It is the architectural solution to the "connection exhaustion" problem with Lambda. Increasing max_connections is a stopgap and has a limit.
 </details>
 
 ---
 
-**4.** Sobre Amazon Aurora, qual afirmação está CORRETA?
+**4.** About Amazon Aurora, which statement is CORRECT?
 
-- A) Aurora armazena 2 cópias dos dados em 2 AZs (total 2 cópias)
-- B) Write quorum requer 4 de 6 cópias; read quorum requer 3 de 6
-- C) Aurora Failover para Read Replica demora ~30 minutos
-- D) Aurora Serverless v2 não suporta escalonamento automático de capacidade
+- A) Aurora stores 2 copies of the data in 2 AZs (2 copies total)
+- B) Write quorum requires 4 of 6 copies; read quorum requires 3 of 6
+- C) Aurora failover to a Read Replica takes ~30 minutes
+- D) Aurora Serverless v2 does not support automatic capacity scaling
 
 <details>
-<summary>Resposta</summary>
-**B — Correto**
-Aurora mantém **6 cópias em 3 AZs** (2 por AZ). Write quorum: 4/6 cópias confirmadas. Read quorum: 3/6. Failover para Aurora Read Replica é automático e demora ~30 segundos (não 30 minutos). Aurora Serverless v2 escala de 0,5 a 128 ACUs automaticamente.
+<summary>Answer</summary>
+**B — Correct**
+Aurora keeps **6 copies across 3 AZs** (2 per AZ). Write quorum: 4/6 copies acknowledged. Read quorum: 3/6. Failover to an Aurora Read Replica is automatic and takes ~30 seconds (not 30 minutes). Aurora Serverless v2 scales automatically from 0.5 to 128 ACUs.
 </details>
 
 ---
 
-**5.** Uma empresa precisa de um banco NoSQL que responda em microssegundos para um catálogo de produtos com milhões de itens. Qual solução?
+**5.** A company needs a NoSQL database that responds in microseconds for a product catalog with millions of items. Which solution?
 
-- A) DynamoDB com DAX
-- B) ElastiCache Redis com RDS PostgreSQL
-- C) Aurora com Read Replicas
-- D) DynamoDB com Strong Consistency habilitado
+- A) DynamoDB with DAX
+- B) ElastiCache Redis with RDS PostgreSQL
+- C) Aurora with Read Replicas
+- D) DynamoDB with Strong Consistency enabled
 
 <details>
-<summary>Resposta</summary>
-**A — DynamoDB com DAX**
-DynamoDB tem latência de milissegundos. DAX (DynamoDB Accelerator) é cache in-memory gerenciado que reduz latência para **microssegundos**. ElastiCache com RDS adiciona complexidade operacional. Strong Consistency no DynamoDB aumenta latência (não reduz).
+<summary>Answer</summary>
+**A — DynamoDB with DAX**
+DynamoDB has millisecond latency. DAX (DynamoDB Accelerator) is a managed in-memory cache that reduces latency to **microseconds**. ElastiCache with RDS adds operational complexity. Strong Consistency on DynamoDB increases latency (it does not reduce it).
 </details>
 
 ---
 
-**6.** Qual modelo de capacidade do DynamoDB cobrar apenas pelo que for efetivamente consumido sem planejamento de capacidade?
+**6.** Which DynamoDB capacity mode charges only for what is actually consumed, without capacity planning?
 
-- A) Provisioned Capacity Mode com Auto Scaling
+- A) Provisioned Capacity Mode with Auto Scaling
 - B) On-Demand Capacity Mode
 - C) Reserved Capacity
-- D) Provisioned com burst capacity
+- D) Provisioned with burst capacity
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — On-Demand Capacity Mode**
-On-Demand cobra por cada read/write request efetivamente feito. Ideal para cargas imprevisíveis, novos workloads ou uso esporádico. Custa mais por request que Provisioned, mas zero planejamento. Provisioned + Auto Scaling ainda exige configuração de min/max; pode ter throttling se o scaling não acompanhar spikes súbitos.
+On-Demand charges for each read/write request actually made. Ideal for unpredictable workloads, new workloads, or sporadic use. It costs more per request than Provisioned, but requires zero planning. Provisioned + Auto Scaling still requires min/max configuration; it can throttle if scaling does not keep up with sudden spikes.
 </details>
 
 ---
 
-**7.** Uma aplicação web precisa de sessões de usuário armazenadas em cache com TTL de 30 minutos, compartilhadas entre múltiplas instâncias EC2. Qual serviço?
+**7.** A web application needs user sessions stored in a cache with a 30-minute TTL, shared across multiple EC2 instances. Which service?
 
-- A) DynamoDB com TTL
+- A) DynamoDB with TTL
 - B) ElastiCache Redis
 - C) ElastiCache Memcached
-- D) RDS com índice em session_id
+- D) RDS with an index on session_id
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — ElastiCache Redis**
-Redis suporta estruturas de dados ricas, persistência, replicação, Multi-AZ e Pub/Sub. Para sessões de usuário com TTL, Redis é ideal. Memcached é mais simples, sem persistência, sem replicação. DynamoDB funciona mas tem latência de milissegundos vs microssegundos do Redis e não está "in-memory" em sentido estrito.
+Redis supports rich data structures, persistence, replication, Multi-AZ, and Pub/Sub. For user sessions with TTL, Redis is ideal. Memcached is simpler, with no persistence and no replication. DynamoDB works but has millisecond latency vs Redis's microseconds and is not "in-memory" in the strict sense.
 </details>
 
 ---
 
-**8.** Uma empresa precisa executar queries SQL analíticas sobre 100 TB de dados de vendas históricas com performance de minutos, não horas. Qual banco de dados AWS usar?
+**8.** A company needs to run analytical SQL queries over 100 TB of historical sales data with performance measured in minutes, not hours. Which AWS database should be used?
 
-- A) RDS PostgreSQL com índices
+- A) RDS PostgreSQL with indexes
 - B) Aurora Serverless v2
 - C) Amazon Redshift
-- D) DynamoDB com GSI
+- D) DynamoDB with GSI
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — Amazon Redshift**
-Redshift é OLAP (Online Analytical Processing) com arquitetura MPP (Massively Parallel Processing) para queries analíticas sobre petabytes de dados. RDS/Aurora são OLTP (transações). DynamoDB + GSI é NoSQL, não adequado para SQL analítico ad-hoc em 100 TB.
+Redshift is OLAP (Online Analytical Processing) with an MPP (Massively Parallel Processing) architecture for analytical queries over petabytes of data. RDS/Aurora are OLTP (transactions). DynamoDB + GSI is NoSQL, not suited for ad-hoc analytical SQL over 100 TB.
 </details>
 
 ---
 
-**9.** Qual a diferença entre LSI e GSI no DynamoDB?
+**9.** What is the difference between LSI and GSI in DynamoDB?
 
-- A) LSI pode ter chave de partição diferente; GSI mantém a mesma chave de partição
-- B) LSI deve ser criado na criação da tabela; GSI pode ser criado a qualquer momento
-- C) GSI usa RCU/WCU separados; LSI compartilha RCU/WCU da tabela base
-- D) B e C estão corretas
+- A) LSI can have a different partition key; GSI keeps the same partition key
+- B) LSI must be created at table creation; GSI can be created at any time
+- C) GSI uses separate RCU/WCU; LSI shares the base table's RCU/WCU
+- D) B and C are correct
 
 <details>
-<summary>Resposta</summary>
-**D — B e C estão corretas**
-LSI: criado **apenas na criação da tabela** (depois não é possível); mesma partition key, sort key diferente; compartilha throughput da tabela. GSI: criado a qualquer momento após a criação; partition key e sort key distintas; tem próprio throughput (WCU/RCU independentes). Ambos permitem queries em atributos não-chave.
+<summary>Answer</summary>
+**D — B and C are correct**
+LSI: created **only at table creation** (not possible afterward); same partition key, different sort key; shares the table's throughput. GSI: can be created any time after table creation; distinct partition key and sort key; has its own throughput (independent WCU/RCU). Both allow queries on non-key attributes.
 </details>
 
 ---
 
-**10.** Uma empresa quer usar Aurora e garantir RPO próximo de zero em caso de falha total de uma AWS Region. Qual recurso?
+**10.** A company wants to use Aurora and guarantee an RPO close to zero in case of a total failure of an AWS Region. Which feature?
 
-- A) Aurora Multi-AZ com 6 cópias
+- A) Aurora Multi-AZ with 6 copies
 - B) Aurora Global Database
-- C) Aurora com CRR (Cross-Region Read Replica)
+- C) Aurora with CRR (Cross-Region Read Replica)
 - D) RDS Multi-Region
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — Aurora Global Database**
-Aurora Global Database replica com lag < 1 segundo para até 5 regiões secundárias. Em caso de falha da região primária, pode promover uma região secundária em < 1 minuto (RTO < 1min, RPO < 1 segundo). CRR RDS/Aurora regular tem lag maior e failover manual mais demorado.
+Aurora Global Database replicates with < 1 second lag to up to 5 secondary Regions. If the primary Region fails, it can promote a secondary Region in < 1 minute (RTO < 1min, RPO < 1 second). A regular RDS/Aurora CRR has higher lag and a slower manual failover.
 </details>
 
 ---
 
-**11.** Uma aplicação legada Java usa JDBC para conectar a um banco Oracle on-premises. A empresa quer migrar para AWS sem reescrever a aplicação. Qual banco escolher?
+**11.** A legacy Java application uses JDBC to connect to an on-premises Oracle database. The company wants to migrate to AWS without rewriting the application. Which database should be chosen?
 
-- A) DynamoDB (NoSQL como substituto)
+- A) DynamoDB (NoSQL as a replacement)
 - B) RDS for Oracle
-- C) Aurora PostgreSQL com schema conversion
+- C) Aurora PostgreSQL with schema conversion
 - D) Amazon Keyspaces
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — RDS for Oracle**
-Para migração lift-and-shift de Oracle sem reescrever, RDS for Oracle mantém compatibilidade total com Oracle. Aurora PostgreSQL + AWS SCT (Schema Conversion Tool) é uma opção para heterogeneous migration mas requer esforço de conversão. DynamoDB e Keyspaces são NoSQL — não compatíveis com JDBC Oracle sem reescrita.
+For a lift-and-shift migration of Oracle without rewriting, RDS for Oracle maintains full Oracle compatibility. Aurora PostgreSQL + AWS SCT (Schema Conversion Tool) is an option for heterogeneous migration but requires conversion effort. DynamoDB and Keyspaces are NoSQL — not compatible with Oracle JDBC without a rewrite.
 </details>
 
 ---
 
-**12.** Uma análise de Redshift precisa cruzar dados do data warehouse com dados fresh no S3, sem carregá-los ao DW. Qual recurso usar?
+**12.** A Redshift analysis needs to join data from the data warehouse with fresh data in S3, without loading it into the DW. Which feature should be used?
 
 - A) Redshift COPY command
 - B) Redshift Spectrum
@@ -177,52 +177,52 @@ Para migração lift-and-shift de Oracle sem reescrever, RDS for Oracle mantém 
 - D) Amazon Athena
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — Redshift Spectrum**
-Redshift Spectrum permite executar queries SQL diretamente em dados no S3 (Parquet, CSV, JSON, etc.) como se fossem tabelas externas do Redshift, sem carregar os dados. Athena também consulta S3 mas é independente do Redshift — Spectrum une os dois mundos numa única query.
+Redshift Spectrum lets you run SQL queries directly on data in S3 (Parquet, CSV, JSON, etc.) as if they were Redshift external tables, without loading the data. Athena also queries S3 but is independent of Redshift — Spectrum joins the two worlds in a single query.
 </details>
 
 ---
 
-**13.** Qual banco de dados AWS é mais adequado para dados de grafos como redes sociais (amizades, conexões)?
+**13.** Which AWS database is best suited for graph data such as social networks (friendships, connections)?
 
-- A) DynamoDB com adjacency list pattern
+- A) DynamoDB with the adjacency list pattern
 - B) Amazon Neptune
 - C) Amazon DocumentDB
 - D) Amazon QLDB
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — Amazon Neptune**
-Neptune é graph database gerenciado, com suporte a Property Graph (Gremlin, openCypher) e RDF (SPARQL). Ideal para redes sociais, knowledge graphs, fraud detection, recomendações. DocumentDB é document store (MongoDB-compatible). QLDB é ledger imutável. DynamoDB adjacency list funciona mas é subótimo para traversals complexos.
+Neptune is a managed graph database, supporting Property Graph (Gremlin, openCypher) and RDF (SPARQL). Ideal for social networks, knowledge graphs, fraud detection, and recommendations. DocumentDB is a document store (MongoDB-compatible). QLDB is an immutable ledger. A DynamoDB adjacency list works but is suboptimal for complex traversals.
 </details>
 
 ---
 
-**14.** Uma aplicação armazena sessões de usuário no DynamoDB. Sessões expiram após 24 horas e precisam ser automaticamente removidas. Qual recurso usar?
+**14.** An application stores user sessions in DynamoDB. Sessions expire after 24 hours and must be removed automatically. Which feature should be used?
 
-- A) Lambda com CloudWatch Events removendo itens diariamente
-- B) DynamoDB Streams com Lambda de cleanup
-- C) TTL (Time To Live) no DynamoDB
-- D) S3 Lifecycle Policy integrada ao DynamoDB
+- A) Lambda with CloudWatch Events removing items daily
+- B) DynamoDB Streams with a cleanup Lambda
+- C) TTL (Time To Live) on DynamoDB
+- D) S3 Lifecycle Policy integrated with DynamoDB
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — TTL (Time To Live)**
-DynamoDB TTL permite associar um atributo de timestamp a um item; quando o timestamp expira, DynamoDB automaticamente remove o item sem custo de WCU. Remoção ocorre em janela de 48h após expiração (não imediata, mas eficiente e sem custo). Lambda + CloudWatch é overengineering.
+DynamoDB TTL lets you associate a timestamp attribute with an item; when the timestamp expires, DynamoDB automatically removes the item at no WCU cost. Removal occurs within a 48h window after expiration (not immediate, but efficient and free). Lambda + CloudWatch is overengineering.
 </details>
 
 ---
 
-**15.** Qual é o RTO típico de um RDS Multi-AZ failover?
+**15.** What is the typical RTO of an RDS Multi-AZ failover?
 
-- A) Instantâneo (0 segundos) — automaticamente redireciona DNS
-- B) 1 a 2 minutos — troca DNS para standby
-- C) 5 a 10 minutos — standby precisa re-sincronizar logs
-- D) 15 a 30 minutos — nova instância de DB é provisionada
+- A) Instant (0 seconds) — automatically redirects DNS
+- B) 1 to 2 minutes — switches DNS to the standby
+- C) 5 to 10 minutes — the standby needs to re-synchronize logs
+- D) 15 to 30 minutes — a new DB instance is provisioned
 
 <details>
-<summary>Resposta</summary>
-**B — 1 a 2 minutos**
-RDS Multi-AZ failover troca o DNS CNAME para apontar para o standby em ~60-120 segundos. A aplicação reconecta ao mesmo endpoint DNS. Standby já está sincronizado (síncrono), então não há re-sincronização. Zero perda de dados com RPO ≈ 0. Aplicações devem usar JDBC connection retry para absorver o breve downtime.
+<summary>Answer</summary>
+**B — 1 to 2 minutes**
+An RDS Multi-AZ failover switches the DNS CNAME to point to the standby in ~60-120 seconds. The application reconnects to the same DNS endpoint. The standby is already in sync (synchronous), so there is no re-synchronization. Zero data loss with RPO ≈ 0. Applications should use JDBC connection retry to absorb the brief downtime.
 </details>

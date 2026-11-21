@@ -1,157 +1,157 @@
-# Cheatsheet — Glossário AWS (Módulo 20)
+# Cheatsheet — AWS Glossary (Module 20)
 
-## Siglas e Acrônimos — Referência Rápida
+## Acronyms and Abbreviations — Quick Reference
 
-| Sigla | Significado | Contexto |
+| Acronym | Meaning | Context |
 |-------|-------------|---------|
-| **ACL** | Access Control List | S3 object/bucket access; NACL em VPC |
-| **ACM** | AWS Certificate Manager | Certificados TLS/SSL gratuitos |
-| **AMI** | Amazon Machine Image | Template para instâncias EC2 |
-| **ARN** | Amazon Resource Name | Identificador único de recurso AWS |
-| **ASG** | Auto Scaling Group | Grupo de EC2 com escalonamento automático |
-| **AZ** | Availability Zone | Data center(s) isolado dentro de uma Region |
-| **BAA** | Business Associate Agreement | Contrato para dados HIPAA/saúde |
-| **BYOL** | Bring Your Own License | Usar licença própria em EC2 Dedicated |
-| **CDN** | Content Delivery Network | CloudFront distribui conteúdo globalmente |
-| **CIDR** | Classless Inter-Domain Routing | Notação de blocos IP (ex: 10.0.0.0/16) |
-| **CMK** | Customer Managed Key | Chave KMS gerenciada pelo cliente |
-| **CORS** | Cross-Origin Resource Sharing | Política S3/API GW para acesso cross-domain |
-| **CRR** | Cross-Region Replication | Replicação S3 entre regiões |
-| **DAX** | DynamoDB Accelerator | Cache in-memory para DynamoDB |
-| **DNSSEC** | DNS Security Extensions | Verificação autenticidade registros DNS |
-| **EBS** | Elastic Block Store | Volume de disco para EC2 |
-| **EC2** | Elastic Compute Cloud | Serviço de máquinas virtuais |
-| **ECS** | Elastic Container Service | Orquestrador de containers |
-| **EFS** | Elastic File System | Sistema de arquivos NFS gerenciado |
-| **EIP** | Elastic IP | IP público estático para EC2/NAT GW |
-| **EKS** | Elastic Kubernetes Service | Kubernetes gerenciado |
-| **EMR** | Elastic MapReduce | Processamento big data (Spark/Hadoop) |
-| **ETL** | Extract, Transform, Load | Pipeline de dados (AWS Glue) |
-| **FSx** | Amazon FSx | Sistemas de arquivos gerenciados (Windows, Lustre) |
-| **GS** | General Purpose SSD | Tipo EBS — gp2/gp3 |
-| **HA** | High Availability | Alta disponibilidade |
-| **IAM** | Identity and Access Management | Controle de acesso AWS |
-| **IGW** | Internet Gateway | Permite acesso à internet em VPC |
-| **IOPS** | Input/Output Operations Per Second | Métrica de performance de disco |
-| **KDS** | Kinesis Data Streams | Stream de dados em tempo real |
-| **KDF** | Kinesis Data Firehose | Entrega streaming para S3/Redshift/ES |
-| **KMS** | Key Management Service | Gerenciamento de chaves de criptografia |
-| **MFA** | Multi-Factor Authentication | Autenticação em múltiplos fatores |
-| **MGN** | Application Migration Service | Lift-and-shift de servidores para AWS |
-| **MTBF** | Mean Time Between Failures | Tempo médio entre falhas |
-| **MTTR** | Mean Time To Recovery | Tempo médio de recuperação |
-| **NACL** | Network Access Control List | Firewall stateless para subnets VPC |
-| **NLB** | Network Load Balancer | LB camada 4 (TCP/UDP), alta performance |
-| **ALB** | Application Load Balancer | LB camada 7 (HTTP/HTTPS) |
-| **CLB** | Classic Load Balancer | LB legado (não recomendado) |
-| **NAT** | Network Address Translation | NAT GW/Instance para subnets privadas |
-| **OIDC** | OpenID Connect | Protocolo de identidade federada |
-| **OAC** | Origin Access Control | CloudFront acessa S3 privado (novo) |
-| **OAI** | Origin Access Identity | CloudFront acessa S3 privado (legado) |
-| **PCI DSS** | Payment Card Industry Data Security Standard | Compliance para dados de cartão |
-| **RPO** | Recovery Point Objective | Quantidade máxima de dados que pode perder |
-| **RTO** | Recovery Time Objective | Tempo máximo para recuperar após falha |
-| **SAML** | Security Assertion Markup Language | Federação de identidade SSO |
-| **SCP** | Service Control Policy | Política de controle em AWS Organizations |
-| **SDK** | Software Development Kit | Bibliotecas para desenvolvimento AWS |
-| **SG** | Security Group | Firewall stateful para instâncias/recursos |
-| **SLA** | Service Level Agreement | Acordo de nível de serviço (uptime) |
-| **SNS** | Simple Notification Service | Pub/sub, notificações |
-| **SOC** | Service Organization Control | Relatório de auditoria (SOC1/SOC2/SOC3) |
-| **SQS** | Simple Queue Service | Fila de mensagens gerenciada |
-| **SRR** | Same-Region Replication | Replicação S3 dentro da mesma região |
-| **SSE** | Server-Side Encryption | Criptografia no servidor (S3/DynamoDB) |
-| **SSM** | Systems Manager | Gerenciamento de instâncias, parameters |
-| **STS** | Security Token Service | Tokens temporários (AssumeRole) |
-| **TGW** | Transit Gateway | Hub de conectividade VPC multi-VPC |
-| **TTL** | Time To Live | Tempo de expiração (DNS, cache, DynamoDB) |
-| **VPC** | Virtual Private Cloud | Rede virtual privada na AWS |
-| **VPN** | Virtual Private Network | Conexão criptografada on-premises ↔ AWS |
-| **WAF** | Web Application Firewall | Proteção layer 7 (SQLi, XSS) |
-| **WORM** | Write Once Read Many | S3 Object Lock — imutabilidade |
+| **ACL** | Access Control List | S3 object/bucket access; NACL in VPC |
+| **ACM** | AWS Certificate Manager | Free TLS/SSL certificates |
+| **AMI** | Amazon Machine Image | Template for EC2 instances |
+| **ARN** | Amazon Resource Name | Unique identifier of an AWS resource |
+| **ASG** | Auto Scaling Group | Group of EC2 instances with automatic scaling |
+| **AZ** | Availability Zone | Isolated data center(s) within a Region |
+| **BAA** | Business Associate Agreement | Contract for HIPAA/healthcare data |
+| **BYOL** | Bring Your Own License | Use your own license on EC2 Dedicated |
+| **CDN** | Content Delivery Network | CloudFront distributes content globally |
+| **CIDR** | Classless Inter-Domain Routing | IP block notation (e.g., 10.0.0.0/16) |
+| **CMK** | Customer Managed Key | KMS key managed by the customer |
+| **CORS** | Cross-Origin Resource Sharing | S3/API GW policy for cross-domain access |
+| **CRR** | Cross-Region Replication | S3 replication between Regions |
+| **DAX** | DynamoDB Accelerator | In-memory cache for DynamoDB |
+| **DNSSEC** | DNS Security Extensions | Verifies the authenticity of DNS records |
+| **EBS** | Elastic Block Store | Disk volume for EC2 |
+| **EC2** | Elastic Compute Cloud | Virtual machine service |
+| **ECS** | Elastic Container Service | Container orchestrator |
+| **EFS** | Elastic File System | Managed NFS file system |
+| **EIP** | Elastic IP | Static public IP for EC2/NAT GW |
+| **EKS** | Elastic Kubernetes Service | Managed Kubernetes |
+| **EMR** | Elastic MapReduce | Big data processing (Spark/Hadoop) |
+| **ETL** | Extract, Transform, Load | Data pipeline (AWS Glue) |
+| **FSx** | Amazon FSx | Managed file systems (Windows, Lustre) |
+| **GS** | General Purpose SSD | EBS type — gp2/gp3 |
+| **HA** | High Availability | High availability |
+| **IAM** | Identity and Access Management | AWS access control |
+| **IGW** | Internet Gateway | Enables internet access in a VPC |
+| **IOPS** | Input/Output Operations Per Second | Disk performance metric |
+| **KDS** | Kinesis Data Streams | Real-time data stream |
+| **KDF** | Kinesis Data Firehose | Streaming delivery to S3/Redshift/ES |
+| **KMS** | Key Management Service | Encryption key management |
+| **MFA** | Multi-Factor Authentication | Multi-factor authentication |
+| **MGN** | Application Migration Service | Lift-and-shift of servers to AWS |
+| **MTBF** | Mean Time Between Failures | Average time between failures |
+| **MTTR** | Mean Time To Recovery | Average recovery time |
+| **NACL** | Network Access Control List | Stateless firewall for VPC subnets |
+| **NLB** | Network Load Balancer | Layer 4 LB (TCP/UDP), high performance |
+| **ALB** | Application Load Balancer | Layer 7 LB (HTTP/HTTPS) |
+| **CLB** | Classic Load Balancer | Legacy LB (not recommended) |
+| **NAT** | Network Address Translation | NAT GW/Instance for private subnets |
+| **OIDC** | OpenID Connect | Federated identity protocol |
+| **OAC** | Origin Access Control | CloudFront accesses private S3 (new) |
+| **OAI** | Origin Access Identity | CloudFront accesses private S3 (legacy) |
+| **PCI DSS** | Payment Card Industry Data Security Standard | Compliance for card data |
+| **RPO** | Recovery Point Objective | Maximum amount of data you can afford to lose |
+| **RTO** | Recovery Time Objective | Maximum time to recover after a failure |
+| **SAML** | Security Assertion Markup Language | SSO identity federation |
+| **SCP** | Service Control Policy | Control policy in AWS Organizations |
+| **SDK** | Software Development Kit | Libraries for AWS development |
+| **SG** | Security Group | Stateful firewall for instances/resources |
+| **SLA** | Service Level Agreement | Service level agreement (uptime) |
+| **SNS** | Simple Notification Service | Pub/sub, notifications |
+| **SOC** | Service Organization Control | Audit report (SOC1/SOC2/SOC3) |
+| **SQS** | Simple Queue Service | Managed message queue |
+| **SRR** | Same-Region Replication | S3 replication within the same Region |
+| **SSE** | Server-Side Encryption | Server-side encryption (S3/DynamoDB) |
+| **SSM** | Systems Manager | Instance management, parameters |
+| **STS** | Security Token Service | Temporary tokens (AssumeRole) |
+| **TGW** | Transit Gateway | Multi-VPC connectivity hub |
+| **TTL** | Time To Live | Expiration time (DNS, cache, DynamoDB) |
+| **VPC** | Virtual Private Cloud | Private virtual network on AWS |
+| **VPN** | Virtual Private Network | Encrypted on-premises ↔ AWS connection |
+| **WAF** | Web Application Firewall | Layer 7 protection (SQLi, XSS) |
+| **WORM** | Write Once Read Many | S3 Object Lock — immutability |
 
 ---
 
-## Confusões Frequentes no Exame
+## Common Exam Confusions
 
-| Conceito A | vs | Conceito B | Como Diferenciar |
-|------------|----|-----------|--------------|}
-| **RTO** | vs | **RPO** | RTO = tempo de recuperação; RPO = dados perdidos (ponto no passado) |
-| **Disponibilidade** | vs | **Durabilidade** | Disponibilidade = posso acessar agora? Durabilidade = dados foram perdidos? |
-| **Throughput** | vs | **Latência** | Throughput = quanto por segundo; Latência = quanto tempo demora 1 operação |
-| **Multi-AZ** | vs | **Read Replica** | Multi-AZ = HA/failover (standby syncrono); Read Replica = escalar leituras |
-| **SG** | vs | **NACL** | SG = stateful (retorno automático); NACL = stateless (regras entrada E saída) |
-| **Secrets Manager** | vs | **SSM Param Store** | Secrets = rotação automática, maior custo; SSM = configuraçõesgerais, gratuito para Standard |
-| **KMS CMK** | vs | **KMS AWS-managed** | CMK = você controla rotação/acesso; AWS-managed = AWS controla |
-| **SNS** | vs | **SQS** | SNS = push para N assinantes (fan-out); SQS = pull pela aplicação (1 consumidor por msg) |
-| **Elasticity** | vs | **Scalability** | Elasticity = escala e desescala automaticamente; Scalability = capacidade de crescer |
-| **IaaS** | vs | **PaaS** | IaaS = EC2 (você gerencia SO); PaaS = Elastic Beanstalk/RDS (AWS gerencia SO/infra) |
+| Concept A | vs | Concept B | How to Tell Them Apart |
+|------------|----|-----------|--------------|
+| **RTO** | vs | **RPO** | RTO = recovery time; RPO = data lost (a point in the past) |
+| **Availability** | vs | **Durability** | Availability = can I access it now? Durability = was the data lost? |
+| **Throughput** | vs | **Latency** | Throughput = how much per second; Latency = how long 1 operation takes |
+| **Multi-AZ** | vs | **Read Replica** | Multi-AZ = HA/failover (synchronous standby); Read Replica = scale reads |
+| **SG** | vs | **NACL** | SG = stateful (automatic return traffic); NACL = stateless (inbound AND outbound rules) |
+| **Secrets Manager** | vs | **SSM Param Store** | Secrets = automatic rotation, higher cost; SSM = general configuration, free for Standard |
+| **KMS CMK** | vs | **KMS AWS-managed** | CMK = you control rotation/access; AWS-managed = AWS controls it |
+| **SNS** | vs | **SQS** | SNS = push to N subscribers (fan-out); SQS = pull by the application (1 consumer per msg) |
+| **Elasticity** | vs | **Scalability** | Elasticity = scales out and in automatically; Scalability = ability to grow |
+| **IaaS** | vs | **PaaS** | IaaS = EC2 (you manage the OS); PaaS = Elastic Beanstalk/RDS (AWS manages OS/infra) |
 
 ---
 
-## Tipos de Armazenamento
+## Storage Types
 
-| Tipo | Serviço | Protocolo | Quando Usar |
+| Type | Service | Protocol | When to Use |
 |------|---------|-----------|-------------|
-| **Block** | EBS | iSCSI / NVMe | Boot volume, DB, app que precisa de disco local |
-| **File** | EFS | NFS v4.1 | Compartilhamento entre EC2, apps Linux |
-| **File** | FSx for Windows | SMB / CIFS | Apps Windows, Active Directory |
-| **Object** | S3 | HTTP REST | Backup, mídia, logs, data lake |
-| **Archive** | S3 Glacier | HTTP | Compliance, backup long-term |
-| **In-Memory** | ElastiCache | Redis/Memcached | Cache de sessão, dados quentes |
+| **Block** | EBS | iSCSI / NVMe | Boot volume, DB, apps that need local disk |
+| **File** | EFS | NFS v4.1 | Sharing across EC2, Linux apps |
+| **File** | FSx for Windows | SMB / CIFS | Windows apps, Active Directory |
+| **Object** | S3 | HTTP REST | Backup, media, logs, data lake |
+| **Archive** | S3 Glacier | HTTP | Compliance, long-term backup |
+| **In-Memory** | ElastiCache | Redis/Memcached | Session cache, hot data |
 
 ---
 
-## Modelos de Responsabilidade Compartilhada
+## Shared Responsibility Models
 
-| Responsabilidade | AWS | Cliente |
+| Responsibility | AWS | Customer |
 |-----------------|-----|---------|
-| Hardware físico | ✅ | |
-| Hipervisor | ✅ | |
-| Rede física | ✅ | |
-| Sistema Operacional (EC2) | | ✅ |
-| Patches do SO | | ✅ |
-| Configuração Security Groups | | ✅ |
-| Dados do cliente | | ✅ |
-| Criptografia de dados | Ferramentas | Configuração |
-| IAM (usuários/roles) | | ✅ |
-| RDS SO patches | ✅ | |
-| RDS dados | | ✅ |
+| Physical hardware | ✅ | |
+| Hypervisor | ✅ | |
+| Physical network | ✅ | |
+| Operating System (EC2) | | ✅ |
+| OS patches | | ✅ |
+| Security Groups configuration | | ✅ |
+| Customer data | | ✅ |
+| Data encryption | Tools | Configuration |
+| IAM (users/roles) | | ✅ |
+| RDS OS patches | ✅ | |
+| RDS data | | ✅ |
 
 ---
 
-## Consistência no DynamoDB
+## DynamoDB Consistency
 
-| Tipo | O que significa | Quando Usar |
+| Type | What it means | When to Use |
 |------|----------------|-------------|
-| **Eventual Consistency** | Leitura pode retornar dado levemente desatualizado | Padrão; menor custo; apps tolerantes |
-| **Strong Consistency** | Leitura sempre retorna dado mais recente | 2x custo de leitura; quando precisar garantia |
+| **Eventual Consistency** | A read may return slightly stale data | Default; lower cost; tolerant apps |
+| **Strong Consistency** | A read always returns the most recent data | 2x read cost; when you need the guarantee |
 
 ---
 
-## SLAs de Disponibilidade — Referência
+## Availability SLAs — Reference
 
-| Porcentagem | Downtime/ano | Downtime/mês | Serviço Exemplo |
+| Percentage | Downtime/year | Downtime/month | Example Service |
 |------------|-------------|-------------|----------------|
-| 99% | ~87,6h | ~7,3h | Serviços básicos |
-| 99,9% | ~8,7h | ~43,8min | EC2, S3 Standard-IA |
-| 99,95% | ~4,4h | ~21,9min | RDS Multi-AZ |
-| 99,99% | ~52,6min | ~4,4min | S3 Standard, DynamoDB |
-| 99,999% | ~5,3min | ~26s | Route 53 |
+| 99% | ~87.6h | ~7.3h | Basic services |
+| 99.9% | ~8.7h | ~43.8min | EC2, S3 Standard-IA |
+| 99.95% | ~4.4h | ~21.9min | RDS Multi-AZ |
+| 99.99% | ~52.6min | ~4.4min | S3 Standard, DynamoDB |
+| 99.999% | ~5.3min | ~26s | Route 53 |
 
 ---
 
-## Dicas de Prova
+## Exam Tips
 
-| Pista na Questão | Resposta Esperada |
+| Clue in the Question | Expected Answer |
 |-----------------|------------------|
-| "identificar recurso AWS pelo ID único" | ARN (Amazon Resource Name) |
-| "acessar API AWS com código" | SDK + IAM Role (nunca access key hardcoded) |
-| "bloco de IPs para VPC" | CIDR (ex: 10.0.0.0/16) |
-| "certificado SSL gratuito para ALB/CloudFront" | ACM (AWS Certificate Manager) |
-| "manter conformidade com leis de saúde" | HIPAA + BAA com AWS |
-| "dados que não podem ser alterados após gravação" | S3 Object Lock (WORM) |
-| "failover automático banco de dados" | RDS Multi-AZ (não Read Replica) |
-| "escalar leitura banco de dados" | RDS Read Replica (não Multi-AZ) |
-| "SG retorna resposta automaticamente" | Stateful (SG) vs Stateless (NACL) |
-| "conectar múltiplas VPCs como hub-and-spoke" | Transit Gateway (TGW) |
+| "identify an AWS resource by its unique ID" | ARN (Amazon Resource Name) |
+| "access the AWS API with code" | SDK + IAM Role (never a hardcoded access key) |
+| "IP block for a VPC" | CIDR (e.g., 10.0.0.0/16) |
+| "free SSL certificate for ALB/CloudFront" | ACM (AWS Certificate Manager) |
+| "maintain compliance with healthcare laws" | HIPAA + BAA with AWS |
+| "data that cannot be changed after being written" | S3 Object Lock (WORM) |
+| "automatic database failover" | RDS Multi-AZ (not Read Replica) |
+| "scale database reads" | RDS Read Replica (not Multi-AZ) |
+| "SG returns the response automatically" | Stateful (SG) vs Stateless (NACL) |
+| "connect multiple VPCs as hub-and-spoke" | Transit Gateway (TGW) |

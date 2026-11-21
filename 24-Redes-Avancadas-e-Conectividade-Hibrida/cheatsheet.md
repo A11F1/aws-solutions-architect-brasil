@@ -1,31 +1,31 @@
-# Cheatsheet - Redes Avancadas e Conectividade Hibrida
+# Cheatsheet - Advanced Networking and Hybrid Connectivity
 
-## Escolha rapida
+## Quick choice
 
-| Cenario | Solucao recomendada |
+| Scenario | Recommended solution |
 |---|---|
-| 2 VPCs com troca simples de trafego | VPC Peering |
-| dezenas de VPCs e contas | Transit Gateway |
-| publicar servico interno para varias contas | PrivateLink |
-| conectar filial rapidamente | Site-to-Site VPN |
-| throughput alto e latencia previsivel | Direct Connect |
+| 2 VPCs with simple traffic exchange | VPC Peering |
+| dozens of VPCs and accounts | Transit Gateway |
+| publish an internal service to several accounts | PrivateLink |
+| connect a branch office quickly | Site-to-Site VPN |
+| high throughput and predictable latency | Direct Connect |
 
-## Regras importantes
+## Important rules
 
-- VPC Peering: sem transitive routing
-- TGW: roteamento central com route tables separadas
-- PrivateLink: conecta consumidor ao endpoint de servico privado
-- DX: usar link redundante e VPN como contingencia
-- Resolver inbound/outbound endpoints: DNS hibrido
+- VPC Peering: no transitive routing
+- TGW: central routing with separate route tables
+- PrivateLink: connects the consumer to the private service endpoint
+- DX: use a redundant link and VPN as contingency
+- Resolver inbound/outbound endpoints: hybrid DNS
 
-## Armadilhas de prova
+## Exam pitfalls
 
-- usar peering em malha grande (nao escala)
-- esquecer overlapping CIDR (bloqueia peering/TGW)
-- assumir que Security Group filtra trafego de internet de subnet publica sem rota correta
-- confundir NACL stateful (na verdade e stateless)
+- using peering in a large mesh (does not scale)
+- forgetting overlapping CIDRs (blocks peering/TGW)
+- assuming a Security Group filters internet traffic of a public subnet without the correct route
+- confusing NACL stateful (it is actually stateless)
 
-## Frases gatilho
+## Trigger phrases
 
 - "multiple VPCs across accounts" => Transit Gateway
 - "privately access service" => PrivateLink

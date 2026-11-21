@@ -1,10 +1,10 @@
-# Questões — Introdução SAA-C03
+# Questions — Introduction to SAA-C03
 
-## Questão 1
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Fácil
+## Question 1
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Easy
 
-Uma analista está começando a estudar para o SAA-C03 e quer priorizar o domínio com maior peso para montar as primeiras revisões. Qual domínio deve receber a maior atenção inicial?
+An analyst is starting to study for the SAA-C03 and wants to prioritize the highest-weighted domain when planning the first reviews. Which domain should receive the most initial attention?
 
 - A) Design Secure Applications and Architectures
 - B) Design Cost-Optimized Architectures
@@ -12,104 +12,104 @@ Uma analista está começando a estudar para o SAA-C03 e quer priorizar o domín
 - D) Design High-Performing Architectures
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: C**
+**Correct answer: C**
 
-Design Resilient Architectures representa 30% do exame, o maior peso entre os quatro domínios. Por isso, costuma ser um bom ponto de partida para revisão estratégica. A alternativa D é próxima, mas High-Performing tem 28%. A alternativa A tem 24% e a B 18%.
+Design Resilient Architectures represents 30% of the exam, the highest weight among the four domains. That makes it a good starting point for strategic review. Option D is close, but High-Performing is 28%. Option A is 24% and B is 18%.
 
-**Conceito-chave:** pesos oficiais dos domínios do SAA-C03
+**Key concept:** official domain weights of the SAA-C03
 </details>
 
-## Questão 2
-**Domínio:** Design High-Performing Architectures  
-**Dificuldade:** Médio
+## Question 2
+**Domain:** Design High-Performing Architectures  
+**Difficulty:** Medium
 
-Uma equipe acostumada com o CLF-C02 está migrando seu plano de estudos para o SAA-C03. O gerente técnico quer entender a principal diferença de profundidade entre os exames. Qual afirmação descreve melhor essa diferença?
+A team used to the CLF-C02 is moving its study plan to the SAA-C03. The technical manager wants to understand the main difference in depth between the exams. Which statement best describes this difference?
 
-- A) O SAA-C03 cobra apenas nomes de serviços, enquanto o CLF-C02 cobra cenários
-- B) O SAA-C03 exige decisões arquiteturais com trade-offs, enquanto o CLF-C02 é mais introdutório
-- C) O SAA-C03 não cobre segurança, apenas computação e redes
-- D) O CLF-C02 e o SAA-C03 têm exatamente o mesmo foco, mudando apenas o idioma
+- A) The SAA-C03 only tests service names, while the CLF-C02 tests scenarios
+- B) The SAA-C03 requires architectural decisions with trade-offs, while the CLF-C02 is more introductory
+- C) The SAA-C03 does not cover security, only compute and networking
+- D) The CLF-C02 and the SAA-C03 have exactly the same focus, differing only in language
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-O SAA-C03 exige escolha contextual entre serviços e padrões arquiteturais, considerando disponibilidade, segurança, desempenho e custo. O CLF-C02 trabalha mais no reconhecimento conceitual dos serviços. A alternativa A inverte os papéis. A alternativa C é falsa porque segurança tem peso relevante. A alternativa D ignora a diferença real de profundidade.
+The SAA-C03 requires contextual choices between services and architectural patterns, considering availability, security, performance, and cost. The CLF-C02 works more on conceptual recognition of services. Option A reverses the roles. Option C is false because security carries significant weight. Option D ignores the real difference in depth.
 
-**Conceito-chave:** diferença entre prova introdutória e prova associate
+**Key concept:** difference between an introductory exam and an associate exam
 </details>
 
-## Questão 3
-**Domínio:** Design Cost-Optimized Architectures  
-**Dificuldade:** Médio
+## Question 3
+**Domain:** Design Cost-Optimized Architectures  
+**Difficulty:** Medium
 
-Uma startup tem equipe enxuta e precisa lançar uma API com o menor esforço operacional possível. Durante uma revisão para o SAA-C03, um arquiteto usa esse cenário para explicar como a prova pensa. Qual abordagem é mais alinhada com a lógica da AWS em questões do exame?
+A startup has a lean team and needs to launch an API with the least possible operational effort. During a review for the SAA-C03, an architect uses this scenario to explain how the exam thinks. Which approach is most aligned with AWS logic in exam questions?
 
-- A) Priorizar sempre EC2 para ter controle total do ambiente
-- B) Priorizar serviços gerenciados quando eles atendem ao requisito com menos administração
-- C) Evitar qualquer serviço serverless por causa de limites de timeout
-- D) Escolher a opção com maior performance teórica, independentemente do custo
+- A) Always prioritize EC2 to have full control of the environment
+- B) Prioritize managed services when they meet the requirement with less administration
+- C) Avoid any serverless service because of timeout limits
+- D) Choose the option with the highest theoretical performance, regardless of cost
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Em cenários que pedem menor esforço operacional, a AWS normalmente favorece serviços gerenciados como Lambda, API Gateway, RDS, DynamoDB, S3 e ECS Fargate, desde que atendam aos requisitos técnicos. A alternativa A aumenta a carga operacional. A alternativa C generaliza um limite real, mas fora de contexto. A alternativa D ignora o equilíbrio entre custo e necessidade.
+In scenarios that ask for the least operational effort, AWS normally favors managed services such as Lambda, API Gateway, RDS, DynamoDB, S3, and ECS Fargate, as long as they meet the technical requirements. Option A increases the operational load. Option C generalizes a real limit, but out of context. Option D ignores the balance between cost and need.
 
-**Conceito-chave:** least operational overhead
+**Key concept:** least operational overhead
 </details>
 
-## Questão 4
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Fácil
+## Question 4
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Easy
 
-Qual conjunto representa melhor os serviços com maior recorrência no SAA-C03 e que, por isso, deveriam receber estudo aprofundado nas primeiras semanas?
+Which set best represents the most recurring services on the SAA-C03 and that, therefore, should receive in-depth study in the first weeks?
 
-- A) Snowmobile, Braket, Ground Station e GameLift
-- B) EC2, S3, VPC, IAM, RDS, DynamoDB, Lambda e Route 53
-- C) Device Farm, CodeArtifact, Honeycode e WorkSpaces
-- D) AWS Wickr, IQ, Managed Blockchain e Panorama
+- A) Snowmobile, Braket, Ground Station, and GameLift
+- B) EC2, S3, VPC, IAM, RDS, DynamoDB, Lambda, and Route 53
+- C) Device Farm, CodeArtifact, Honeycode, and WorkSpaces
+- D) AWS Wickr, IQ, Managed Blockchain, and Panorama
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Esses serviços aparecem com alta frequência porque formam o núcleo das decisões arquiteturais cobradas. As demais alternativas listam serviços que podem aparecer pontualmente, mas não representam o centro do exame.
+These services appear with high frequency because they form the core of the architectural decisions tested. The other options list services that may appear occasionally, but do not represent the center of the exam.
 
-**Conceito-chave:** priorização de estudo por incidência
+**Key concept:** prioritizing study by frequency of appearance
 </details>
 
-## Questão 5
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Médio
+## Question 5
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Medium
 
-Durante um grupo de estudos, um aluno afirma que uma arquitetura Multi-AZ já resolve qualquer requisito de continuidade de negócio. Qual resposta corrige melhor essa afirmação?
+During a study group, a student claims that a Multi-AZ architecture already solves any business continuity requirement. Which answer best corrects this claim?
 
-- A) Multi-AZ cobre falha de zona, mas não necessariamente um desastre regional
-- B) Multi-AZ é equivalente a Multi-Region
-- C) Multi-AZ só se aplica a aplicações serverless
-- D) Multi-AZ elimina a necessidade de backup
+- A) Multi-AZ covers an Availability Zone failure, but not necessarily a regional disaster
+- B) Multi-AZ is equivalent to Multi-Region
+- C) Multi-AZ only applies to serverless applications
+- D) Multi-AZ eliminates the need for backups
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: A**
+**Correct answer: A**
 
-Multi-AZ eleva disponibilidade dentro de uma região, protegendo contra falhas de zona de disponibilidade. No entanto, um evento regional ainda pode exigir estratégia multi-region. A alternativa B confunde conceitos. A alternativa C é falsa. A alternativa D ignora que backup e DR continuam necessários.
+Multi-AZ increases availability within a region, protecting against Availability Zone failures. However, a regional event may still require a multi-region strategy. Option B confuses concepts. Option C is false. Option D ignores that backup and DR are still necessary.
 
-**Conceito-chave:** diferença entre HA regional e DR multi-region
+**Key concept:** difference between regional HA and multi-region DR
 </details>
 
-## Questão 6
-**Domínio:** Design High-Performing Architectures  
-**Dificuldade:** Médio
+## Question 6
+**Domain:** Design High-Performing Architectures  
+**Difficulty:** Medium
 
-Uma questão do exame descreve uma aplicação global HTTP que precisa reduzir latência para usuários finais e também cachear conteúdo estático em edge locations. Qual serviço tende a ser a melhor resposta?
+An exam question describes a global HTTP application that needs to reduce latency for end users and also cache static content at edge locations. Which service tends to be the best answer?
 
 - A) AWS Global Accelerator
 - B) Amazon CloudFront
@@ -117,20 +117,20 @@ Uma questão do exame descreve uma aplicação global HTTP que precisa reduzir l
 - D) Amazon EventBridge
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-CloudFront é a CDN da AWS e oferece cache em edge locations, sendo a escolha mais adequada para conteúdo HTTP com distribuição global. Global Accelerator melhora roteamento global para aplicações TCP/UDP e também HTTP, mas não é um cache edge. Direct Connect é conectividade privada. EventBridge não se aplica.
+CloudFront is the AWS CDN and offers caching at edge locations, making it the most suitable choice for globally distributed HTTP content. Global Accelerator improves global routing for TCP/UDP applications and also HTTP, but it is not an edge cache. Direct Connect is private connectivity. EventBridge does not apply.
 
-**Conceito-chave:** CloudFront vs Global Accelerator
+**Key concept:** CloudFront vs Global Accelerator
 </details>
 
-## Questão 7
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Médio
+## Question 7
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Medium
 
-Um cenário pede rotação automática de credenciais de banco de dados e integração nativa com KMS. Qual serviço costuma ser mais alinhado ao enunciado?
+A scenario asks for automatic rotation of database credentials and native integration with KMS. Which service is usually most aligned with the question statement?
 
 - A) AWS Secrets Manager
 - B) AWS Systems Manager Parameter Store Standard
@@ -138,62 +138,62 @@ Um cenário pede rotação automática de credenciais de banco de dados e integr
 - D) Amazon CloudWatch Logs
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: A**
+**Correct answer: A**
 
-Secrets Manager é a escolha mais forte quando o requisito inclui segredos sensíveis e rotação automática. Parameter Store pode armazenar segredos, mas a rotação não é o seu diferencial nativo principal. S3 Versioning e CloudWatch Logs não resolvem esse problema.
+Secrets Manager is the strongest choice when the requirement includes sensitive secrets and automatic rotation. Parameter Store can store secrets, but rotation is not its main native differentiator. S3 Versioning and CloudWatch Logs do not solve this problem.
 
-**Conceito-chave:** Secrets Manager vs Parameter Store
+**Key concept:** Secrets Manager vs Parameter Store
 </details>
 
-## Questão 8
-**Domínio:** Design Cost-Optimized Architectures  
-**Dificuldade:** Médio
+## Question 8
+**Domain:** Design Cost-Optimized Architectures  
+**Difficulty:** Medium
 
-Ao ler uma questão que destaca orçamento apertado e carga imprevisível, qual sinal do enunciado mais sugere avaliar tecnologias serverless ou elásticas por demanda?
+When reading a question that highlights a tight budget and unpredictable load, which signal in the statement most strongly suggests evaluating serverless or on-demand elastic technologies?
 
-- A) Requisito de uso de hardware dedicado
-- B) Requisito de baixa mudança organizacional
-- C) Requisito de cobrança compatível com consumo e baixa ociosidade
-- D) Requisito de licenciamento perpétuo on-premises
+- A) A requirement to use dedicated hardware
+- B) A requirement for low organizational change
+- C) A requirement for billing that matches consumption and low idle time
+- D) A requirement for perpetual on-premises licensing
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: C**
+**Correct answer: C**
 
-Quando o problema enfatiza consumo variável e redução de ociosidade, serviços com cobrança sob demanda e elasticidade nativa passam a ser mais aderentes. Hardware dedicado vai na direção oposta. Baixa mudança organizacional pode favorecer lift-and-shift, mas não responde à otimização de consumo. Licenciamento on-premises não se aplica.
+When the problem emphasizes variable consumption and reduced idle time, services with on-demand billing and native elasticity become a better fit. Dedicated hardware goes in the opposite direction. Low organizational change may favor lift-and-shift, but does not address consumption optimization. On-premises licensing does not apply.
 
-**Conceito-chave:** custo orientado a consumo
+**Key concept:** consumption-driven cost
 </details>
 
-## Questão 9
-**Domínio:** Design High-Performing Architectures  
-**Dificuldade:** Difícil
+## Question 9
+**Domain:** Design High-Performing Architectures  
+**Difficulty:** Hard
 
-Uma empresa precisa armazenar dados altamente relacionais com transações ACID e leitura em escala para usuários distribuídos. Em uma questão introdutória de arquitetura, qual combinação mostra melhor o tipo de raciocínio esperado pelo exame?
+A company needs to store highly relational data with ACID transactions and read at scale for distributed users. In an introductory architecture question, which combination best shows the kind of reasoning the exam expects?
 
-- A) Substituir tudo por DynamoDB porque sempre escala melhor
-- B) Usar Amazon RDS ou Aurora para consistência transacional e avaliar read replicas para leitura
-- C) Usar Amazon S3 como banco transacional principal
-- D) Usar Amazon CloudFront para replicação de banco
+- A) Replace everything with DynamoDB because it always scales better
+- B) Use Amazon RDS or Aurora for transactional consistency and evaluate read replicas for reads
+- C) Use Amazon S3 as the main transactional database
+- D) Use Amazon CloudFront for database replication
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-O exame recompensa a escolha de um banco relacional gerenciado quando o workload pede transação e modelo relacional, complementando com estratégias de escala de leitura quando apropriado. A alternativa A simplifica demais e ignora requisitos. A alternativa C não oferece semântica transacional relacional. A alternativa D não é solução de banco de dados.
+The exam rewards choosing a managed relational database when the workload calls for transactions and a relational model, complemented with read-scaling strategies when appropriate. Option A oversimplifies and ignores requirements. Option C does not offer relational transactional semantics. Option D is not a database solution.
 
-**Conceito-chave:** alinhar requisito de dados ao serviço correto
+**Key concept:** aligning the data requirement with the right service
 </details>
 
-## Questão 10
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Médio
+## Question 10
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Medium
 
-Em uma questão de arquitetura, a empresa quer reduzir acoplamento entre produtores e consumidores, absorver picos e reprocessar mensagens em caso de falha. Qual serviço costuma aparecer como resposta central?
+In an architecture question, the company wants to reduce coupling between producers and consumers, absorb spikes, and reprocess messages in case of failure. Which service commonly appears as the central answer?
 
 - A) Amazon SQS
 - B) Amazon Route 53
@@ -201,20 +201,20 @@ Em uma questão de arquitetura, a empresa quer reduzir acoplamento entre produto
 - D) AWS Artifact
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: A**
+**Correct answer: A**
 
-SQS é um mecanismo clássico de desacoplamento com buffer, absorção de burst e reprocessamento por meio de visibilidade, retenção e DLQ. Route 53 é DNS. Inspector faz análise de vulnerabilidade. Artifact é acesso a relatórios de compliance.
+SQS is a classic decoupling mechanism with buffering, burst absorption, and reprocessing through visibility timeout, retention, and DLQ. Route 53 is DNS. Inspector performs vulnerability analysis. Artifact provides access to compliance reports.
 
-**Conceito-chave:** padrão de desacoplamento com fila
+**Key concept:** queue-based decoupling pattern
 </details>
 
-## Questão 11
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Difícil
+## Question 11
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Hard
 
-Uma questão afirma que uma empresa quer restringir permissões máximas que equipes de desenvolvimento podem delegar, mesmo quando administradores locais criam políticas adicionais. Qual conceito deve vir à mente?
+A question states that a company wants to restrict the maximum permissions that development teams can delegate, even when local administrators create additional policies. Which concept should come to mind?
 
 - A) Amazon CloudFront signed cookies
 - B) Permission Boundaries
@@ -222,62 +222,62 @@ Uma questão afirma que uma empresa quer restringir permissões máximas que equ
 - D) RDS Read Replicas
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Permission Boundaries definem o teto efetivo de permissões que uma identidade IAM pode receber. Isso é um conceito clássico de governança e costuma surgir em cenários com delegação controlada. As demais opções tratam de problemas totalmente diferentes.
+Permission Boundaries define the effective ceiling of permissions an IAM identity can receive. This is a classic governance concept and usually arises in scenarios with controlled delegation. The other options address entirely different problems.
 
-**Conceito-chave:** governança de permissões em IAM
+**Key concept:** permissions governance in IAM
 </details>
 
-## Questão 12
-**Domínio:** Design Cost-Optimized Architectures  
-**Dificuldade:** Fácil
+## Question 12
+**Domain:** Design Cost-Optimized Architectures  
+**Difficulty:** Easy
 
-Uma equipe está entre duas alternativas válidas. Ambas atendem ao requisito técnico, mas uma delas elimina manutenção de sistema operacional, patching e capacidade ociosa. Na lógica do exame, qual tende a ser preferida?
+A team is choosing between two valid alternatives. Both meet the technical requirement, but one of them eliminates operating system maintenance, patching, and idle capacity. By the exam's logic, which one tends to be preferred?
 
-- A) A alternativa com maior esforço operacional
-- B) A alternativa com mais componentes manuais
-- C) A alternativa gerenciada, se o requisito funcional for atendido
-- D) A alternativa com hardware dedicado por padrão
+- A) The alternative with the greatest operational effort
+- B) The alternative with more manual components
+- C) The managed alternative, if the functional requirement is met
+- D) The alternative with dedicated hardware by default
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: C**
+**Correct answer: C**
 
-Esse é um padrão recorrente no SAA-C03. Se a solução gerenciada atende ao cenário sem comprometer requisitos críticos, ela tende a ser preferida por reduzir operação e risco. As demais aumentam custo ou complexidade sem necessidade clara.
+This is a recurring pattern in the SAA-C03. If the managed solution meets the scenario without compromising critical requirements, it tends to be preferred because it reduces operations and risk. The others increase cost or complexity without a clear need.
 
-**Conceito-chave:** preferência por managed services no exame
+**Key concept:** preference for managed services on the exam
 </details>
 
-## Questão 13
-**Domínio:** Design High-Performing Architectures  
-**Dificuldade:** Médio
+## Question 13
+**Domain:** Design High-Performing Architectures  
+**Difficulty:** Medium
 
-Qual interpretação é mais correta quando uma questão menciona “near real-time analytics” sobre eventos contínuos produzidos por aplicações?
+Which interpretation is most correct when a question mentions "near real-time analytics" over continuous events produced by applications?
 
-- A) Pode haver necessidade de streaming, como Kinesis, em vez de processamento batch isolado
-- B) Sempre deve ser usado um data warehouse tradicional com carga semanal
-- C) O enunciado aponta diretamente para S3 Glacier Deep Archive
-- D) O requisito exclui qualquer serviço gerenciado
+- A) There may be a need for streaming, such as Kinesis, instead of isolated batch processing
+- B) A traditional data warehouse with weekly loads should always be used
+- C) The statement points directly to S3 Glacier Deep Archive
+- D) The requirement excludes any managed service
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: A**
+**Correct answer: A**
 
-“Near real-time” é um indicador de que o dado precisa fluir e ser processado com latência baixa, o que muitas vezes aponta para soluções de streaming ou event-driven. Batch semanal não atende. Glacier é arquivamento. Serviço gerenciado não é excluído.
+"Near real-time" is an indicator that data needs to flow and be processed with low latency, which often points to streaming or event-driven solutions. Weekly batch does not meet it. Glacier is archiving. Managed services are not excluded.
 
-**Conceito-chave:** palavras-chave do enunciado
+**Key concept:** keywords in the question statement
 </details>
 
-## Questão 14
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Médio
+## Question 14
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Medium
 
-Uma empresa quer registrar chamadas de API feitas na conta AWS para fins de auditoria e investigação. Qual serviço deve ser lembrado primeiro?
+A company wants to record API calls made in the AWS account for auditing and investigation purposes. Which service should be remembered first?
 
 - A) Amazon CloudTrail
 - B) Amazon CloudWatch Synthetics
@@ -285,32 +285,32 @@ Uma empresa quer registrar chamadas de API feitas na conta AWS para fins de audi
 - D) Amazon Macie
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: A**
+**Correct answer: A**
 
-CloudTrail registra eventos de API e é central para auditoria. CloudWatch Synthetics testa endpoints. Budgets monitora custo. Macie analisa dados sensíveis em S3. Todos podem aparecer no exame, mas apenas CloudTrail atende diretamente ao requisito descrito.
+CloudTrail records API events and is central to auditing. CloudWatch Synthetics tests endpoints. Budgets monitors cost. Macie analyzes sensitive data in S3. All of them may appear on the exam, but only CloudTrail directly meets the described requirement.
 
-**Conceito-chave:** auditoria de ações na conta AWS
+**Key concept:** auditing actions in the AWS account
 </details>
 
-## Questão 15
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Difícil
+## Question 15
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Hard
 
-Um candidato está revisando uma questão em que todas as opções funcionam, mas apenas uma atende ao requisito com a melhor combinação de resiliência, simplicidade operacional e custo. Qual abordagem mental é a mais adequada para resolver esse tipo de problema?
+A candidate is reviewing a question in which all options work, but only one meets the requirement with the best combination of resilience, operational simplicity, and cost. Which mental approach is most appropriate for solving this type of problem?
 
-- A) Escolher sempre a arquitetura mais complexa, pois tende a ser mais robusta
-- B) Escolher a opção mais barata isoladamente, sem considerar operação
-- C) Avaliar requisito principal, restrições e trade-offs antes de decidir
-- D) Ignorar palavras como “securely”, “cost-effective” e “minimal changes” porque confundem
+- A) Always choose the most complex architecture, since it tends to be more robust
+- B) Choose the cheapest option in isolation, without considering operations
+- C) Evaluate the main requirement, constraints, and trade-offs before deciding
+- D) Ignore words such as "securely", "cost-effective", and "minimal changes" because they are confusing
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: C**
+**Correct answer: C**
 
-Esse é o núcleo do SAA-C03. A prova mede a capacidade de avaliar trade-offs diante de requisitos explícitos e implícitos. Complexidade excessiva não é prêmio automático. Menor custo isolado pode gerar risco ou operação inviável. As palavras do enunciado são decisivas e nunca devem ser ignoradas.
+This is the core of the SAA-C03. The exam measures the ability to evaluate trade-offs given explicit and implicit requirements. Excessive complexity is not an automatic prize. Lowest cost in isolation can create risk or unworkable operations. The words in the statement are decisive and should never be ignored.
 
-**Conceito-chave:** raciocínio arquitetural orientado a trade-offs
+**Key concept:** trade-off-driven architectural reasoning
 </details>

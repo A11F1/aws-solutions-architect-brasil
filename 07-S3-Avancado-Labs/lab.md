@@ -1,32 +1,32 @@
-# Lab Prático — S3: Versionamento, Lifecycle, Replicação e Eventos (Módulo 08)
+# Hands-On Lab — S3: Versioning, Lifecycle, Replication, and Events (Module 08)
 
-> **Região:** us-east-1 | **Custo estimado:** ~$0.01 (armazenamento mínimo, < 1h)  
-> **Pré-requisitos:** AWS CLI configurado, Python 3.8+
-
----
-
-## Objetivo
-
-Praticar S3 avançado: versionamento de objetos, lifecycle policies, CRR, presigned URLs, e notificações de eventos com Lambda.
+> **Region:** us-east-1 | **Estimated cost:** ~$0.01 (minimal storage, < 1h)  
+> **Prerequisites:** AWS CLI configured, Python 3.8+
 
 ---
 
-## Parte 1 — Versionamento e Lifecycle
+## Objective
+
+Practice advanced S3: object versioning, lifecycle policies, CRR, presigned URLs, and event notifications with Lambda.
+
+---
+
+## Part 1 — Versioning and Lifecycle
 
 ```bash
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 BUCKET_MAIN="lab-s3-lab-${ACCOUNT_ID}"
 BUCKET_REPLICA="lab-s3-replica-${ACCOUNT_ID}"
 
-# Criar buckets
+# Create buckets
 aws s3api create-bucket --bucket "$BUCKET_MAIN"
 
-# Habilitar versionamento
+# Enable versioning
 aws s3api put-bucket-versioning \
   --bucket "$BUCKET_MAIN" \
   --versioning-configuration Status=Enabled
 
-# Habilitar criptografia padrão
+# Enable default encryption
 aws s3api put-bucket-encryption \
   --bucket "$BUCKET_MAIN" \
   --server-side-encryption-configuration '{
@@ -38,21 +38,21 @@ aws s3api put-bucket-encryption \
     }]
   }'
 
-# Criar múltiplas versões do mesmo objeto
+# Create multiple versions of the same object
 for i in 1 2 3; do
-  echo "Versão ${i} do arquivo — $(date)" > /tmp/config.txt
+  echo "Version ${i} of the file — $(date)" > /tmp/config.txt
   aws s3 cp /tmp/config.txt "s3://${BUCKET_MAIN}/config.txt"
   sleep 1
 done
 
-# Listar versões
+# List versions
 aws s3api list-object-versions \
   --bucket "$BUCKET_MAIN" \
   --prefix "config.txt" \
   --query 'Versions[*].[VersionId, LastModified, IsLatest]' \
   --output table
 
-# Recuperar versão específica
+# Retrieve a specific version
 FIRST_VERSION=$(aws s3api list-object-versions \
   --bucket "$BUCKET_MAIN" \
   --prefix "config.txt" \
@@ -64,7 +64,7 @@ aws s3api get-object \
   --version-id "$FIRST_VERSION" \
   /tmp/config_v1.txt
 
-echo "Conteúdo da versão mais antiga:"
+echo "Content of the oldest version:"
 cat /tmp/config_v1.txt
 
 # Lifecycle Policy
@@ -73,7 +73,7 @@ aws s3api put-bucket-lifecycle-configuration \
   --lifecycle-configuration '{
     "Rules": [
       {
-        "ID": "mover-para-ia-30-dias",
+        "ID": "move-to-ia-after-30-days",
         "Status": "Enabled",
         "Filter": {"Prefix": "logs/"},
         "Transitions": [
@@ -83,7 +83,7 @@ aws s3api put-bucket-lifecycle-configuration \
         "Expiration": {"Days": 365}
       },
       {
-        "ID": "limpar-versoes-antigas",
+        "ID": "clean-up-old-versions",
         "Status": "Enabled",
         "Filter": {"Prefix": ""},
         "NoncurrentVersionTransitions": [
@@ -95,26 +95,26 @@ aws s3api put-bucket-lifecycle-configuration \
     ]
   }'
 
-echo "Lifecycle configurado!"
+echo "Lifecycle configured!"
 ```
 
 ---
 
-## Parte 2 — Presigned URLs
+## Part 2 — Presigned URLs
 
 ```bash
-# Criar arquivo privado para demo de presigned URL
-echo "Documento confidencial de acesso temporário" > /tmp/documento_privado.txt
+# Create a private file for the presigned URL demo
+echo "Confidential document for temporary access" > /tmp/documento_privado.txt
 aws s3 cp /tmp/documento_privado.txt "s3://${BUCKET_MAIN}/privado/documento.txt"
 
-# Verificar que o objeto é privado
+# Verify that the object is private
 aws s3api get-object-acl \
   --bucket "$BUCKET_MAIN" \
   --key "privado/documento.txt" \
   --query 'Grants[*].[Permission, Grantee.Type]' \
   --output table
 
-# Gerar presigned URL (válida por 60 segundos)
+# Generate presigned URL (valid for 60 seconds)
 PRESIGNED_URL=$(aws s3 presign \
   "s3://${BUCKET_MAIN}/privado/documento.txt" \
   --expires-in 60)
@@ -123,26 +123,26 @@ echo "Presigned URL (60s):"
 echo "$PRESIGNED_URL" | head -c 100
 echo "..."
 
-# Usar a URL para download
+# Use the URL to download
 curl -s "$PRESIGNED_URL" -o /tmp/download_presigned.txt
 echo "Download via presigned URL:"
 cat /tmp/download_presigned.txt
 
-# Presigned URL para UPLOAD (PUT)
+# Presigned URL for UPLOAD (PUT)
 PRESIGNED_PUT=$(aws s3 presign \
   "s3://${BUCKET_MAIN}/uploads/arquivo_usuario.txt" \
   --expires-in 300)
 
-echo "Presigned PUT URL gerada (simulando upload de cliente)"
-# curl -X PUT "$PRESIGNED_PUT" -T /tmp/config.txt  # descomentar para testar
+echo "Presigned PUT URL generated (simulating a client upload)"
+# curl -X PUT "$PRESIGNED_PUT" -T /tmp/config.txt  # uncomment to test
 ```
 
 ---
 
-## Parte 3 — S3 Event Notification com Lambda
+## Part 3 — S3 Event Notification with Lambda
 
 ```bash
-# IAM Role para Lambda
+# IAM Role for Lambda
 LAMBDA_ROLE_ARN=$(aws iam create-role \
   --role-name "lab-s3-event-lambda-role" \
   --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Action":"sts:AssumeRole","Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"}}]}' \
@@ -154,7 +154,7 @@ aws iam attach-role-policy \
 
 sleep 10
 
-# Lambda que processa novos objetos
+# Lambda that processes new objects
 zip -j /tmp/s3_event_handler.zip - << 'PYTHON'
 import json
 
@@ -176,7 +176,7 @@ FUNC_ARN=$(aws lambda create-function \
   --zip-file fileb:///tmp/s3_event_handler.zip \
   --query 'FunctionArn' --output text)
 
-# Permissão para S3 invocar Lambda
+# Permission for S3 to invoke Lambda
 aws lambda add-permission \
   --function-name "lab-s3-event-processor" \
   --principal s3.amazonaws.com \
@@ -185,7 +185,7 @@ aws lambda add-permission \
   --source-arn "arn:aws:s3:::${BUCKET_MAIN}" \
   --source-account "$ACCOUNT_ID"
 
-# Configurar notificação no S3
+# Configure notification on S3
 aws s3api put-bucket-notification-configuration \
   --bucket "$BUCKET_MAIN" \
   --notification-configuration "{
@@ -200,13 +200,13 @@ aws s3api put-bucket-notification-configuration \
     }]
   }"
 
-# Fazer upload para disparar evento
-echo "Arquivo de teste $(date)" > /tmp/novo_upload.txt
+# Upload a file to trigger the event
+echo "Test file $(date)" > /tmp/novo_upload.txt
 aws s3 cp /tmp/novo_upload.txt "s3://${BUCKET_MAIN}/uploads/novo_arquivo.txt"
 
 sleep 15
 
-# Ver logs da Lambda
+# View the Lambda logs
 aws logs filter-log-events \
   --log-group-name "/aws/lambda/lab-s3-event-processor" \
   --filter-pattern "S3 EVENT" \
@@ -216,17 +216,17 @@ aws logs filter-log-events \
 
 ---
 
-## Limpeza
+## Cleanup
 
 ```bash
-# Deletar Lambda
+# Delete Lambda
 aws lambda delete-function --function-name "lab-s3-event-processor"
 aws iam detach-role-policy \
   --role-name "lab-s3-event-lambda-role" \
   --policy-arn "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 aws iam delete-role --role-name "lab-s3-event-lambda-role"
 
-# Deletar todas as versões dos objetos S3
+# Delete all versions of the S3 objects
 python3 << PYTHON
 import boto3
 s3 = boto3.client('s3', region_name='us-east-1')
@@ -236,23 +236,23 @@ for page in paginator.paginate(Bucket=bucket):
     for obj_type in ['Versions', 'DeleteMarkers']:
         for item in page.get(obj_type, []):
             s3.delete_object(Bucket=bucket, Key=item['Key'], VersionId=item['VersionId'])
-print("Todos os objetos e versões deletados")
+print("All objects and versions deleted")
 PYTHON
 
 aws s3api delete-bucket --bucket "$BUCKET_MAIN"
 
-# Remover arquivos locais
+# Remove local files
 rm -f /tmp/config.txt /tmp/config_v1.txt /tmp/documento_privado.txt \
       /tmp/download_presigned.txt /tmp/novo_upload.txt /tmp/s3_event_handler.zip
 ```
 
 ---
 
-## O Que Você Aprendeu
+## What You Learned
 
-- **Versionamento:** uma vez habilitado, nunca "desabilitado" — só "suspenso"; toda versão armazenada é cobrada
-- **Delete marker:** deletar objeto versionado cria Delete Marker (objeto não some de fato)
-- **Lifecycle transitions:** STANDARD → STANDARD_IA (mín 30 dias) → GLACIER (mín 90 dias)
-- **Presigned URL:** permite acesso temporário sem credenciais; expira no tempo definido; auditorado via CloudTrail
-- **S3 Events:** pattern push (S3 → Lambda/SNS/SQS); ideal para pipelines de processamento de arquivos
-- **CRR:** replication cross-region requer versionamento nos dois buckets e IAM role com s3:ReplicateObject
+- **Versioning:** once enabled, it can never be "disabled" — only "suspended"; every stored version is billed
+- **Delete marker:** deleting a versioned object creates a Delete Marker (the object does not actually disappear)
+- **Lifecycle transitions:** STANDARD → STANDARD_IA (min 30 days) → GLACIER (min 90 days)
+- **Presigned URL:** allows temporary access without credentials; expires at the defined time; audited via CloudTrail
+- **S3 Events:** push pattern (S3 → Lambda/SNS/SQS); ideal for file-processing pipelines
+- **CRR:** cross-region replication requires versioning on both buckets and an IAM role with s3:ReplicateObject

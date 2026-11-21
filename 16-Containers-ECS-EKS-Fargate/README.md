@@ -1,145 +1,145 @@
-# Módulo 10 — Containers: ECS, EKS, Fargate
+# Module 10 — Containers: ECS, EKS, Fargate
 
-## Por Que Containers na AWS?
+## Why Containers on AWS?
 
-Containers oferecem consistência entre ambientes (dev/staging/prod), isolamento de dependências e densidade de workloads. A AWS oferece dois orquestradores principais: **ECS** (proprietary, simplesidade) e **EKS** (Kubernetes, portabilidade).
+Containers provide consistency across environments (dev/staging/prod), dependency isolation, and workload density. AWS offers two main orchestrators: **ECS** (proprietary, simplicity) and **EKS** (Kubernetes, portability).
 
 ---
 
 ## Amazon ECS (Elastic Container Service)
 
-### Conceitos Fundamentais
+### Core Concepts
 ```
 ECS Cluster
-  └── Service (define quantas Tasks rodar + onde)
-        └── Task (1-N containers rodando juntos)
-              └── Task Definition (blueprint: imagem, CPU, RAM, ports, volumes, IAM role)
+  └── Service (defines how many Tasks to run + where)
+        └── Task (1-N containers running together)
+              └── Task Definition (blueprint: image, CPU, RAM, ports, volumes, IAM role)
 ```
 
-- **Task Definition**: arquivo JSON versionado que define containers (como Dockerfile mas para o ECS)
-- **Task**: instância rodando de uma Task Definition (1 task = 1 ou mais containers co-localizados)
-- **Service**: garante que N tasks estejam sempre rodando; integra com ALB/NLB; rolling updates
-- **Cluster**: agrupamento lógico de resources (pode ser EC2 instances ou Fargate)
+- **Task Definition**: versioned JSON file that defines containers (like a Dockerfile but for ECS)
+- **Task**: a running instance of a Task Definition (1 task = 1 or more co-located containers)
+- **Service**: ensures N tasks are always running; integrates with ALB/NLB; rolling updates
+- **Cluster**: logical grouping of resources (can be EC2 instances or Fargate)
 
 ### Launch Types
 
-| Launch Type | Infraestrutura | Gerenciamento | Controle |
+| Launch Type | Infrastructure | Management | Control |
 |---|---|---|---|
-| **EC2** | EC2 instances que você registra no cluster | Você gerencia as instâncias (AMI, patches, scaling) | Total sobre o host |
-| **Fargate** | Serverless — AWS gerencia o host | Sem instâncias para gerenciar | Apenas task-level |
-| **External (ECS Anywhere)** | Seus servidores on-premises | Você gerencia | Híbrido |
+| **EC2** | EC2 instances that you register in the cluster | You manage the instances (AMI, patches, scaling) | Full control over the host |
+| **Fargate** | Serverless — AWS manages the host | No instances to manage | Task-level only |
+| **External (ECS Anywhere)** | Your on-premises servers | You manage | Hybrid |
 
-### Modos de Rede do ECS
+### ECS Network Modes
 
-| Modo | Descrição | Quando usar |
+| Mode | Description | When to use |
 |---|---|---|
-| **bridge** | Container ports mapeados para IPs dinâmicos do host | EC2, múltiplos containers no mesmo host |
-| **host** | Container usa diretamente a rede do host | EC2, alta performance, sem NAT |
-| **awsvpc** | Cada task recebe própria ENI com IP privado da VPC | **Recomendado** — Fargate obrigatório; isolamento de SG por task |
-| **none** | Sem rede | Tasks offline |
+| **bridge** | Container ports mapped to dynamic host IPs | EC2, multiple containers on the same host |
+| **host** | Container directly uses the host network | EC2, high performance, no NAT |
+| **awsvpc** | Each task gets its own ENI with a private VPC IP | **Recommended** — required for Fargate; SG isolation per task |
+| **none** | No network | Offline tasks |
 
-Com `awsvpc`, cada task tem seu próprio Security Group — granularidade máxima de isolamento de rede.
+With `awsvpc`, each task has its own Security Group — maximum network isolation granularity.
 
-### IAM no ECS
-| Papel IAM | Para | Quem usa |
+### IAM in ECS
+| IAM Role | For | Who uses it |
 |---|---|---|
-| **Task Role** | O que o container pode fazer (S3, DynamoDB, etc.) | A aplicação dentro do container |
-| **Task Execution Role** | O que o ECS pode fazer para lançar a task (pull ECR, push CloudWatch Logs, Secrets Manager) | O ECS agent |
+| **Task Role** | What the container can do (S3, DynamoDB, etc.) | The application inside the container |
+| **Task Execution Role** | What ECS can do to launch the task (pull ECR, push CloudWatch Logs, Secrets Manager) | The ECS agent |
 
-> **Nunca embuta credenciais no container** — use Task Role com `awsvpc` mode. As credenciais são obtidas via IMDS do task metadata endpoint.
+> **Never embed credentials in the container** — use a Task Role with `awsvpc` mode. Credentials are obtained via the task metadata endpoint.
 
-### ECS + ALB: Service Discovery e Load Balancing
-- **ALB com dynamic port mapping** (launch type EC2): containers registram portas dinâmicas no TG
-- **NLB** para tráfego alto throughput ou non-HTTP
-- **Service Connect**: Service Mesh gerenciado para comunicação service-to-service dentro do ECS (mTLS, observabilidade)
-- **Cloud Map**: service discovery baseado em DNS para comunicação entre containers
+### ECS + ALB: Service Discovery and Load Balancing
+- **ALB with dynamic port mapping** (EC2 launch type): containers register dynamic ports in the TG
+- **NLB** for high-throughput or non-HTTP traffic
+- **Service Connect**: managed Service Mesh for service-to-service communication within ECS (mTLS, observability)
+- **Cloud Map**: DNS-based service discovery for communication between containers
 
 ### ECS Auto Scaling
-- Escala o número de **tasks** (não instâncias — para EC2 Launch Type, escalar instâncias é separado)
-- Políticas: Target Tracking, Step Scaling, Scheduled
-- **ECS Capacity Provider**: gerencia automaticamente o scaling do cluster EC2 subjacente com base nas tasks pendentes
+- Scales the number of **tasks** (not instances — for the EC2 Launch Type, scaling instances is separate)
+- Policies: Target Tracking, Step Scaling, Scheduled
+- **ECS Capacity Provider**: automatically manages scaling of the underlying EC2 cluster based on pending tasks
 
 ---
 
 ## AWS Fargate
 
-Compute engine serverless para ECS e EKS. Você não gerencia servidores:
+Serverless compute engine for ECS and EKS. You do not manage servers:
 
-- Define: CPU (0,25 vCPU a 16 vCPU) + RAM (proporcional ao CPU)
-- Cobrado por vCPU-hora e GB-hora enquanto task está rodando
-- Cada task em Fargate obrigatoriamente usa `awsvpc` (própria ENI)
-- **Spot Fargate**: até 70% de desconto para tasks interrompíveis
-- **Fargate Savings Plans**: compromisso de uso para desconto
+- You define: CPU (0.25 vCPU to 16 vCPU) + RAM (proportional to CPU)
+- Billed per vCPU-hour and GB-hour while the task is running
+- Every task on Fargate necessarily uses `awsvpc` (its own ENI)
+- **Fargate Spot**: up to 70% discount for interruptible tasks
+- **Fargate Savings Plans**: usage commitment for a discount
 
 ---
 
 ## Amazon EKS (Elastic Kubernetes Service)
 
-Kubernetes gerenciado na AWS. AWS gerencia o control plane (API server, etcd); você gerencia os worker nodes.
+Managed Kubernetes on AWS. AWS manages the control plane (API server, etcd); you manage the worker nodes.
 
-### Modos de Worker Nodes
+### Worker Node Modes
 
-| Modo | Descrição | Flexibilidade |
+| Mode | Description | Flexibility |
 |---|---|---|
-| **Managed Node Groups** | AWS gerencia o lifecycle dos EC2 nodes (launch, update, terminate) | Alta — pode customizar AMI, tipo, etc. |
-| **Self-managed Nodes** | Você gerencia completamente (launch template, userdata) | Total |
-| **Fargate Profiles** | Pods rodam em Fargate (serverless) | Sem node management |
+| **Managed Node Groups** | AWS manages the lifecycle of EC2 nodes (launch, update, terminate) | High — you can customize AMI, type, etc. |
+| **Self-managed Nodes** | You manage everything (launch template, userdata) | Full |
+| **Fargate Profiles** | Pods run on Fargate (serverless) | No node management |
 
-### Componentes EKS
-- **Control Plane**: gerenciado pela AWS (multi-AZ por padrão, altamente disponível)
-- **Worker Nodes**: EC2 ou Fargate onde os Pods rodam
-- **Add-ons**: AWS gerencia componentes como CoreDNS, kube-proxy, Amazon VPC CNI, AWS Load Balancer Controller
-- **Amazon VPC CNI**: pods recebem IPs diretamente da VPC (igual ao ECS awsvpc — cada pod = IP da VPC)
+### EKS Components
+- **Control Plane**: managed by AWS (multi-AZ by default, highly available)
+- **Worker Nodes**: EC2 or Fargate where the Pods run
+- **Add-ons**: AWS manages components such as CoreDNS, kube-proxy, Amazon VPC CNI, AWS Load Balancer Controller
+- **Amazon VPC CNI**: pods get IPs directly from the VPC (same as ECS awsvpc — each pod = a VPC IP)
 
 ### EKS Storage
-- **EBS**: volumes persistentes para pods (node-specific, não multi-attach)
-- **EFS**: volumes compartilhados entre múltiplos pods/nodes
-- **Amazon FSx for Lustre**: high-performance para ML/HPC workloads
+- **EBS**: persistent volumes for pods (node-specific, not multi-attach)
+- **EFS**: volumes shared across multiple pods/nodes
+- **Amazon FSx for Lustre**: high performance for ML/HPC workloads
 
 ### EKS vs ECS
 
-| Aspecto | ECS | EKS |
+| Aspect | ECS | EKS |
 |---|---|---|
-| Orquestrador | Proprietário AWS | Kubernetes (open source) |
-| Curva de aprendizado | Menor | Maior |
-| Portabilidade | Apenas AWS | Qualquer Kubernetes (on-prem, GKE, AKS) |
-| Ecossistema | Integrado com AWS natively | Helm charts, operadores Kubernetes |
-| Multi-cloud/on-prem | ECS Anywhere (limitado) | EKS Anywhere, Kubernetes em qualquer lugar |
-| Custo control plane | Sem custo de cluster | $0,10/hora por cluster EKS |
+| Orchestrator | AWS proprietary | Kubernetes (open source) |
+| Learning curve | Lower | Higher |
+| Portability | AWS only | Any Kubernetes (on-prem, GKE, AKS) |
+| Ecosystem | Natively integrated with AWS | Helm charts, Kubernetes operators |
+| Multi-cloud/on-prem | ECS Anywhere (limited) | EKS Anywhere, Kubernetes anywhere |
+| Control plane cost | No cluster charge | $0.10/hour per EKS cluster |
 
 ---
 
 ## Amazon ECR (Elastic Container Registry)
 
-Registry privado (e público) de imagens Docker/OCI:
+Private (and public) registry for Docker/OCI images:
 
-- **Repositórios privados**: imagens acessíveis apenas dentro da conta (ou cross-account via resource policy)
-- **Repositórios públicos** (ECR Public): imagens públicas (hub.docker similar)
-- **Image Scanning**: enhanced scanning via Amazon Inspector (CVEs, malware) ou básica
-- **Lifecycle Policies**: descarta imagens antigas automaticamente (ex: manter apenas as 10 mais recentes)
-- **Replication**: cross-region ou cross-account para DR e distribuição global
+- **Private repositories**: images accessible only within the account (or cross-account via resource policy)
+- **Public repositories** (ECR Public): public images (similar to Docker Hub)
+- **Image Scanning**: enhanced scanning via Amazon Inspector (CVEs, malware) or basic
+- **Lifecycle Policies**: automatically discards old images (e.g., keep only the 10 most recent)
+- **Replication**: cross-region or cross-account for DR and global distribution
 
 ---
 
-## Outros Serviços de Container
+## Other Container Services
 
 ### AWS App Runner
-- PaaS para containers web: você fornece o código ou imagem, App Runner gerencia tudo
-- Auto-scaling, HTTPS, load balancing — sem configuração de ECS/Fargate/ALB
-- Mais simples, menos controle
+- PaaS for web containers: you provide the code or image, App Runner manages everything
+- Auto-scaling, HTTPS, load balancing — no ECS/Fargate/ALB configuration
+- Simpler, less control
 
 ### AWS Copilot
-- CLI para implantar aplicações containerizadas no ECS/Fargate com melhores práticas incorporadas
-- Cria automaticamente: ECR, ECS Service, ALB, SSM Parameters, etc.
+- CLI to deploy containerized applications on ECS/Fargate with best practices built in
+- Automatically creates: ECR, ECS Service, ALB, SSM Parameters, etc.
 
 ### AWS App Mesh
-- Service Mesh baseado em **Envoy proxy** para ECS e EKS
-- Observabilidade (tracing, metrics) e mTLS para comunicação service-to-service
-- Alternativa AWS-native ao Istio
+- Service Mesh based on **Envoy proxy** for ECS and EKS
+- Observability (tracing, metrics) and mTLS for service-to-service communication
+- AWS-native alternative to Istio
 
 ---
 
-## Arquitetura de Referência: Microserviços com ECS Fargate
+## Reference Architecture: Microservices with ECS Fargate
 
 ```
 Route 53 → ALB (public)
@@ -150,39 +150,39 @@ Route 53 → ALB (public)
               └── /api/notify/* → ECS Service: NotifyService (Fargate)
                                       └── Task Role → SNS/SES
 
-Comunicação interna:
+Internal communication:
   OrderService → SNS "order-placed" → SQS → NotifyService
-  (fan-out via EventBridge para auditoria no S3)
+  (fan-out via EventBridge for auditing to S3)
 
-ECR → Task Definition (imagem versionada)
+ECR → Task Definition (versioned image)
 CloudWatch Logs → Container logs (awslogs driver)
 AWS X-Ray → Distributed tracing
 ```
 
 ---
 
-## Quando Usar o Quê
+## When to Use What
 
-| Necessidade | Serviço |
+| Need | Service |
 |---|---|
-| Simplicidade máxima, app web containerizada | App Runner |
-| Containers AWS-native sem gerenciar infra | ECS + Fargate |
-| Containers AWS-native com controle do host | ECS + EC2 |
-| Kubernetes para portabilidade | EKS |
-| Kubernetes serverless | EKS + Fargate |
-| Kubernetes on-premises | EKS Anywhere |
+| Maximum simplicity, containerized web app | App Runner |
+| AWS-native containers without managing infra | ECS + Fargate |
+| AWS-native containers with host control | ECS + EC2 |
+| Kubernetes for portability | EKS |
+| Serverless Kubernetes | EKS + Fargate |
+| On-premises Kubernetes | EKS Anywhere |
 
 ---
 
-## Dicas de Prova
+## Exam Tips
 
-- **Task Role** = permissões da aplicação; **Task Execution Role** = permissões do ECS para gerenciar a task
-- **awsvpc mode** = cada task tem ENI e SG próprios — isolamento de rede por task (Fargate obrigatório)
-- **ECS EC2** ainda precisa de EC2 instances no cluster; **Fargate** = zero infra para gerenciar
-- **Managed Node Groups** no EKS ≠ Fargate — ainda são EC2 nodes mas gerenciados pela AWS
-- **ECR Lifecycle Policy** evita acúmulo de imagens antigas; usar para controle de custos
-- EKS tem custo fixo de cluster ($0,10/hora ≈ $72/mês); ECS não cobra pelo cluster
-- Para portabilidade multi-cloud: EKS (Kubernetes) é mais adequado que ECS
-- **VPC CNI no EKS** = pods com IPs da VPC (como awsvpc no ECS) — importante para segurança e roteamento
-- ECS Auto Scaling escala **tasks**; Capacity Provider escala o **cluster EC2** subjacente automaticamente
-- **Service Connect** = nova alternativa ao App Mesh para comunicação service-to-service no ECS
+- **Task Role** = application permissions; **Task Execution Role** = ECS permissions to manage the task
+- **awsvpc mode** = each task has its own ENI and SG — network isolation per task (required for Fargate)
+- **ECS EC2** still needs EC2 instances in the cluster; **Fargate** = zero infrastructure to manage
+- **Managed Node Groups** in EKS ≠ Fargate — they are still EC2 nodes but managed by AWS
+- **ECR Lifecycle Policy** prevents accumulation of old images; use it for cost control
+- EKS has a fixed cluster cost ($0.10/hour ≈ $72/month); ECS does not charge for the cluster
+- For multi-cloud portability: EKS (Kubernetes) is more suitable than ECS
+- **VPC CNI on EKS** = pods with VPC IPs (like awsvpc on ECS) — important for security and routing
+- ECS Auto Scaling scales **tasks**; Capacity Provider automatically scales the underlying **EC2 cluster**
+- **Service Connect** = the newer alternative to App Mesh for service-to-service communication on ECS

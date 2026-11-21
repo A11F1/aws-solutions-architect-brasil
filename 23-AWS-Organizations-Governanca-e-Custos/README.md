@@ -1,55 +1,55 @@
-# 23 AWS Organizations, Governanca e Custos
+# 23 AWS Organizations, Governance, and Costs
 
-## Objetivos do modulo
+## Module objectives
 
-- desenhar ambientes multi-account com seguranca e governanca central
-- aplicar SCPs, tagging e controle de acesso por Organizational Unit
-- dominar servicos de custo no contexto de arquitetura: Budgets, Cost Explorer, CUR, Savings Plans e RI
-- responder cenarios do SAA-C03 que pedem reducao de custo com menor overhead operacional
+- design multi-account environments with security and central governance
+- apply SCPs, tagging, and access control per Organizational Unit
+- master cost services in an architecture context: Budgets, Cost Explorer, CUR, Savings Plans, and RI
+- answer SAA-C03 scenarios that call for cost reduction with the lowest operational overhead
 
-## Conceitos fundamentais
+## Core concepts
 
-No SAA-C03, governanca e custo aparecem junto com seguranca e operacao. A ideia central e estruturar contas para reduzir risco, melhorar visibilidade financeira e aplicar guardrails sem travar o time.
+In the SAA-C03, governance and cost appear alongside security and operations. The central idea is to structure accounts to reduce risk, improve financial visibility, and apply guardrails without blocking the team.
 
-## Arquitetura multi-account recomendada
+## Recommended multi-account architecture
 
-- Management account apenas para governanca e billing
-- OUs separadas por ambiente e criticidade (Sandbox, Dev, Prod, Security)
-- Contas dedicadas para logs e seguranca
-- Acesso humano central por IAM Identity Center
+- Management account only for governance and billing
+- OUs separated by environment and criticality (Sandbox, Dev, Prod, Security)
+- Dedicated accounts for logs and security
+- Central human access via IAM Identity Center
 
-## Servicos e praticas chave
+## Key services and practices
 
-- AWS Organizations: hierarquia de contas e consolidated billing
-- SCP: define teto de permissoes por OU/conta
-- AWS Control Tower: baseline multi-account com guardrails
-- AWS Budgets: alertas proativos por limite de gasto ou uso
-- Cost Explorer: analise de tendencia e recomendacoes
-- Cost and Usage Report (CUR): base detalhada para chargeback/showback
-- Savings Plans e Reserved Instances: compromisso para reduzir custo de compute
-- Cost Allocation Tags: rastrear custo por time/produto/ambiente
+- AWS Organizations: account hierarchy and consolidated billing
+- SCP: defines the permission ceiling per OU/account
+- AWS Control Tower: multi-account baseline with guardrails
+- AWS Budgets: proactive alerts by spend or usage threshold
+- Cost Explorer: trend analysis and recommendations
+- Cost and Usage Report (CUR): detailed basis for chargeback/showback
+- Savings Plans and Reserved Instances: commitment to reduce compute cost
+- Cost Allocation Tags: track cost by team/product/environment
 
-## Dicas de exame
+## Exam tips
 
-- SCP nao concede permissoes; apenas restringe.
-- "Least operational overhead" em multi-account aponta para Control Tower e Identity Center.
-- Para visibilidade granular de custo em escala, CUR + Athena e alternativa recorrente.
-- Para workloads estaveis, RI/Savings Plans costuma ser resposta de otimizacao.
-- Spot e melhor para cargas tolerantes a interrupcao.
+- SCPs do not grant permissions; they only restrict.
+- "Least operational overhead" in multi-account points to Control Tower and Identity Center.
+- For granular cost visibility at scale, CUR + Athena is a recurring alternative.
+- For stable workloads, RI/Savings Plans is usually the optimization answer.
+- Spot is best for interruption-tolerant workloads.
 
-## Anti-padroes
+## Anti-patterns
 
-- usar conta unica para tudo
-- usar root user no dia a dia
-- sem padrao de tags obrigatorias
-- sem limites/alertas de custo por ambiente
-- sem segregacao de contas de log e seguranca
+- using a single account for everything
+- using the root user day to day
+- no standard of mandatory tags
+- no cost limits/alerts per environment
+- no segregation of log and security accounts
 
-## Links relacionados
+## Related links
 
 - [Cheatsheet](./cheatsheet.md)
-- [Casos de uso](./casos-de-uso.md)
-- [Questoes](./questoes.md)
+- [Use cases](./casos-de-uso.md)
+- [Questions](./questoes.md)
 - [Flashcards](./flashcards.md)
 - [Lab](./lab.md)
-- [Links oficiais](./links.md)
+- [Official links](./links.md)

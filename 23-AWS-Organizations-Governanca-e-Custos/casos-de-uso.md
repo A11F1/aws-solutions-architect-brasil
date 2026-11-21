@@ -1,47 +1,47 @@
-# Casos de Uso - AWS Organizations, Governanca e Custos
+# Use Cases - AWS Organizations, Governance, and Costs
 
-## Caso 1: Empresa em crescimento rapido
+## Case 1: Fast-growing company
 
-Cenario:
-- 40 contas AWS em 6 meses
-- times independentes por produto
-- necessidade de guardrails comuns
+Scenario:
+- 40 AWS accounts in 6 months
+- independent teams per product
+- need for common guardrails
 
-Arquitetura:
-- AWS Control Tower para landing zone
-- OUs por ambiente (Sandbox, Dev, Prod)
-- SCP bloqueando desativacao de CloudTrail e uso fora de regioes permitidas
-- Identity Center para acesso federado
+Architecture:
+- AWS Control Tower for the landing zone
+- OUs per environment (Sandbox, Dev, Prod)
+- SCP blocking CloudTrail deactivation and use outside allowed regions
+- Identity Center for federated access
 
-## Caso 2: FinOps com chargeback
+## Case 2: FinOps with chargeback
 
-Cenario:
-- diretoria quer custo por produto e por squad
+Scenario:
+- leadership wants cost per product and per squad
 
-Arquitetura:
-- Tags obrigatorias (Owner, CostCenter, Product, Environment)
-- CUR no S3
-- Athena + QuickSight para dashboards de chargeback
-- Budgets por conta e por tag
+Architecture:
+- Mandatory tags (Owner, CostCenter, Product, Environment)
+- CUR in S3
+- Athena + QuickSight for chargeback dashboards
+- Budgets per account and per tag
 
-## Caso 3: Reducao de custo compute
+## Case 3: Compute cost reduction
 
-Cenario:
-- gasto elevado em EC2 e Fargate
+Scenario:
+- high spend on EC2 and Fargate
 
-Arquitetura:
-- Savings Plans para base estavel
-- Spot para batch e workers stateless
-- autoscaling com limites
-- rightsizing com Compute Optimizer
+Architecture:
+- Savings Plans for the stable baseline
+- Spot for batch and stateless workers
+- autoscaling with limits
+- rightsizing with Compute Optimizer
 
-## Caso 4: Governanca de seguranca
+## Case 4: Security governance
 
-Cenario:
-- auditoria exige trilhas imutaveis
+Scenario:
+- audit requires immutable trails
 
-Arquitetura:
-- conta de log central
+Architecture:
+- central log account
 - CloudTrail org trail
-- bucket de log com Object Lock
-- bloqueios SCP para impedir alteracao de trilha
+- log bucket with Object Lock
+- SCP blocks to prevent trail modification

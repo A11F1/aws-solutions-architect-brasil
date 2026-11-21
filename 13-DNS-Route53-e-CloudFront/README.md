@@ -1,73 +1,73 @@
-# Módulo 08 — DNS, Route 53 e CloudFront
+# Module 08 — DNS, Route 53, and CloudFront
 
 ## Amazon Route 53
 
-Serviço DNS gerenciado e registrador de domínios da AWS. Nome vem da porta DNS (53) e da Rota 66 americana.
+AWS's managed DNS service and domain registrar. The name comes from the DNS port (53) and the American Route 66.
 
-### Tipos de Hosted Zones
-- **Public Hosted Zone**: resolve nomes na internet pública
-- **Private Hosted Zone**: resolve nomes dentro de uma ou mais VPCs (não acessível publicamente)
+### Hosted Zone Types
+- **Public Hosted Zone**: resolves names on the public internet
+- **Private Hosted Zone**: resolves names inside one or more VPCs (not publicly accessible)
 
 ### Record Types
-| Tipo | Descrição | AWS-specific |
+| Type | Description | AWS-specific |
 |---|---|---|
 | A | IPv4 address | — |
 | AAAA | IPv6 address | — |
-| CNAME | Aponta para outro hostname | Não pode ser criado no apex (root domain) |
-| **Alias** | Aponta para recurso AWS (ELB, CloudFront, S3, etc.) | ✅ Sim — responde como A/AAAA, gratuito para recursos AWS |
-| NS | Name Servers da hosted zone | — |
+| CNAME | Points to another hostname | Cannot be created at the apex (root domain) |
+| **Alias** | Points to an AWS resource (ELB, CloudFront, S3, etc.) | ✅ Yes — answers as A/AAAA, free for AWS resources |
+| NS | Name servers of the hosted zone | — |
 | SOA | Start of Authority | — |
 | MX | Mail servers | — |
-| TXT | Texto (SPF, DKIM, validação ACM) | — |
+| TXT | Text (SPF, DKIM, ACM validation) | — |
 | PTR | Reverse DNS | — |
-| SRV, CAA | Serviços, autoridade de certificados | — |
+| SRV, CAA | Services, certificate authority authorization | — |
 
-> **Alias vs CNAME**: Alias pode ser criado no apex (exemplo.com), CNAME não pode. Alias não cobra por query. Alias resolve para o IP real (sem CNAME chain). **Não pode criar Alias para EC2 DNS name.**
+> **Alias vs CNAME**: Alias can be created at the apex (example.com); CNAME cannot. Alias queries are not charged. Alias resolves to the real IP (no CNAME chain). **You cannot create an Alias to an EC2 DNS name.**
 
 ### Routing Policies
 
-| Política | Comportamento | Quando usar |
+| Policy | Behavior | When to use |
 |---|---|---|
-| **Simple** | Retorna 1 ou múltiplos valores aleatórios | Single resource, sem health check obrigatório |
-| **Weighted** | Distribui por peso (0–255) | A/B testing, migração gradual |
-| **Latency** | Roteia para região de menor latência ao usuário | Multi-region, baixa latência |
-| **Failover** | Primary → Secondary se primary falhar | Active-passive DR |
-| **Geolocation** | Por país/continente/estado (US) | Conteúdo localizado, compliance |
-| **Geoproximity** | Por localização + bias (ampliar/reduzir região) | Redistribuição de tráfego por coordenadas |
-| **Multivalue Answer** | Retorna até 8 valores, com health check | Distribuição de carga sem ELB (client-side) |
-| **IP-based** | Por CIDR do cliente | ISP-specific routing, otimização de rede |
+| **Simple** | Returns 1 or multiple random values | Single resource, no mandatory health check |
+| **Weighted** | Distributes by weight (0–255) | A/B testing, gradual migration |
+| **Latency** | Routes to the region with the lowest latency to the user | Multi-region, low latency |
+| **Failover** | Primary → Secondary if primary fails | Active-passive DR |
+| **Geolocation** | By country/continent/state (US) | Localized content, compliance |
+| **Geoproximity** | By location + bias (expand/shrink region) | Traffic redistribution by coordinates |
+| **Multivalue Answer** | Returns up to 8 values, with health check | Load distribution without ELB (client-side) |
+| **IP-based** | By client CIDR | ISP-specific routing, network optimization |
 
-> Geoproximity requer **Traffic Flow** e **Traffic Policy** — não é configurável via console simples.
+> Geoproximity requires **Traffic Flow** and **Traffic Policy** — it is not configurable through the simple console.
 
 ### Health Checks
-- Verificam endpoint HTTP/HTTPS/TCP a cada 10s (Fast HCs) ou 30s
-- Calculados por pelo menos 18 verificadores globais (threshold configurável de 1–10)
-- **Calculated Health Checks**: combina múltiplos health checks (AND/OR)
-- **CloudWatch Alarm Health Check**: para recursos privados (sem IP público) — HC verifica o alarm, não o recurso direto
-- Podem ser associados a records de Weighted, Failover, Latency, Geolocation
+- Check an HTTP/HTTPS/TCP endpoint every 10s (Fast HCs) or 30s
+- Evaluated by at least 18 global checkers (configurable threshold of 1–10)
+- **Calculated Health Checks**: combines multiple health checks (AND/OR)
+- **CloudWatch Alarm Health Check**: for private resources (no public IP) — the HC checks the alarm, not the resource directly
+- Can be associated with Weighted, Failover, Latency, and Geolocation records
 
 ---
 
 ## Amazon CloudFront
 
-CDN (Content Delivery Network) global com 450+ PoPs (Edge Locations) e 13 Regional Edge Caches.
+Global CDN (Content Delivery Network) with 450+ PoPs (Edge Locations) and 13 Regional Edge Caches.
 
-### Componentes
-- **Distribution**: unidade de configuração do CloudFront (domain: `xxxx.cloudfront.net`)
-- **Origin**: backend (S3, ALB, EC2, API Gateway, qualquer endereço HTTP)
-- **Behavior (Cache Behavior)**: regra por path pattern (ex: `/api/*` → sem cache; `/*.jpg` → cache 1 dia)
-- **Cache Policy**: TTL (min/max/default), headers/cookies/query strings para incluir na cache key
-- **Origin Request Policy**: o que enviar ao origin além do que está na cache key
-- **Edge Location**: onde os arquivos são cacheados
+### Components
+- **Distribution**: CloudFront configuration unit (domain: `xxxx.cloudfront.net`)
+- **Origin**: backend (S3, ALB, EC2, API Gateway, any HTTP address)
+- **Behavior (Cache Behavior)**: rule per path pattern (e.g., `/api/*` → no cache; `/*.jpg` → cache 1 day)
+- **Cache Policy**: TTL (min/max/default), headers/cookies/query strings to include in the cache key
+- **Origin Request Policy**: what to send to the origin besides what is in the cache key
+- **Edge Location**: where files are cached
 
 ### CloudFront + S3
 
-| Método | Descrição | Para novo conteúdo? |
+| Method | Description | For new content? |
 |---|---|---|
-| **OAC (Origin Access Control)** | Política no S3 bucket que só aceita requisições assinadas pelo CloudFront | ✅ Recomendado |
-| **OAI (Origin Access Identity)** | Identidade virtual IAM para o CF acessar S3 privado | ⚠️ Legado (ainda funciona) |
+| **OAC (Origin Access Control)** | Policy on the S3 bucket that only accepts requests signed by CloudFront | ✅ Recommended |
+| **OAI (Origin Access Identity)** | Virtual IAM identity for CF to access a private S3 | ⚠️ Legacy (still works) |
 
-Com OAC, o bucket S3 deve ter:
+With OAC, the S3 bucket must have:
 ```json
 {
   "Principal": {"Service": "cloudfront.amazonaws.com"},
@@ -76,74 +76,74 @@ Com OAC, o bucket S3 deve ter:
 ```
 
 ### CloudFront Cache Invalidation
-- Remove objetos do cache antes do TTL expirar: `/*` (tudo) ou path específico
-- Cobrado por invalidation path após as primeiras 1.000/mês
-- Alternativa: usar versionamento de arquivos (ex: `app.v2.js`) — sem custo de invalidação
+- Removes objects from the cache before the TTL expires: `/*` (everything) or a specific path
+- Charged per invalidation path after the first 1,000/month
+- Alternative: use file versioning (e.g., `app.v2.js`) — no invalidation cost
 
 ### Geo Restriction
-- **Allowlist**: apenas países listados podem acessar
-- **Blocklist**: países listados são bloqueados
-- Baseado em banco de dados GeoIP (não infalível — VPNs podem contornar)
+- **Allowlist**: only listed countries can access
+- **Blocklist**: listed countries are blocked
+- Based on a GeoIP database (not foolproof — VPNs can bypass it)
 
 ### Lambda@Edge vs CloudFront Functions
 
-| Característica | Lambda@Edge | CloudFront Functions |
+| Characteristic | Lambda@Edge | CloudFront Functions |
 |---|---|---|
 | Runtime | Node.js, Python | JavaScript (ECMAScript 5.1) |
-| Latência | Moderada (~1–10ms) | Muito baixa (<1ms) |
-| Memória | Até 10 GB (L@E viewer), 128MB request | Máx 2 MB de memória |
-| Requests/s | Sem limite de taxa | 10 milhões+ req/s |
-| Duração | Até 30s (origin), 5s (viewer) | Máximo 1ms |
-| Acesso à rede | Sim (pode chamar APIs externas) | Não |
-| Eventos | Viewer Request/Response, Origin Request/Response | Viewer Request/Response apenas |
-| Uso típico | Reescrita de URL complexa, A/B com cookies, autenticação | Manipulação de headers, URL rewrite simples, redirect |
+| Latency | Moderate (~1–10ms) | Very low (<1ms) |
+| Memory | Up to 10 GB (L@E origin), 128MB viewer | Max 2 MB of memory |
+| Requests/s | No rate limit | 10 million+ req/s |
+| Duration | Up to 30s (origin), 5s (viewer) | Max 1ms |
+| Network access | Yes (can call external APIs) | No |
+| Events | Viewer Request/Response, Origin Request/Response | Viewer Request/Response only |
+| Typical use | Complex URL rewriting, A/B with cookies, authentication | Header manipulation, simple URL rewrite, redirect |
 
 ---
 
 ## AWS Global Accelerator
 
-Usa a rede global da AWS para rotear tráfego de usuários ao endpoint mais próximo com menor latência:
+Uses the AWS global network to route user traffic to the closest, lowest-latency endpoint:
 
-- Fornece **2 Anycast IPs estáticos** globais (não mudam — excelente para whitelisting)
-- Roteia para o endpoint saudável mais próximo via rede backbone AWS
-- Suporta endpoints: ALB, NLB, EC2, Endereços IP elásticos
-- **Health checks** detectam failover e reroteiam automaticamente
-- **Diferença do CloudFront**: CloudFront entrega conteúdo cacheado (CDN); Global Accelerator é proxy TCP/UDP, melhor para aplicações não-HTTP (jogos, IoT, VoIP)
+- Provides **2 static global Anycast IPs** (they do not change — excellent for whitelisting)
+- Routes to the nearest healthy endpoint via the AWS backbone network
+- Supported endpoints: ALB, NLB, EC2, Elastic IP addresses
+- **Health checks** detect failures and reroute automatically
+- **Difference from CloudFront**: CloudFront delivers cached content (CDN); Global Accelerator is a TCP/UDP proxy, better for non-HTTP applications (gaming, IoT, VoIP)
 
 ### Route 53 vs Global Accelerator
 
-| Aspecto | Route 53 | Global Accelerator |
+| Aspect | Route 53 | Global Accelerator |
 |---|---|---|
-| IP estático | Não (DNS) | Sim (2 Anycast IPs) |
-| Failover | DNS propagation (~60s) | Quase instantâneo |
-| TCP/UDP genérico | Não (apenas DNS) | Sim |
-| Conteúdo cacheado | Não | Não |
-| Custo | Por query | Taxa horária + por GB |
+| Static IP | No (DNS) | Yes (2 Anycast IPs) |
+| Failover | DNS propagation (~60s) | Near-instant |
+| Generic TCP/UDP | No (DNS only) | Yes |
+| Cached content | No | No |
+| Cost | Per query | Hourly fee + per GB |
 
 ---
 
 ## AWS WAF (Web Application Firewall)
 
-Protege aplicações web contra exploits OWASP:
+Protects web applications against OWASP exploits:
 
 - Deploy: **CloudFront, ALB, API Gateway, AppSync, Cognito User Pool**
-- **Web ACL**: contém rules e rule groups
-- Rules inspecionam: IP, headers, body (até 8 KB), URI string, query string, método HTTP
-- **Managed Rule Groups**: conjuntos pré-configurados (OWASP Top 10, bots, AWS Managed Intelligence)
-- **Rate-based Rules**: limita por IP (ex: máx 100 req/5min)
-- Ação: Allow, Block, Count (monitoring sem bloquear), CAPTCHA, Challenge
+- **Web ACL**: contains rules and rule groups
+- Rules inspect: IP, headers, body (up to 8 KB), URI string, query string, HTTP method
+- **Managed Rule Groups**: pre-configured sets (OWASP Top 10, bots, AWS Managed Intelligence)
+- **Rate-based Rules**: limits per IP (e.g., max 100 req/5min)
+- Actions: Allow, Block, Count (monitoring without blocking), CAPTCHA, Challenge
 
 ---
 
-## Dicas de Prova
+## Exam Tips
 
-- **Alias record** = gratuito + pode ser apex; CNAME = cobra por query + não pode ser apex
-- **Geoproximity** precisa de Traffic Policy (Traffic Flow); Geolocation não precisa
-- **Failover**: primary health check falha → roteia para secondary (passive DR)
-- CloudFront + S3: OAC é o novo padrão (substituiu OAI)
-- **Lambda@Edge** = processamento complexo com chamadas externas; **CF Functions** = transformações em < 1ms
-- **Global Accelerator** = IPs estáticos + rede backbone AWS; bom para jogos, IoT, VoIP e apps TCP/UDP
-- **Route 53 Multivalue** ≠ ELB: apenas distribui, não balanceia carga real; cliente escolhe arbitrariamente
-- Resolver DNS de Private Hosted Zone de outra VPC: habilitar **VPC Association** ou usar **Route 53 Resolver** (Inbound/Outbound Endpoints) para on-prem
-- CloudFront pode ter múltiplos origins em um mesmo distribution (path-based routing entre origins)
-- WAF pode ir no ALB **ou** no CloudFront — para proteção closer to edge, use CloudFront + WAF
+- **Alias record** = free + can be apex; CNAME = charged per query + cannot be apex
+- **Geoproximity** needs a Traffic Policy (Traffic Flow); Geolocation does not
+- **Failover**: primary health check fails → routes to secondary (passive DR)
+- CloudFront + S3: OAC is the new standard (replaced OAI)
+- **Lambda@Edge** = complex processing with external calls; **CF Functions** = transformations in < 1ms
+- **Global Accelerator** = static IPs + AWS backbone network; good for gaming, IoT, VoIP, and TCP/UDP apps
+- **Route 53 Multivalue** ≠ ELB: only distributes, does not do real load balancing; the client picks arbitrarily
+- Resolving DNS of a Private Hosted Zone from another VPC: enable **VPC Association** or use **Route 53 Resolver** (Inbound/Outbound Endpoints) for on-prem
+- CloudFront can have multiple origins in the same distribution (path-based routing between origins)
+- WAF can go on the ALB **or** on CloudFront — for protection closer to the edge, use CloudFront + WAF

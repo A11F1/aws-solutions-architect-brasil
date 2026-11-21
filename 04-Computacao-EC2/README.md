@@ -1,117 +1,117 @@
-# 03 Computação EC2
+# 03 EC2 Compute
 
-## 📋 Índice
-- [Objetivos do Módulo](#-objetivos-do-módulo)
-- [Conceitos Fundamentais](#-conceitos-fundamentais)
-- [Arquitetura e Componentes](#-arquitetura-e-componentes)
-- [Configurações Importantes para o Exame](#-configurações-importantes-para-o-exame)
-- [Comparativo de Serviços](#-comparativo-de-serviços)
-- [Dicas e Armadilhas do Exame](#-dicas-e-armadilhas-do-exame)
-- [Para o Exame](#-para-o-exame)
-- [Links Relacionados](#-links-relacionados)
+## 📋 Table of Contents
+- [Module Objectives](#-module-objectives)
+- [Core Concepts](#-core-concepts)
+- [Architecture and Components](#-architecture-and-components)
+- [Important Settings for the Exam](#-important-settings-for-the-exam)
+- [Service Comparison](#-service-comparison)
+- [Exam Tips and Pitfalls](#-exam-tips-and-pitfalls)
+- [For the Exam](#-for-the-exam)
+- [Related Links](#-related-links)
 
-## 🎯 Objetivos do Módulo
+## 🎯 Module Objectives
 
-Ao terminar este módulo, você deve conseguir:
+By the end of this module, you should be able to:
 
-- identificar a família de instância EC2 mais adequada para um workload dado
-- comparar os modelos de compra e selecionar o mais econômico para cada perfil de uso
-- diferenciar EBS gp3, io2, st1 e sc1 por características de performance e custo
-- explicar envelope de Instance Store vs EBS e suas implicações em falha
-- escolher o tipo de placement group correto para cada requisito de latência ou isolamento
-- descrever IMDSv2 e User Data e aplicá-los em questões de automação de instâncias
+- identify the most suitable EC2 instance family for a given workload
+- compare purchasing models and select the most cost-effective one for each usage profile
+- differentiate EBS gp3, io2, st1 and sc1 by performance and cost characteristics
+- explain Instance Store vs EBS and the implications of each on failure
+- choose the correct placement group type for each latency or isolation requirement
+- describe IMDSv2 and User Data and apply them to instance automation questions
 
-## 📚 Conceitos Fundamentais
+## 📚 Core Concepts
 
-### Famílias de Instância
+### Instance Families
 
-A AWS organiza os tipos de instância EC2 em famílias, e cada família é otimizada para uma característica de hardware. Reconhecer a família pela letra inicial é essencial no exame.
+AWS organizes EC2 instance types into families, and each family is optimized for a hardware characteristic. Recognizing the family by its first letter is essential for the exam.
 
-**M — General Purpose (balanced)**: proporção equilibrada de CPU e memória. São as mais comuns para aplicações web, bancos de dados de médio porte e ambientes de desenvolvimento. Exemplo: m7g.xlarge.
+**M — General Purpose (balanced)**: balanced ratio of CPU and memory. They are the most common choice for web applications, mid-sized databases and development environments. Example: m7g.xlarge.
 
-**C — Compute Optimized**: alto desempenho de CPU. Indicada para processamento batch, encoding de vídeo, servers HPC, servidores de jogos e microserviços com muita computação. Exemplo: c7g.large.
+**C — Compute Optimized**: high CPU performance. Suited for batch processing, video encoding, HPC servers, game servers and compute-intensive microservices. Example: c7g.large.
 
-**R — Memory Optimized**: grande quantidade de RAM em relação à CPU. Usada para bancos de dados in-memory como Redis e Memcached, SAP HANA, análise em tempo real. Exemplo: r7g.2xlarge.
+**R — Memory Optimized**: large amount of RAM relative to CPU. Used for in-memory databases such as Redis and Memcached, SAP HANA, and real-time analytics. Example: r7g.2xlarge.
 
-**I — Storage Optimized**: alta IOPS e baixa latência de I/O local. Indicada para bancos NoSQL locais, data warehousing, sistemas de arquivos distribuídos como HDFS. Use quando o dado temporário precisa de acesso ultra-rápido. Exemplo: i4i.xlarge.
+**I — Storage Optimized**: high IOPS and low local I/O latency. Suited for local NoSQL databases, data warehousing, and distributed file systems such as HDFS. Use when temporary data needs ultra-fast access. Example: i4i.xlarge.
 
-**P/G — Accelerated Computing**: GPUs para machine learning, renderização 3D, simulações científicas. P é voltado para treinamento de ML e G para inferência e gráficos. Exemplo: p4de.24xlarge.
+**P/G — Accelerated Computing**: GPUs for machine learning, 3D rendering and scientific simulations. P is geared toward ML training and G toward inference and graphics. Example: p4de.24xlarge.
 
-**T — Burstable**: performance de baseline com créditos acumuláveis para picos. Ideal para cargas intermitentes como ambientes dev/test, microserviços de baixo tráfego. T3 e T4g têm modo unlimited para créditos ilimitados com custo adicional. Cuidado: workloads contínuos de alta CPU zeram os créditos e a performance cai ao baseline.
+**T — Burstable**: baseline performance with accumulable credits for spikes. Ideal for intermittent loads such as dev/test environments and low-traffic microservices. T3 and T4g have an unlimited mode for unlimited credits at an additional cost. Caution: continuous high-CPU workloads exhaust the credits and performance drops to the baseline.
 
-### Modelos de Compra
+### Purchasing Models
 
-O modelo de compra é um dos tópicos mais cobrados em questões de otimização de custo.
+The purchasing model is one of the topics most frequently tested in cost optimization questions.
 
-**On-Demand**: pague pelo segundo ou hora sem compromisso. Maior custo unitário, zero planejamento necessário. Indicado para workloads imprevisíveis, desenvolvimento e testes.
+**On-Demand**: pay per second or hour with no commitment. Highest unit cost, no planning required. Suited for unpredictable workloads, development and testing.
 
-**Reserved Instances (RI)**: compromisso de 1 ou 3 anos com desconto de até 72% vs On-Demand. Há três variantes: Standard RI (maior desconto, tipo e região fixos), Convertible RI (desconto menor, pode trocar tipo/SO dentro do período), e Zonal RI (reserva capacidade na AZ específica). Scheduled RI foi descontinuado.
+**Reserved Instances (RI)**: 1- or 3-year commitment with a discount of up to 72% vs On-Demand. There are three variants: Standard RI (highest discount, fixed type and Region), Convertible RI (lower discount, can change type/OS within the term), and Zonal RI (reserves capacity in a specific AZ). Scheduled RI has been discontinued.
 
-**Savings Plans**: mais flexível que Reserved Instances. Você compromete um gasto horário em dólar por 1 ou 3 anos. Compute Savings Plans (desconto menor, cobre EC2, Lambda e Fargate, qualquer tipo, região e SO) vs EC2 Savings Plans (desconto maior, mas preso ao tipo e região). Não há conceito de "instância específica"; o desconto aplica automaticamente.
+**Savings Plans**: more flexible than Reserved Instances. You commit to an hourly spend in dollars for 1 or 3 years. Compute Savings Plans (lower discount, cover EC2, Lambda and Fargate, any type, Region and OS) vs EC2 Savings Plans (higher discount, but tied to type and Region). There is no concept of a "specific instance"; the discount is applied automatically.
 
-**Spot Instances**: compra de capacidade ociosa da AWS com desconto de até 90%. A AWS pode interromper a instância com 2 minutos de aviso quando precisar da capacidade de volta. Ideal para workloads tolerantes a falhas: batch, procesamento de dados, renderização, CI/CD. Não deve ser usada para bancos de dados stateful ou aplicações sem checkpoint.
+**Spot Instances**: purchase of AWS spare capacity at a discount of up to 90%. AWS can interrupt the instance with a 2-minute warning when it needs the capacity back. Ideal for fault-tolerant workloads: batch, data processing, rendering, CI/CD. Should not be used for stateful databases or applications without checkpointing.
 
-**Spot Fleet**: coleção de instâncias Spot e opcionalmente On-Demand com uma capacidade alvo. Você define múltiplos launch pools (tipo, AZ) e a Fleet seleciona o mais barato. Estratégias: lowestPrice, diversified, capacityOptimized, priceCapacityOptimized (recomendada pela AWS).
+**Spot Fleet**: a collection of Spot Instances and optionally On-Demand Instances with a target capacity. You define multiple launch pools (type, AZ) and the Fleet selects the cheapest. Strategies: lowestPrice, diversified, capacityOptimized, priceCapacityOptimized (recommended by AWS).
 
-**Dedicated Hosts**: servidor físico dedicado. Você tem visibilidade do socket/core, útil para licenciamento por socket (SQL Server, Oracle, Windows Server). Pode ser On-Demand ou Reserved.
+**Dedicated Hosts**: dedicated physical server. You get visibility into sockets/cores, useful for per-socket licensing (SQL Server, Oracle, Windows Server). Can be On-Demand or Reserved.
 
-**Dedicated Instances**: instâncias que rodam em hardware dedicado, mas sem controle do host específico. Cobre compliance que exige isolamento físico sem necessidade de visibilidade de sockets.
+**Dedicated Instances**: instances that run on dedicated hardware, but without control over the specific host. Covers compliance that requires physical isolation without needing socket visibility.
 
-**Capacity Reservations**: reserva capacidade em uma AZ específica sem compromisso de desconto. Combina com Savings Plans ou Regional RI para cobrir custo.
+**Capacity Reservations**: reserve capacity in a specific AZ with no discount commitment. Combine with Savings Plans or Regional RI to cover the cost.
 
-### EC2 User Data e Instance Metadata
+### EC2 User Data and Instance Metadata
 
-**User Data** é um script que executa uma única vez na primeira inicialização da instância (pelo cloud-init). Serve para instalar pacotes, configurar serviços e baixar artefatos. Roda como root. Para executar em toda inicialização é necessário configurar explicitamente pelo cloud-init ou usar MIME multi-part.
+**User Data** is a script that runs only once, at the instance's first boot (via cloud-init). It is used to install packages, configure services and download artifacts. It runs as root. To run on every boot, you must explicitly configure it through cloud-init or use MIME multi-part.
 
-**Instance Metadata Service (IMDS)** expõe informações sobre a instância no endpoint especial `http://169.254.169.254`. A segunda versão, IMDSv2, é session-oriented e exige uma chamada prévia para obter um token com TTL. O token é então usado no header `X-aws-ec2-metadata-token` nas chamadas subsequentes. IMDSv2 protege contra SSRF, pois o token não pode ser capturado por um atacante que conseguir executar um request via SSRF. O exame cobra quando usar IMDSv2: sempre que o cenário mencionar segurança aprimorada de metadados ou proteção contra SSRF em instâncias EC2.
+**Instance Metadata Service (IMDS)** exposes information about the instance at the special endpoint `http://169.254.169.254`. The second version, IMDSv2, is session-oriented and requires a prior call to obtain a token with a TTL. The token is then used in the `X-aws-ec2-metadata-token` header in subsequent calls. IMDSv2 protects against SSRF, because the token cannot be captured by an attacker who manages to execute a request via SSRF. The exam tests when to use IMDSv2: whenever the scenario mentions enhanced metadata security or protection against SSRF on EC2 instances.
 
 ### AMIs
 
-Amazon Machine Images são templates que definem o sistema operacional, configurações de software e mapeamento de dispositivos de uma instância. Podem ser criadas a partir de instâncias em execução (snapshot dos volumes EBS) ou de volumes EBS diretamente. 
+Amazon Machine Images are templates that define an instance's operating system, software configuration and device mapping. They can be created from running instances (snapshot of the EBS volumes) or directly from EBS volumes.
 
-Uma AMI pode ser copiada entre regiões, facilitando deployment multi-region. Pode ser compartilhada com outras contas ou tornada pública. A cópia de uma AMI cria um novo snapshot EBS na região destino. AMIs criptografadas só podem ser copiadas para contas que têm acesso à CMK usada.
+An AMI can be copied across Regions, which facilitates multi-Region deployment. It can be shared with other accounts or made public. Copying an AMI creates a new EBS snapshot in the destination Region. Encrypted AMIs can only be copied to accounts that have access to the CMK used.
 
-Para o exame, AMIs costumam aparecer em contextos de launch templates, golden images para bootstrap consistente e estratégias de recuperação rápida.
+For the exam, AMIs usually appear in the context of launch templates, golden images for consistent bootstrapping, and fast recovery strategies.
 
 ### Amazon EBS — Elastic Block Store
 
-EBS fornece volumes de bloco persistentes para instâncias EC2. O volume existe independentemente da instância — mesmo se a instância for terminada, o volume pode ser preservado.
+EBS provides persistent block volumes for EC2 instances. The volume exists independently of the instance — even if the instance is terminated, the volume can be preserved.
 
-**gp3**: geração atual de SSD de uso geral. Baseline de 3.000 IOPS e 125 MBps independentemente do tamanho. IOPS e throughput podem ser escalados separadamente do tamanho até 16.000 IOPS e 1.000 MBps. Custo menor que gp2 para IOPS adicionais.
+**gp3**: current-generation general purpose SSD. Baseline of 3,000 IOPS and 125 MBps regardless of size. IOPS and throughput can be scaled separately from size up to 16,000 IOPS and 1,000 MBps. Lower cost than gp2 for additional IOPS.
 
-**gp2**: geração anterior. IOPS vinculados ao tamanho: 3 IOPS/GB, mínimo 100, máximo 16.000 (requer volume de 5.333 GB). Possibilidade de burst para 3.000 IOPS usando créditos. Prefira gp3 para novos volumes.
+**gp2**: previous generation. IOPS tied to size: 3 IOPS/GB, minimum 100, maximum 16,000 (requires a 5,333 GB volume). Can burst to 3,000 IOPS using credits. Prefer gp3 for new volumes.
 
-**io2 Block Express**: IOPS provisionado de altíssima performance. Durabilidade de 99.999%, latência consistente, até 256.000 IOPS e 4.000 MBps. Suporte a multi-attach (múltiplas instâncias no mesmo volume — cluster-aware FS necessário).
+**io2 Block Express**: very high-performance provisioned IOPS. 99.999% durability, consistent latency, up to 256,000 IOPS and 4,000 MBps. Supports Multi-Attach (multiple instances on the same volume — cluster-aware FS required).
 
-**io1**: geração anterior de IOPS provisionado. Até 64.000 IOPS. Preferir io2 para novos casos.
+**io1**: previous-generation provisioned IOPS. Up to 64,000 IOPS. Prefer io2 for new use cases.
 
-**st1**: HDD otimizado para throughput. Bom para grandes volumes de dados sequenciais: logs, data lake, Hadoop. Até 500 MBps. Não pode ser volume de boot.
+**st1**: throughput-optimized HDD. Good for large sequential data volumes: logs, data lake, Hadoop. Up to 500 MBps. Cannot be a boot volume.
 
-**sc1**: HDD frio (cold). Menor custo de EBS. Para dados raramente acessados. Até 250 MBps. Não pode ser volume de boot.
+**sc1**: cold HDD. Lowest EBS cost. For infrequently accessed data. Up to 250 MBps. Cannot be a boot volume.
 
-Snapshots EBS são incrementais e armazenados no S3 (transparente ao usuário). O primeiro snapshot copia tudo; os subsequentes apenas os blocos alterados. Podem ser copiados entre regiões. A criptografia é por volume: se a CMK é especificada ao criar o volume, todos os snapshots herdam a criptografia.
+EBS snapshots are incremental and stored in S3 (transparent to the user). The first snapshot copies everything; subsequent ones copy only the changed blocks. They can be copied across Regions. Encryption is per volume: if the CMK is specified when the volume is created, all snapshots inherit the encryption.
 
 ### Instance Store
 
-Instance Store é armazenamento temporário diretamente nos discos físicos do servidor que hospeda a instância. Baixíssima latência e altíssimo IOPS (NVMe). A desvantagem é que os dados são perdidos quando a instância é parada, hibernada ou terminada. Use para cache, buffers e dados temporários que podem ser recreados — nunca para dados permanentes.
+Instance Store is temporary storage directly on the physical disks of the server hosting the instance. Very low latency and very high IOPS (NVMe). The drawback is that data is lost when the instance is stopped, hibernated or terminated. Use it for cache, buffers and temporary data that can be recreated — never for permanent data.
 
 ### Placement Groups
 
-**Cluster Placement Group**: empacota instâncias fisicamente próximas em um rack ou grupo de racks na mesma AZ. Minimiza latência de rede (10 Gbps entre instâncias). Risco: uma falha de hardware pode afetar todas as instâncias. Indicado para HPC, aplicações de baixa latência e tráfego intenso entre nós.
+**Cluster Placement Group**: packs instances physically close together in a rack or group of racks in the same AZ. Minimizes network latency (10 Gbps between instances). Risk: a hardware failure can affect all instances. Suited for HPC, low-latency applications and heavy traffic between nodes.
 
-**Spread Placement Group**: distribui instâncias em hardware distinto. Máximo de 7 instâncias por AZ por placement group. Maximiza disponibilidade: uma falha de rack afeta no máximo uma instância. Indicado para aplicações críticas onde cada instância não pode compartilhar ponto de falha.
+**Spread Placement Group**: spreads instances across distinct hardware. Maximum of 7 instances per AZ per placement group. Maximizes availability: a rack failure affects at most one instance. Suited for critical applications where each instance must not share a point of failure.
 
-**Partition Placement Group**: divide instâncias em partições, cada uma em rack separado. Até 7 partições por AZ e centenas de instâncias por grupo. A aplicação pode saber em qual partição cada instância está (via metadata). Indicado para HDFS, HBase, Cassandra, Kafka — sistemas distribuídos que têm awareness de topologia.
+**Partition Placement Group**: divides instances into partitions, each on a separate rack. Up to 7 partitions per AZ and hundreds of instances per group. The application can know which partition each instance is in (via metadata). Suited for HDFS, HBase, Cassandra, Kafka — distributed systems that are topology-aware.
 
-### Ciclo de Vida da Instância
+### Instance Lifecycle
 
-**Stop/Start**: para instâncias com EBS como root. Os dados no EBS persistem. A instância pode ser movida para hardware diferente ao reiniciar. O IP público muda (a menos que use Elastic IP).
+**Stop/Start**: for instances with EBS as root. Data on EBS persists. The instance may be moved to different hardware on restart. The public IP changes (unless you use an Elastic IP).
 
-**Hibernate**: salva o conteúdo da RAM no volume EBS root (que deve ter espaço suficiente e ser criptografado). A instância pode retomar de onde parou, com o estado de memória intacto. Mais rápido que reboot completo. Não permanece em hibernação por mais de 60 dias.
+**Hibernate**: saves the RAM contents to the root EBS volume (which must have enough space and be encrypted). The instance can resume where it left off, with its memory state intact. Faster than a full reboot. It cannot stay hibernated for more than 60 days.
 
-**Terminate**: deleta a instância e, por padrão, o volume EBS root. Volumes adicionais podem ser configurados para persistir com `DeleteOnTermination=false`.
+**Terminate**: deletes the instance and, by default, the root EBS volume. Additional volumes can be configured to persist with `DeleteOnTermination=false`.
 
-## 🏗️ Arquitetura e Componentes
+## 🏗️ Architecture and Components
 
 ```text
 ┌─────────────────────────────────────────────────────┐
@@ -119,12 +119,12 @@ Instance Store é armazenamento temporário diretamente nos discos físicos do s
 │                                                      │
 │  AMI (boot)                                          │
 │  ┌──────────────┐    ┌────────────────────────────┐  │
-│  │  EBS Root    │    │       Volumes EBS           │  │
+│  │  EBS Root    │    │       EBS Volumes           │  │
 │  │  (gp3/io2)   │    │  data, gp3, io2, st1, sc1  │  │
 │  └──────────────┘    └────────────────────────────┘  │
 │                                                      │
 │  ┌──────────────────────────────────────────────┐    │
-│  │   Instance Store (NVMe) — temporário         │    │
+│  │   Instance Store (NVMe) — temporary          │    │
 │  └──────────────────────────────────────────────┘    │
 │                                                      │
 │  User Data (cloud-init)                              │
@@ -136,72 +136,72 @@ Instance Store é armazenamento temporário diretamente nos discos físicos do s
 
 Placement Groups:
   Cluster:    [ i1 ][ i2 ][ i3 ]  ← 1 rack, low latency
-  Spread:     [ i1 ] ... [ i2 ] ... [ i3 ]  ← racks distintos
-  Partition:  P1[ i1,i2 ] P2[ i3,i4 ] P3[ i5,i6 ]  ← racks por partição
+  Spread:     [ i1 ] ... [ i2 ] ... [ i3 ]  ← distinct racks
+  Partition:  P1[ i1,i2 ] P2[ i3,i4 ] P3[ i5,i6 ]  ← racks per partition
 ```
 
-## ⚙️ Configurações Importantes para o Exame
+## ⚙️ Important Settings for the Exam
 
-| Item | Valor | Observação |
+| Item | Value | Note |
 |---|---|---|
-| Desconto máximo Spot | ~90% vs On-Demand | Workload tolerante a interrupção |
-| Desconto máximo Standard RI 3 anos | ~72% | All Upfront, mesmo tipo e região |
-| gp3 IOPS base | 3.000 | Independente do tamanho (diferente do gp2) |
-| gp3 IOPS máximo | 16.000 | Com custo adicional por IOPS |
-| io2 Block Express IOPS máximo | 256.000 | Volumes de alto desempenho |
-| io2 durabilidade | 99,999% | Maior do EBS |
-| Spread placement max por AZ | 7 instâncias | Por placement group |
-| Hibernation duração máxima | 60 dias | RAM salva em EBS criptografado |
-| IMDSv2 TTL padrão do token | 6 horas | Configurável na criação |
-| Aviso de interrupção Spot | 2 minutos | Via metadata e EventBridge |
+| Maximum Spot discount | ~90% vs On-Demand | Interruption-tolerant workload |
+| Maximum Standard RI 3-year discount | ~72% | All Upfront, same type and Region |
+| gp3 baseline IOPS | 3,000 | Independent of size (unlike gp2) |
+| gp3 maximum IOPS | 16,000 | With additional cost per IOPS |
+| io2 Block Express maximum IOPS | 256,000 | High-performance volumes |
+| io2 durability | 99.999% | Highest of EBS |
+| Spread placement max per AZ | 7 instances | Per placement group |
+| Maximum hibernation duration | 60 days | RAM saved to encrypted EBS |
+| IMDSv2 default token TTL | 6 hours | Configurable at creation |
+| Spot interruption notice | 2 minutes | Via metadata and EventBridge |
 
-## 🔄 Comparativo de Serviços
+## 🔄 Service Comparison
 
-| Modelo de Compra | Desconto | Compromisso | Ideal para |
+| Purchasing Model | Discount | Commitment | Ideal for |
 |---|---|---|---|
-| On-Demand | — | Nenhum | Workload imprevisível, dev/test |
-| Reserved (Standard) | até 72% | 1 ou 3 anos | Produção estável, mesmo tipo |
-| Reserved (Convertible) | até 66% | 1 ou 3 anos | Produção que pode mudar de tipo |
-| Savings Plans (Compute) | até 66% | 1 ou 3 anos ($ horário) | EC2 + Lambda + Fargate, qualquer tipo |
-| Savings Plans (EC2) | até 72% | 1 ou 3 anos ($ horário) | EC2 mesmo tipo e região |
-| Spot | até 90% | Nenhum | Batch, CI/CD, processamento tolerante |
-| Dedicated Host | variável | Pode ser RI | Licença por socket, compliance |
-| Dedicated Instance | variável + taxa | Nenhum | Isolamento físico sem controle do host |
+| On-Demand | — | None | Unpredictable workload, dev/test |
+| Reserved (Standard) | up to 72% | 1 or 3 years | Stable production, same type |
+| Reserved (Convertible) | up to 66% | 1 or 3 years | Production that may change type |
+| Savings Plans (Compute) | up to 66% | 1 or 3 years (hourly $) | EC2 + Lambda + Fargate, any type |
+| Savings Plans (EC2) | up to 72% | 1 or 3 years (hourly $) | EC2 same type and Region |
+| Spot | up to 90% | None | Batch, CI/CD, fault-tolerant processing |
+| Dedicated Host | variable | Can be RI | Per-socket license, compliance |
+| Dedicated Instance | variable + fee | None | Physical isolation without host control |
 
-| EBS Type | Use Case | IOPS máximo | Throughput máx | Boot? |
+| EBS Type | Use Case | Max IOPS | Max Throughput | Boot? |
 |---|---|---:|---|---|
-| gp3 | General purpose | 16.000 | 1.000 MBps | ✅ |
-| gp2 | General (legacy) | 16.000 | 250 MBps | ✅ |
-| io2 Block Express | OLTP crítico, baixa latência | 256.000 | 4.000 MBps | ✅ |
-| io1 | IOPS provisionado (legacy) | 64.000 | 1.000 MBps | ✅ |
-| st1 | Big data, logs, sequencial | 500 | 500 MBps | ❌ |
-| sc1 | Cold, arquivamento barato | 250 | 250 MBps | ❌ |
+| gp3 | General purpose | 16,000 | 1,000 MBps | ✅ |
+| gp2 | General (legacy) | 16,000 | 250 MBps | ✅ |
+| io2 Block Express | Critical OLTP, low latency | 256,000 | 4,000 MBps | ✅ |
+| io1 | Provisioned IOPS (legacy) | 64,000 | 1,000 MBps | ✅ |
+| st1 | Big data, logs, sequential | 500 | 500 MBps | ❌ |
+| sc1 | Cold, cheap archiving | 250 | 250 MBps | ❌ |
 
-## 💡 Dicas e Armadilhas do Exame
+## 💡 Exam Tips and Pitfalls
 
-- T3 burstable em workload contínuo de CPU alta vai esgotar créditos e operar abaixo do esperado — Cuidado com questões que descrevem degradação de performance inesperada.
-- Instance Store não persiste após stop ou terminate. Se a questão menciona "dados temporários de cache de alta performance", Instance Store pode ser a resposta; se menciona persistência, não.
-- gp2 vincula IOPS ao tamanho. Se quiser IOPS altos sem volume grande, use gp3 (independência entre tamanho e IOPS).
-- Spot Fleet com estratégia `capacityOptimized` reduz chance de interrupção; `lowestPrice` maximiza economia mas aumenta risco de interrupção.
-- Dedicated Host é para licença por socket/core. Dedicated Instance é para compliance de isolamento físico sem visibilidade de host.
-- O IP público de uma EC2 muda a cada stop/start. Para IP fixo, use Elastic IP.
-- Placement Groups Cluster ficam em uma AZ. Se a questão pede distribuição multi-AZ, Cluster não serve.
-- IMDSv2 é mais seguro que IMDSv1. A AWS recomenda só IMDSv2; em questões de segurança da infraestrutura, prefira IMDSv2 como resposta.
+- A T3 burstable instance under a continuous high-CPU workload will exhaust its credits and perform below expectations — Watch out for questions that describe unexpected performance degradation.
+- Instance Store does not persist after stop or terminate. If the question mentions "temporary high-performance cache data", Instance Store may be the answer; if it mentions persistence, it is not.
+- gp2 ties IOPS to size. If you want high IOPS without a large volume, use gp3 (size and IOPS are independent).
+- Spot Fleet with the `capacityOptimized` strategy reduces the chance of interruption; `lowestPrice` maximizes savings but increases interruption risk.
+- Dedicated Host is for per-socket/core licensing. Dedicated Instance is for physical isolation compliance without host visibility.
+- The public IP of an EC2 instance changes on every stop/start. For a fixed IP, use an Elastic IP.
+- Cluster Placement Groups stay within a single AZ. If the question asks for multi-AZ distribution, Cluster does not fit.
+- IMDSv2 is more secure than IMDSv1. AWS recommends IMDSv2 only; in infrastructure security questions, prefer IMDSv2 as the answer.
 
-## 💡 Para o Exame
+## 💡 For the Exam
 
-- Família M = balanced, C = compute, R = memory, I = storage, T = burstable. Se o workload é descrito, mapeie para a família.
-- Produção estável de longo prazo = Reserved ou Savings Plans. Burst imprevisível = On-Demand. Tolerante a interrupção = Spot.
-- IOPS alto e latência consistente = io2. Performance adequada e custo menor = gp3. Big data sequencial = st1. Custo mínimo sem performance = sc1.
-- HPC entre nós = Cluster PG. Alta disponibilidade crítica por instância = Spread PG. HDFS/Cassandra/Kafka com awareness de rack = Partition PG.
+- Family M = balanced, C = compute, R = memory, I = storage, T = burstable. If the workload is described, map it to the family.
+- Stable long-term production = Reserved or Savings Plans. Unpredictable burst = On-Demand. Interruption-tolerant = Spot.
+- High IOPS and consistent latency = io2. Adequate performance and lower cost = gp3. Sequential big data = st1. Minimum cost without performance = sc1.
+- HPC between nodes = Cluster PG. Critical high availability per instance = Spread PG. HDFS/Cassandra/Kafka with rack awareness = Partition PG.
 
-## 📎 Links Relacionados
+## 📎 Related Links
 
-- [Questões do módulo](./questoes.md)
-- [Flashcards do módulo](./flashcards.md)
-- [Cheatsheet do módulo](./cheatsheet.md)
-- [Casos de uso do módulo](./casos-de-uso.md)
-- [Lab prático do módulo](./lab.md)
-- [Links oficiais](./links.md)
-- [Módulo 04: Alta Disponibilidade e Escalabilidade](../04-Alta-Disponibilidade-e-Escalabilidade/)
-- [Módulo 05: Amazon S3 e Armazenamento](../05-Amazon-S3-e-Armazenamento/)
+- [Module questions](./questoes.md)
+- [Module flashcards](./flashcards.md)
+- [Module cheatsheet](./cheatsheet.md)
+- [Module use cases](./casos-de-uso.md)
+- [Module hands-on lab](./lab.md)
+- [Official links](./links.md)
+- [Module 04: High Availability and Scalability](../05-Alta-Disponibilidade-e-Escalabilidade/)
+- [Module 05: Amazon S3 and Storage](../06-Amazon-S3-e-Armazenamento/)

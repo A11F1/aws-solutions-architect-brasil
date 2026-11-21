@@ -1,10 +1,10 @@
-# Casos de Uso — Módulo 09: Desacoplamento (SQS, SNS, EventBridge)
+# Use Cases — Module 09: Decoupling (SQS, SNS, EventBridge)
 
-## Caso 1: Fan-Out com SNS + SQS para Processamento de Pedidos
+## Case 1: Fan-Out with SNS + SQS for Order Processing
 
-**Cenário:** E-commerce precisa que cada novo pedido acione: atualização de estoque, geração de nota fiscal e envio de email de confirmação — independentemente.
+**Scenario:** An e-commerce site needs each new order to trigger: inventory update, invoice generation, and a confirmation email — independently.
 
-**Arquitetura:**
+**Architecture:**
 ```
 Order Service (Producer)
   └── SNS Topic: order-events
@@ -16,23 +16,23 @@ Order Service (Producer)
         │     └── [FilterPolicy: {eventType: ["order.created", "order.completed"]}]
         │           └── DLQ: invoice-dlq
         │
-        └── Lambda: EmailService (direto) → SES
+        └── Lambda: EmailService (direct) → SES
               └── [FilterPolicy: {eventType: ["order.created"]}]
 
 Benefits:
-✓ Order Service não conhece os consumers
-✓ Falha no InvoiceService não afeta InventoryService
-✓ Cada queue tem seu próprio DLQ e retry
-✓ Adicionar novo consumer = nova SQS subscription (zero impacto nos outros)
+✓ Order Service does not know the consumers
+✓ A failure in InvoiceService does not affect InventoryService
+✓ Each queue has its own DLQ and retry
+✓ Adding a new consumer = a new SQS subscription (zero impact on the others)
 ```
 
 ---
 
-## Caso 2: Worker Assíncrono com SQS + Auto Scaling
+## Case 2: Asynchronous Worker with SQS + Auto Scaling
 
-**Cenário:** Sistema de processamento de vídeo. Usuários fazem upload e os vídeos precisam ser transcodificados. Carga varia muito ao longo do dia.
+**Scenario:** A video processing system. Users upload videos and they need to be transcoded. Load varies widely throughout the day.
 
-**Arquitetura:**
+**Architecture:**
 ```
 S3 (upload) → S3 Event Notification → SQS Queue: video-transcode
                                               │
@@ -47,46 +47,46 @@ S3 (upload) → S3 Event Notification → SQS Queue: video-transcode
                         EC2 Worker: polling SQS → transcode → S3 (output)
 ```
 
-**Por que não Lambda?** Transcodificação pode demorar 30+ minutos (Lambda máximo = 15min). EC2 com ASG baseado em SQS metric é o padrão para workloads de longa duração.
+**Why not Lambda?** Transcoding can take 30+ minutes (Lambda maximum = 15 min). EC2 with an ASG based on an SQS metric is the standard for long-running workloads.
 
-**Otimização de custo:** Workers podem ser Spot Instances (até 90% desconto). Se spot for interrompida, a mensagem SQS reaparece após VisibilityTimeout → outro worker pega.
+**Cost optimization:** Workers can be Spot Instances (up to 90% discount). If a Spot Instance is interrupted, the SQS message reappears after the VisibilityTimeout → another worker picks it up.
 
 ---
 
-## Caso 3: Pipeline de IoT com Kinesis + Lambda
+## Case 3: IoT Pipeline with Kinesis + Lambda
 
-**Cenário:** 10.000 sensores IoT enviam dados de temperatura a cada segundo. Dados precisam ser armazenados no S3 e alertas gerados em tempo real para temperaturas anormais.
+**Scenario:** 10,000 IoT sensors send temperature data every second. Data must be stored in S3 and alerts generated in real time for abnormal temperatures.
 
-**Arquitetura:**
+**Architecture:**
 ```
-IoT Sensors (10.000 × 1 msg/s = 10K msgs/s)
+IoT Sensors (10,000 × 1 msg/s = 10K msgs/s)
   └── AWS IoT Core (MQTT)
         └── IoT Rule → Kinesis Data Stream (10 shards × 1K req/s = 10K/s)
                             ├── Lambda Consumer (Enhanced Fan-Out)
-                            │     └── Analisa temperatura em real-time
+                            │     └── Analyzes temperature in real time
                             │           └── > 80°C → SNS → PagerDuty
                             │
                             └── Kinesis Data Firehose
-                                  └── (buffer 60s) → S3 (Parquet)
+                                  └── (60s buffer) → S3 (Parquet)
                                         └── Glue Catalog → Athena queries
 ```
 
-**KDS vs Firehose:** KDS para alertas real-time (Lambda, < 200ms). Firehose para ingestão batch no S3 (near real-time, sem código de consumer).
+**KDS vs Firehose:** KDS for real-time alerts (Lambda, < 200ms). Firehose for batch ingestion into S3 (near real-time, no consumer code).
 
 ---
 
-## Caso 4: Event-Driven com EventBridge para Automação de Operações
+## Case 4: Event-Driven with EventBridge for Operations Automation
 
-**Cenário:** Equipe de ops quer automações: ao escalar instâncias EC2, notificar equipe; ao criar usuário IAM, verificar políticas; ao atualizar código no CodePipeline, atualizar wiki.
+**Scenario:** The ops team wants automations: when EC2 instances scale, notify the team; when an IAM user is created, check policies; when code is updated in CodePipeline, update the wiki.
 
-**Regras EventBridge:**
+**EventBridge Rules:**
 ```
-Default Event Bus (eventos AWS)
+Default Event Bus (AWS events)
   ├── Rule 1: EC2 Instance State Change → RUNNING
-  │     └── Target: Lambda → Slack webhook ("Nova instância i-xxx em us-east-1")
+  │     └── Target: Lambda → Slack webhook ("New instance i-xxx in us-east-1")
   │
   ├── Rule 2: IAM CreateUser API (via CloudTrail)
-  │     └── Target: Lambda → IAM Compliance Check → SNS se violação
+  │     └── Target: Lambda → IAM Compliance Check → SNS on violation
   │
   └── Rule 3: CodePipeline → Execution Succeeded
         └── Target: Step Functions → Confluence API Update
@@ -99,11 +99,11 @@ Custom Event Bus: app-events
 
 ---
 
-## Caso 5: Desacoplamento com Amazon MQ para Migração de Sistema Legado
+## Case 5: Decoupling with Amazon MQ for Legacy System Migration
 
-**Cenário:** Sistema bancário legado Java usa ActiveMQ para comunicação entre microserviços. Empresa quer mover para AWS sem reescrever o código.
+**Scenario:** A legacy Java banking system uses ActiveMQ for communication between microservices. The company wants to move to AWS without rewriting the code.
 
-**Estratégia Lift-and-Shift:**
+**Lift-and-Shift Strategy:**
 ```
 BEFORE (on-premises):
   ServiceA (AMQP) → ActiveMQ Broker → ServiceB (AMQP)
@@ -115,13 +115,13 @@ AFTER (AWS - Amazon MQ):
                     └── Broker 2 (us-east-1b) Standby
 ```
 
-**Estratégia de modernização incremental:**
+**Incremental modernization strategy:**
 ```
 Phase 2 (Future):
   ServiceA → Amazon MQ → Bridge Lambda → SNS/SQS
-  [Lambda consome do MQ e republica no SNS]
-  [Novos serviços usam SQS/SNS; legados continuam com MQ]
-  [Migração gradual sem big-bang]
+  [Lambda consumes from MQ and republishes to SNS]
+  [New services use SQS/SNS; legacy ones continue with MQ]
+  [Gradual migration without a big-bang]
 ```
 
-**Por que não ir direto para SQS?** Código de produção usa AMQP/STOMP client libraries. Mudar para SQS SDK exigiria refatoração significativa e testes. Amazon MQ = zero mudanças no código.
+**Why not go straight to SQS?** Production code uses AMQP/STOMP client libraries. Switching to the SQS SDK would require significant refactoring and testing. Amazon MQ = zero code changes.

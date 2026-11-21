@@ -1,101 +1,101 @@
-# Flashcards — Módulo 06: Banco de Dados
+# Flashcards — Module 06: Databases
 
 ---
 
-**P:** Qual é a diferença de replicação entre RDS Multi-AZ e Read Replica?
-**R:** Multi-AZ: replicação **síncrona** → zero RPO, failover automático (~1-2 min). Read Replica: replicação **assíncrona** → pequeno lag, para offload de leituras, failover manual (promover a standalone DB)
+**Q:** What is the replication difference between RDS Multi-AZ and Read Replica?
+**A:** Multi-AZ: **synchronous** replication → zero RPO, automatic failover (~1-2 min). Read Replica: **asynchronous** replication → small lag, for offloading reads, manual failover (promote to a standalone DB)
 
 ---
 
-**P:** Quantas cópias os dados Aurora mantém e como?
-**R:** 6 cópias em 3 AZs (2 por AZ). Write quorum: 4/6. Read quorum: 3/6. Suporta perda de 1 AZ sem impacto em reads; perda de 2 AZs sem impacto em writes
+**Q:** How many copies of data does Aurora keep, and how?
+**A:** 6 copies across 3 AZs (2 per AZ). Write quorum: 4/6. Read quorum: 3/6. Tolerates the loss of 1 AZ with no impact on reads; the loss of 2 AZs with no impact on writes
 
 ---
 
-**P:** Qual o RTO/RPO do Aurora Global Database em caso de falha regional?
-**R:** RPO < 1 segundo (replicação com lag de ~1s). RTO < 1 minuto (promover região secundária manualmente ou automaticamente via managed failover)
+**Q:** What are the RTO/RPO of Aurora Global Database in case of a regional failure?
+**A:** RPO < 1 second (replication with ~1s lag). RTO < 1 minute (promote a secondary Region manually or automatically via managed failover)
 
 ---
 
-**P:** O que é RDS Proxy e quando usar?
-**R:** Proxy gerenciado que faz connection pooling entre aplicações e RDS/Aurora. Reutiliza conexões, evita connection exhaustion. Crítico para Lambda (sem estado, abre nova conexão a cada invoke) e ECS (muitas tasks)
+**Q:** What is RDS Proxy and when should you use it?
+**A:** A managed proxy that does connection pooling between applications and RDS/Aurora. It reuses connections and avoids connection exhaustion. Critical for Lambda (stateless, opens a new connection on every invoke) and ECS (many tasks)
 
 ---
 
-**P:** Quanto tempo o RDS PITR (Point-In-Time Recovery) permite restaurar?
-**R:** Até os últimos 35 dias (configurável de 1 a 35 dias). Restaura para qualquer segundo dentro dessa janela usando backups + transaction logs
+**Q:** How far back does RDS PITR (Point-In-Time Recovery) allow restoring?
+**A:** Up to the last 35 days (configurable from 1 to 35 days). Restores to any second within that window using backups + transaction logs
 
 ---
 
-**P:** Quais são os 2 modos de capacidade do DynamoDB e quando usar cada um?
-**R:** Provisioned: você define RCUs e WCUs + Auto Scaling. Use para carga previsível/consistente (mais barato). On-Demand: cobra por request. Use para carga imprevisível, novos workloads, spikes súbitos
+**Q:** What are the 2 DynamoDB capacity modes and when should you use each?
+**A:** Provisioned: you define RCUs and WCUs + Auto Scaling. Use for predictable/consistent load (cheaper). On-Demand: charges per request. Use for unpredictable load, new workloads, sudden spikes
 
 ---
 
-**P:** O que é 1 RCU e 1 WCU no DynamoDB?
-**R:** 1 RCU = 1 read forte consistência de até 4 KB (ou 2 reads eventually consistent). 1 WCU = 1 write de até 1 KB por segundo
+**Q:** What are 1 RCU and 1 WCU in DynamoDB?
+**A:** 1 RCU = 1 strongly consistent read of up to 4 KB (or 2 eventually consistent reads). 1 WCU = 1 write of up to 1 KB per second
 
 ---
 
-**P:** Qual é a latência do DAX vs DynamoDB direto?
-**R:** DynamoDB: milissegundos de latência. DAX (DynamoDB Accelerator): **microssegundos** (cache in-memory gerenciado, compatível com API DynamoDB)
+**Q:** What is the latency of DAX vs DynamoDB directly?
+**A:** DynamoDB: millisecond latency. DAX (DynamoDB Accelerator): **microseconds** (managed in-memory cache, compatible with the DynamoDB API)
 
 ---
 
-**P:** Qual é a diferença entre LSI e GSI no DynamoDB?
-**R:** LSI: mesma partition key, sort key diferente, criado APENAS na criação da tabela, usa throughput da tabela. GSI: partition key diferente, criado a qualquer momento, throughput independente
+**Q:** What is the difference between LSI and GSI in DynamoDB?
+**A:** LSI: same partition key, different sort key, created ONLY at table creation, uses the table's throughput. GSI: different partition key, can be created at any time, independent throughput
 
 ---
 
-**P:** Por quanto tempo DynamoDB Streams retém os dados?
-**R:** 24 horas. Streams captura item-level changes (INSERT, MODIFY, REMOVE) com imagem antes e/ou depois. Integra com Lambda (trigger) e DynamoDB Global Tables (replicação multi-região)
+**Q:** How long does DynamoDB Streams retain data?
+**A:** 24 hours. Streams captures item-level changes (INSERT, MODIFY, REMOVE) with the before and/or after image. Integrates with Lambda (trigger) and DynamoDB Global Tables (multi-region replication)
 
 ---
 
-**P:** Qual é o padrão de leitura "Lazy Loading" no ElastiCache?
-**R:** Cache Miss: busca do banco de dados → escreve no cache. Cache Hit: retorna do cache. Prós: só armazena dados solicitados. Contras: cache miss = 3 viagens (cache, DB, cache) + risco de dado stale
+**Q:** What is the "Lazy Loading" read pattern in ElastiCache?
+**A:** Cache Miss: fetch from the database → write to the cache. Cache Hit: return from the cache. Pros: only stores requested data. Cons: a cache miss = 3 trips (cache, DB, cache) + risk of stale data
 
 ---
 
-**P:** Qual é a diferença principal entre Redis e Memcached no ElastiCache?
-**R:** Redis: persistência, replicação, Multi-AZ, Pub/Sub, Sorted Sets, Geospatial, Cluster Mode (sharding). Memcached: multi-threading, sem persistência, sem replicação, simples, pure cache. Para HA e estruturas complexas: Redis
+**Q:** What is the main difference between Redis and Memcached in ElastiCache?
+**A:** Redis: persistence, replication, Multi-AZ, Pub/Sub, Sorted Sets, Geospatial, Cluster Mode (sharding). Memcached: multi-threading, no persistence, no replication, simple, pure cache. For HA and complex structures: Redis
 
 ---
 
-**P:** O que é Redshift Enhanced VPC Routing?
-**R:** Força o tráfego COPY e UNLOAD do Redshift a usar a VPC (ao invés da internet pública/endpoints públicos S3). Permite controle via VPC Flow Logs, SG, NACLs. Recomendado para segurança e conformidade
+**Q:** What is Redshift Enhanced VPC Routing?
+**A:** It forces Redshift COPY and UNLOAD traffic to use the VPC (instead of the public internet/public S3 endpoints). It allows control via VPC Flow Logs, SGs, and NACLs. Recommended for security and compliance
 
 ---
 
-**P:** Quando usar Amazon Neptune?
-**R:** Para dados e queries de grafos: redes sociais (amizades), fraud detection (conexões suspeitas), knowledge graphs, motores de recomendação. Suporta Property Graph (Gremlin, openCypher) e RDF (SPARQL)
+**Q:** When should you use Amazon Neptune?
+**A:** For graph data and queries: social networks (friendships), fraud detection (suspicious connections), knowledge graphs, recommendation engines. Supports Property Graph (Gremlin, openCypher) and RDF (SPARQL)
 
 ---
 
-**P:** Quando usar Amazon QLDB?
-**R:** Ledger database com histórico imutável e verificável criptograficamente. Para: registros financeiros, supply chain tracking, audit logs onde nenhum dado pode ser apagado ou modificado retroativamente
+**Q:** When should you use Amazon QLDB?
+**A:** A ledger database with an immutable, cryptographically verifiable history. For: financial records, supply chain tracking, audit logs where no data may be deleted or retroactively modified
 
 ---
 
-**P:** Para qual workload Aurora Serverless v2 é ideal?
-**R:** Cargas de trabalho com tráfego muito variável (ex: dev/test, aplicações com picos noturnos ou sazonais). Escala de 0,5 a 128 ACUs em incrementos de 0,5 ACU em ~1 segundo. Zero downtime durante escalas
+**Q:** What workload is Aurora Serverless v2 ideal for?
+**A:** Workloads with highly variable traffic (e.g., dev/test, applications with nightly or seasonal peaks). Scales from 0.5 to 128 ACUs in 0.5 ACU increments in ~1 second. Zero downtime during scaling
 
 ---
 
-**P:** O que é o endpoint de leitura e endpoint de escrita do Aurora Cluster?
-**R:** Cluster Endpoint (escrita): aponta para a instância primary writer. Reader Endpoint: load balancer entre todas as Read Replicas. Aplicações devem usar o endpoint correto para separar reads de writes
+**Q:** What are the read endpoint and write endpoint of an Aurora Cluster?
+**A:** Cluster Endpoint (write): points to the primary writer instance. Reader Endpoint: load balancer across all Read Replicas. Applications should use the correct endpoint to separate reads from writes
 
 ---
 
-**P:** O que é ElastiCache Cluster Mode (sharding no Redis)?
-**R:** Distribui os key slots (partições do keyspace) entre múltiplos node groups (shards). Permite maior throughput total (escrita em paralelo em shards) e maior capacidade de dados do que um único nó. Cada shard tem réplicas para HA
+**Q:** What is ElastiCache Cluster Mode (sharding in Redis)?
+**A:** It distributes key slots (keyspace partitions) across multiple node groups (shards). It allows higher total throughput (parallel writes across shards) and greater data capacity than a single node. Each shard has replicas for HA
 
 ---
 
-**P:** O que é Amazon Keyspaces?
-**R:** Apache Cassandra compatível e totalmente gerenciado na AWS. Para migração lift-and-shift de workloads Cassandra sem gerenciar clusters. CQL (Cassandra Query Language) compatível
+**Q:** What is Amazon Keyspaces?
+**A:** A fully managed, Apache Cassandra-compatible service on AWS. For lift-and-shift migration of Cassandra workloads without managing clusters. CQL (Cassandra Query Language) compatible
 
 ---
 
-**P:** Qual o uso do Amazon Timestream?
-**R:** Time series database serverless. Para IoT data, DevOps metrics, telemetria de application performance. Armazena e analisa trilhões de eventos por dia. Queries com funções de análise temporal built-in
+**Q:** What is Amazon Timestream used for?
+**A:** A serverless time series database. For IoT data, DevOps metrics, application performance telemetry. Stores and analyzes trillions of events per day. Queries with built-in time-series analytics functions

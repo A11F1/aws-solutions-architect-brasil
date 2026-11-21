@@ -1,20 +1,20 @@
-# Lab Prático — DynamoDB: Modelagem, GSI, DAX e Streams (Módulo 07)
+# Hands-On Lab — DynamoDB: Modeling, GSI, DAX, and Streams (Module 07)
 
-> **Região:** us-east-1 | **Custo estimado:** ~$0 (on-demand mode + DAX ~$0.08/h — destruir após lab)  
-> **Pré-requisitos:** AWS CLI configurado, Python 3.8+, pip
-
----
-
-## Objetivo
-
-Praticar modelagem de dados NoSQL no DynamoDB, criar GSI, habilitar Streams, explorar TTL e entender o modelo de consistência.
+> **Region:** us-east-1 | **Estimated cost:** ~$0 (on-demand mode + DAX ~$0.08/h — destroy after the lab)  
+> **Prerequisites:** AWS CLI configured, Python 3.8+, pip
 
 ---
 
-## Parte 1 — Criar Tabela com GSI e TTL
+## Objective
+
+Practice NoSQL data modeling in DynamoDB, create a GSI, enable Streams, explore TTL, and understand the consistency model.
+
+---
+
+## Part 1 — Create a Table with GSI and TTL
 
 ```bash
-# Tabela: pedidos com GSI para consulta por cliente
+# Table: orders (pedidos) with a GSI to query by customer
 aws dynamodb create-table \
   --table-name "pedidos" \
   --attribute-definitions \
@@ -36,15 +36,15 @@ aws dynamodb create-table \
   ]' \
   --stream-specification "StreamEnabled=true,StreamViewType=NEW_AND_OLD_IMAGES"
 
-# Habilitar TTL (campo expires_at = Unix timestamp)
+# Enable TTL (expires_at field = Unix timestamp)
 aws dynamodb update-time-to-live \
   --table-name "pedidos" \
   --time-to-live-specification "Enabled=true,AttributeName=expires_at"
 
 aws dynamodb wait table-exists --table-name "pedidos"
-echo "Tabela pedidos criada!"
+echo "Table pedidos created!"
 
-# Segunda tabela: carrinho com TTL (sessão de 1h)
+# Second table: cart (carrinho) with TTL (1h session)
 aws dynamodb create-table \
   --table-name "carrinho" \
   --attribute-definitions \
@@ -60,12 +60,12 @@ aws dynamodb update-time-to-live \
   --time-to-live-specification "Enabled=true,AttributeName=expires_at"
 
 aws dynamodb wait table-exists --table-name "carrinho"
-echo "Tabela carrinho criada!"
+echo "Table carrinho created!"
 ```
 
 ---
 
-## Parte 2 — Operações CRUD e Consultas
+## Part 2 — CRUD Operations and Queries
 
 ```python
 # dynamo_lab.py
@@ -79,7 +79,7 @@ tabela_pedidos  = dynamodb.Table('pedidos')
 tabela_carrinho = dynamodb.Table('carrinho')
 
 # ──────────────────────────────────────────
-# 1. PutItem — criar pedidos
+# 1. PutItem — create orders
 # ──────────────────────────────────────────
 agora = datetime.utcnow()
 pedidos_ids = []
@@ -103,10 +103,10 @@ for i, (cliente, produto, valor) in enumerate([
         'expires_at':  int((agora + timedelta(days=30)).timestamp()),
     })
 
-print(f"Inseridos {len(pedidos_ids)} pedidos")
+print(f"Inserted {len(pedidos_ids)} orders")
 
 # ──────────────────────────────────────────
-# 2. GetItem — busca pelo HASH key
+# 2. GetItem — lookup by HASH key
 # ──────────────────────────────────────────
 resp = tabela_pedidos.get_item(
     Key={'pedido_id': pedidos_ids[0]},
@@ -114,24 +114,24 @@ resp = tabela_pedidos.get_item(
 )
 print(f"\nGetItem (consistent): {resp['Item']}")
 
-# Sem ConsistentRead = Eventually Consistent (padrão, mais barato)
+# Without ConsistentRead = Eventually Consistent (default, cheaper)
 resp2 = tabela_pedidos.get_item(Key={'pedido_id': pedidos_ids[0]})
 print(f"GetItem (eventual): {resp2['Item']['produto']}")
 
 # ──────────────────────────────────────────
-# 3. Query pelo GSI: todos os pedidos do CLI-001
+# 3. Query on the GSI: all orders for CLI-001
 # ──────────────────────────────────────────
 resp = tabela_pedidos.query(
     IndexName='cliente-data-index',
     KeyConditionExpression=Key('cliente_id').eq('CLI-001'),
-    ScanIndexForward=False  # ordem decrescente por data
+    ScanIndexForward=False  # descending order by date
 )
-print(f"\nQuery GSI (CLI-001): {len(resp['Items'])} pedidos")
+print(f"\nQuery GSI (CLI-001): {len(resp['Items'])} orders")
 for p in resp['Items']:
     print(f"  {p['data_pedido']} — {p['produto']} — {p['status']}")
 
 # ──────────────────────────────────────────
-# 4. Query com range: pedidos recentes do CLI-001
+# 4. Query with range: recent orders for CLI-001
 # ──────────────────────────────────────────
 data_corte = (agora - timedelta(days=3)).strftime('%Y-%m-%dT%H:%M:%S')
 resp = tabela_pedidos.query(
@@ -141,10 +141,10 @@ resp = tabela_pedidos.query(
         Key('data_pedido').gt(data_corte)
     )
 )
-print(f"\nPedidos recentes CLI-001 (últimos 3 dias): {len(resp['Items'])}")
+print(f"\nRecent orders CLI-001 (last 3 days): {len(resp['Items'])}")
 
 # ──────────────────────────────────────────
-# 5. UpdateItem — atualizar status
+# 5. UpdateItem — update status
 # ──────────────────────────────────────────
 tabela_pedidos.update_item(
     Key={'pedido_id': pedidos_ids[0]},
@@ -153,19 +153,19 @@ tabela_pedidos.update_item(
     ExpressionAttributeValues={':ns': 'enviado', ':ts': agora.isoformat()},
     ConditionExpression=Attr('status').eq('pendente')  # Conditional write
 )
-print(f"\nStatus atualizado condicionalmente: pedido {pedidos_ids[0]} → enviado")
+print(f"\nStatus updated conditionally: order {pedidos_ids[0]} → shipped")
 
 # ──────────────────────────────────────────
-# 6. Scan com FilterExpression (menos eficiente que Query)
+# 6. Scan with FilterExpression (less efficient than Query)
 # ──────────────────────────────────────────
 resp = tabela_pedidos.scan(
     FilterExpression=Attr('status').eq('aprovado'),
     Select='COUNT'
 )
-print(f"\nScan (status=aprovado): {resp['Count']} pedidos")
+print(f"\nScan (status=aprovado): {resp['Count']} orders")
 
 # ──────────────────────────────────────────
-# 7. Carrinho com TTL (expira em 1 hora)
+# 7. Cart with TTL (expires in 1 hour)
 # ──────────────────────────────────────────
 sessao = str(uuid.uuid4())[:8]
 expira = int((agora + timedelta(hours=1)).timestamp())
@@ -179,7 +179,7 @@ for item_id, produto, qtd in [("PROD-1", "Notebook", 1), ("PROD-2", "Mouse", 2)]
         'expires_at': expira,
     })
 
-print(f"\nCarrinho {sessao}: 2 itens (TTL em 1 hora)")
+print(f"\nCart {sessao}: 2 items (TTL in 1 hour)")
 
 # ──────────────────────────────────────────
 # 8. BatchWrite
@@ -195,7 +195,7 @@ with tabela_pedidos.batch_writer() as batch:
             'data_pedido': agora.isoformat(),
             'expires_at': int((agora + timedelta(days=7)).timestamp()),
         })
-print("BatchWrite: 10 pedidos inseridos")
+print("BatchWrite: 10 orders inserted")
 ```
 
 ```bash
@@ -204,17 +204,17 @@ python3 dynamo_lab.py
 
 ---
 
-## Parte 3 — DynamoDB Streams + Lambda Trigger
+## Part 3 — DynamoDB Streams + Lambda Trigger
 
 ```bash
-# Obter ARN do Stream
+# Get the Stream ARN
 STREAM_ARN=$(aws dynamodb describe-table \
   --table-name "pedidos" \
   --query 'Table.LatestStreamArn' --output text)
 
 echo "Stream ARN: $STREAM_ARN"
 
-# Criar Lambda que processa o stream
+# Create a Lambda that processes the stream
 LAMBDA_ROLE=$(aws iam create-role \
   --role-name "lab-dynamo-stream-role" \
   --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Action":"sts:AssumeRole","Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"}}]}' \
@@ -233,16 +233,16 @@ def handler(event, context):
     for record in event['Records']:
         if record['eventName'] == 'INSERT':
             novo = record['dynamodb']['NewImage']
-            print(f"NOVO PEDIDO: id={novo['pedido_id']['S']} cliente={novo.get('cliente_id',{}).get('S')}")
+            print(f"NEW ORDER: id={novo['pedido_id']['S']} cliente={novo.get('cliente_id',{}).get('S')}")
         elif record['eventName'] == 'MODIFY':
             antigo = record['dynamodb'].get('OldImage', {})
             novo = record['dynamodb']['NewImage']
             old_status = antigo.get('status', {}).get('S', '?')
             new_status = novo.get('status', {}).get('S', '?')
             if old_status != new_status:
-                print(f"STATUS MUDOU: {old_status} → {new_status}")
+                print(f"STATUS CHANGED: {old_status} → {new_status}")
         elif record['eventName'] == 'REMOVE':
-            print(f"ITEM REMOVIDO (TTL expirou)")
+            print(f"ITEM REMOVED (TTL expired)")
     return {'batchItemFailures': []}
 PYTHON
 
@@ -254,37 +254,37 @@ FUNC_ARN=$(aws lambda create-function \
   --zip-file fileb:///tmp/stream_handler.zip \
   --query 'FunctionArn' --output text)
 
-# Conectar stream à Lambda
+# Connect the stream to the Lambda
 aws lambda create-event-source-mapping \
   --event-source-arn "$STREAM_ARN" \
   --function-name "lab-dynamo-stream-processor" \
   --starting-position TRIM_HORIZON \
   --batch-size 10
 
-echo "Stream trigger criado!"
+echo "Stream trigger created!"
 sleep 15
 
-# Verificar logs da Lambda (eventos do batch write)
+# Check the Lambda logs (batch write events)
 aws logs filter-log-events \
   --log-group-name "/aws/lambda/lab-dynamo-stream-processor" \
-  --filter-pattern "NOVO PEDIDO" \
+  --filter-pattern "NEW ORDER" \
   --query 'events[*].message' \
   --output text | head -10
 ```
 
 ---
 
-## Limpeza
+## Cleanup
 
 ```bash
-# Deletar Lambda e trigger
+# Delete Lambda and trigger
 aws lambda delete-function --function-name "lab-dynamo-stream-processor"
 aws iam detach-role-policy \
   --role-name "lab-dynamo-stream-role" \
   --policy-arn "arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole"
 aws iam delete-role --role-name "lab-dynamo-stream-role"
 
-# Deletar tabelas
+# Delete tables
 aws dynamodb delete-table --table-name "pedidos"
 aws dynamodb delete-table --table-name "carrinho"
 
@@ -293,11 +293,11 @@ rm -f dynamo_lab.py /tmp/stream_handler.zip
 
 ---
 
-## O Que Você Aprendeu
+## What You Learned
 
-- **Partition Key** distribui dados; **Sort Key** permite range queries em uma partição
-- **GSI:** nova visão da tabela com keys diferentes; eventual consistency por padrão
-- **Scan vs Query:** Scan lê TUDO depois filtra (caro); Query usa index (eficiente)
-- **TTL:** expiração automática e gratuita via atributo Unix timestamp — não é imediata (até 48h)
-- **Streams:** log imutável de mudanças; integra com Lambda para reação em tempo real (event sourcing)
-- **ConditionExpression:** escrita atômica idempotente — prevent lost updates em concorrência
+- **Partition Key** distributes data; **Sort Key** enables range queries within a partition
+- **GSI:** a new view of the table with different keys; eventually consistent by default
+- **Scan vs Query:** Scan reads EVERYTHING and then filters (expensive); Query uses the index (efficient)
+- **TTL:** automatic, free expiration via a Unix timestamp attribute — not immediate (up to 48h)
+- **Streams:** immutable change log; integrates with Lambda for real-time reaction (event sourcing)
+- **ConditionExpression:** atomic, idempotent write — prevents lost updates under concurrency

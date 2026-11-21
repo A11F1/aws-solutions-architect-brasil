@@ -1,139 +1,139 @@
-# Casos de Uso — Alta Disponibilidade e Escalabilidade
+# Use Cases — High Availability and Scalability
 
-## Caso 1: E-commerce Multi-Tier com ALB e ASG
+## Case 1: Multi-Tier E-commerce with ALB and ASG
 
-**Contexto:**  
-Um e-commerce precisa de alta disponibilidade (99,9% SLA) com capacidade de escalar de 50 para 2.000 req/s em horários de pico (Black Friday), separando tráfego de API e frontend.
+**Context:**  
+An e-commerce site needs high availability (99.9% SLA) with the ability to scale from 50 to 2,000 req/s at peak times (Black Friday), separating API and frontend traffic.
 
-**Arquitetura:**
+**Architecture:**
 
 ```
 Route 53 (DNS Failover + Health Check)
          │
          ▼
- Internet Gateway  (VPC pública)
+ Internet Gateway  (public VPC)
          │
          ▼
   ALB (multi-AZ, listener 443)
   ├── Rule 1: /api/* → TG-API (EC2 c5.xlarge, Target Tracking CPU 60%)
-  ├── Rule 2: /static/* → TG-Static (S3 via redirect ou EC2)
+  ├── Rule 2: /static/* → TG-Static (S3 via redirect or EC2)
   └── Rule 3: default → TG-Web (EC2 t3.large, Target Tracking CPU 50%)
 
 TG-API:
   └── ASG: min=2, max=50, desired=4
         ├── Scaling: Target Tracking (CPUUtilization = 60)
-        └── Health check: ELB (/health, HTTP 200, intervalo 15s)
+        └── Health check: ELB (/health, HTTP 200, interval 15s)
 
 TG-Web:
   └── ASG: min=2, max=30, desired=4
         ├── Scaling: Target Tracking + Scheduled (Black Friday pre-scale)
         └── AZ: us-east-1a, us-east-1b, us-east-1c
 
-ElastiCache (Sessão)     RDS Multi-AZ (DB)
+ElastiCache (Session)    RDS Multi-AZ (DB)
 us-east-1a               us-east-1a (primary)
 us-east-1b               us-east-1b (standby AZ)
 
 Backup /static:
-  CloudFront → S3 (assets estáticos, CDN global)
+  CloudFront → S3 (static assets, global CDN)
 ```
 
-**Decisões de design:**
-- Path-based routing no ALB separa API de frontend sem dois ALBs
-- ELB health check no ASG garante substituição automática de instâncias com falha de aplicação
-- Scheduled scaling pré-provisiona instâncias antes do Black Friday
+**Design decisions:**
+- Path-based routing on the ALB separates API from frontend without needing two ALBs
+- ELB health check on the ASG ensures automatic replacement of instances with application failures
+- Scheduled scaling pre-provisions instances before Black Friday
 
-**Conceitos cobrados:** ALB path-based routing, ASG Target Tracking, ELB health check, multi-AZ, escalabilidade horizontal
+**Concepts tested:** ALB path-based routing, ASG Target Tracking, ELB health check, multi-AZ, horizontal scalability
 
 ---
 
-## Caso 2: API Interna com PrivateLink e NLB
+## Case 2: Internal API with PrivateLink and NLB
 
-**Contexto:**  
-Uma fintech expõe uma API de pagamentos para parceiros externos. Os parceiros têm suas próprias VPCs e precisam acessar a API com segurança, sem tráfego pela internet, sem VPC Peering (requisito regulatório que proíbe CIDR overlap).
+**Context:**  
+A fintech exposes a payments API to external partners. The partners have their own VPCs and need to access the API securely, with no traffic over the internet and no VPC Peering (a regulatory requirement that prohibits CIDR overlap).
 
-**Arquitetura:**
+**Architecture:**
 
 ```
-Conta Fintech (Provider):                    Conta Parceiro A:
+Fintech Account (Provider):                  Partner A Account:
 ┌──────────────────────────────┐             ┌─────────────────────┐
 │  VPC: 10.0.0.0/16            │             │  VPC: 10.0.0.0/16   │
-│                              │             │  (mesmo CIDR — ok!) │
-│  EC2 (API Payment)           │             │                     │
+│                              │             │  (same CIDR — ok!)  │
+│  EC2 (Payment API)           │             │                     │
 │    └── Port 8443             │             │  EC2 (Consumer)     │
 │         ↓                    │             │    └── Interface VPC │
 │  NLB (internal)              │ PrivateLink │       Endpoint       │
 │  └── TG: port 8443           │◀───────────▶│    IP: 10.0.x.x     │
-│  └── Listener: 443           │             │    (ENI na VPC)      │
+│  └── Listener: 443           │             │    (ENI in the VPC)  │
 │  └── TLS: ACM cert           │             │                     │
 │         ↓                    │             └─────────────────────┘
 │  VPC Endpoint Service        │
-│  (com whitelist de accounts) │             Conta Parceiro B:
+│  (with account allowlist)    │             Partner B Account:
 │                              │             ┌─────────────────────┐
-└──────────────────────────────┘             │  Mesmo padrão ↑     │
+└──────────────────────────────┘             │  Same pattern ↑     │
                                              └─────────────────────┘
 
-Tráfego: 100% dentro da rede AWS (nunca internet)
-Sem Peering: sem rota entre VPCs, sem problemas de CIDR overlap
+Traffic: 100% inside the AWS network (never the internet)
+No Peering: no route between VPCs, no CIDR overlap problems
 ```
 
-**Configuração do Endpoint Service:**
+**Endpoint Service configuration:**
 ```bash
-# Cria o serviço a partir do NLB
+# Create the service from the NLB
 aws ec2 create-vpc-endpoint-service-configuration \
   --network-load-balancer-arns arn:aws:elasticloadbalancing:... \
-  --acceptance-required  # requer aprovação manual de novos consumidores
+  --acceptance-required  # requires manual approval of new consumers
 
-# Adiciona permissão para o account do parceiro criar endpoint
+# Add permission for the partner's account to create an endpoint
 aws ec2 modify-vpc-endpoint-service-permissions \
   --service-id vpce-svc-xxxxxxxxxxxxxxxx \
   --add-allowed-principals "arn:aws:iam::PARTNER_ACCOUNT_ID:root"
 ```
 
-**Conceitos cobrados:** PrivateLink, NLB como backend de VPC Endpoint Service, Interface VPC Endpoint, segurança cross-account sem internet
+**Concepts tested:** PrivateLink, NLB as backend of a VPC Endpoint Service, Interface VPC Endpoint, cross-account security without internet
 
 ---
 
-## Caso 3: Blue/Green Deployment sem Downtime
+## Case 3: Blue/Green Deployment with No Downtime
 
-**Contexto:**  
-Um time de DevOps precisa fazer deploys de nova versão da aplicação com zero downtime, com capacidade de rollback imediato se a nova versão apresentar erros.
+**Context:**  
+A DevOps team needs to deploy new application versions with zero downtime, with the ability to roll back immediately if the new version shows errors.
 
-**Arquitetura com ALB Weighted Target Groups:**
+**Architecture with ALB Weighted Target Groups:**
 
 ```
 ALB Listener (:443)
 │
 └── Rule: /* → Forward (weighted)
-      ├── TG-Blue (versão 1.2.0): peso 90% → 9 instâncias (m5.large)
-      └── TG-Green (versão 2.0.0): peso 10% → 1 instância (m5.large)
+      ├── TG-Blue (version 1.2.0): weight 90% → 9 instances (m5.large)
+      └── TG-Green (version 2.0.0): weight 10% → 1 instance (m5.large)
 
-Deploy gradual:
-  Fase 1: Blue 100%, Green 0%     (nova versão disponível mas sem tráfego)
-  Fase 2: Blue 95%, Green 5%      (canary: monitoramento)
-  Fase 3: Blue 80%, Green 20%     (validação)
-  Fase 4: Blue 50%, Green 50%     (50/50)
-  Fase 5: Blue 0%, Green 100%     (deploy completo)
+Gradual deployment:
+  Phase 1: Blue 100%, Green 0%     (new version available but with no traffic)
+  Phase 2: Blue 95%, Green 5%      (canary: monitoring)
+  Phase 3: Blue 80%, Green 20%     (validation)
+  Phase 4: Blue 50%, Green 50%     (50/50)
+  Phase 5: Blue 0%, Green 100%     (full deployment)
   
-Rollback instantâneo:
-  Qualquer fase: alterar pesos → Blue 100%, Green 0%
-  API: aws elbv2 modify-rule (< 1 segundo de propagação)
+Instant rollback:
+  Any phase: change weights → Blue 100%, Green 0%
+  API: aws elbv2 modify-rule (< 1 second propagation)
 
-Monitoramento (CloudWatch):
-  ├── ALB: HTTPCode_Target_5XX_Count por TG
-  ├── ALB: TargetResponseTime por TG
-  └── Alarm → SNS → Lambda (rollback automático se error rate > 1%)
+Monitoring (CloudWatch):
+  ├── ALB: HTTPCode_Target_5XX_Count per TG
+  ├── ALB: TargetResponseTime per TG
+  └── Alarm → SNS → Lambda (automatic rollback if error rate > 1%)
 ```
 
-**Conceitos cobrados:** ALB weighted target groups, blue/green zero-downtime, canary release, rollback automatizado
+**Concepts tested:** ALB weighted target groups, blue/green zero-downtime, canary release, automated rollback
 
 ---
 
-## Caso 4: Worker Fleet com Lifecycle Hooks e SQS
+## Case 4: Worker Fleet with Lifecycle Hooks and SQS
 
-**Contexto:**  
-Um sistema de processamento de vídeo usa EC2 para transcodificar arquivos recebidos de uma fila SQS. Cada job demora até 30 minutos. Ao escalar-in, é crítico que o job atual termine antes da instância ser terminada.
+**Context:**  
+A video processing system uses EC2 to transcode files received from an SQS queue. Each job takes up to 30 minutes. On scale-in, it is critical that the current job finishes before the instance is terminated.
 
-**Arquitetura:**
+**Architecture:**
 
 ```
 SQS Queue (video-jobs)
@@ -141,73 +141,73 @@ SQS Queue (video-jobs)
     ▼
 ASG Worker Fleet
   ├── Scale-out Trigger: ApproximateNumberOfMessages > 10 (Custom CloudWatch Metric)
-  ├── Scale-in Trigger: ApproximateNumberOfMessages = 0 por 5 min
+  ├── Scale-in Trigger: ApproximateNumberOfMessages = 0 for 5 min
   │
   └── Lifecycle Hook: EC2_INSTANCE_TERMINATING
-          └── Timeout: 3600s (1 hora)
+          └── Timeout: 3600s (1 hour)
           └── Notification: EventBridge Rule
 
 EventBridge Rule (lifecycle hook event)
   └── Lambda: LifecycleHookTerminating
-        ├── Consulta status do job na instância (SSM Parameter Store)
+        ├── Checks job status on the instance (SSM Parameter Store)
         │     └── /workers/{instance-id}/job-status
-        ├── Se job running: espera (polls a cada 60s)
-        ├── Se job complete: CompleteLifecycleAction(CONTINUE)
-        └── Se timeout (safety): CompleteLifecycleAction(CONTINUE)
+        ├── If job running: waits (polls every 60s)
+        ├── If job complete: CompleteLifecycleAction(CONTINUE)
+        └── If timeout (safety): CompleteLifecycleAction(CONTINUE)
 
-Fluxo completo:
-  ASG decide terminar instância-X
-    → instância-X muda para Terminating:Wait
-    → EventBridge dispara Lambda
-    → Lambda verifica: job em andamento
-    → Lambda espera 20 minutos
-    → Lambda confirma job concluído
+Full flow:
+  ASG decides to terminate instance-X
+    → instance-X moves to Terminating:Wait
+    → EventBridge triggers Lambda
+    → Lambda checks: job in progress
+    → Lambda waits 20 minutes
+    → Lambda confirms job completed
     → CompleteLifecycleAction(CONTINUE)
-    → instância-X termina normalmente
+    → instance-X terminates normally
 ```
 
-**Conceitos cobrados:** Lifecycle Hooks, Terminating:Wait, EventBridge, Lambda para automação de lifecycle, custom CloudWatch metrics para ASG scaling
+**Concepts tested:** Lifecycle Hooks, Terminating:Wait, EventBridge, Lambda for lifecycle automation, custom CloudWatch metrics for ASG scaling
 
 ---
 
-## Caso 5: Inspeção de Tráfego com GWLB e Appliance de Segurança
+## Case 5: Traffic Inspection with GWLB and Security Appliance
 
-**Contexto:**  
-Uma empresa de serviços financeiros precisa inspecionar todo o tráfego de entrada e saída da aplicação com um IDS/IPS de terceiro (Palo Alto Networks) antes de alcançar os servidores de aplicação.
+**Context:**  
+A financial services company needs to inspect all inbound and outbound application traffic with a third-party IDS/IPS (Palo Alto Networks) before it reaches the application servers.
 
-**Arquitetura:**
+**Architecture:**
 
 ```
 Internet Gateway
       │
       ▼
-VPC Provider Account (Security Hub Centralizado):
+Provider Account VPC (Centralized Security Hub):
 ┌──────────────────────────────────────────┐
-│  GWLB Endpoint (na VPC do consumidor)   │
+│  GWLB Endpoint (in the consumer's VPC)   │
 │       │                                  │
 │  GWLB (Layer 3, GENEVE)                  │
 │  └── Target Group: Firewall EC2s         │
 │        ├── Palo Alto VM-Series (AZ-a)    │
 │        └── Palo Alto VM-Series (AZ-b)    │
 └──────────────────────────────────────────┘
-      │ Pacotes inspecionados devolvidos
+      │ Inspected packets returned
       ▼
-VPC Consumidor (Application Account):
+Consumer VPC (Application Account):
 ┌──────────────────────────────────────────┐
 │  Ingress Routing (VPC Route Table)       │
-│  Destino: 0.0.0.0/0 → GWLB Endpoint     │
-│  (Todo tráfego via internet vai ao GWLB) │
+│  Destination: 0.0.0.0/0 → GWLB Endpoint  │
+│  (All internet traffic goes to the GWLB) │
 │                                          │
 │  ALB → ASG (App Servers)                 │
 └──────────────────────────────────────────┘
 
-Fluxo:
+Flow:
   Internet → IGW → GWLB Endpoint → GWLB → Palo Alto
-    → (se OK) devolvido ao GWLB → GWLB Endpoint → ALB → App
-  Se bloqueado pelo IDS/IPS → dropped
+    → (if OK) returned to GWLB → GWLB Endpoint → ALB → App
+  If blocked by IDS/IPS → dropped
 
-Benefício: Appliances gerenciados centralmente no Security Hub Account,
-           isolados da aplicação, escaláveis via ASG
+Benefit: Appliances centrally managed in the Security Hub Account,
+         isolated from the application, scalable via ASG
 ```
 
-**Conceitos cobrados:** GWLB, GENEVE protocol, VPC Ingress Routing, Security Hub centralizado, appliance transparente
+**Concepts tested:** GWLB, GENEVE protocol, VPC Ingress Routing, centralized Security Hub, transparent appliance

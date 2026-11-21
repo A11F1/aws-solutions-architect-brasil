@@ -1,85 +1,85 @@
-# Cheatsheet — Módulo 11: Serverless, Lambda e API Gateway
+# Cheatsheet — Module 11: Serverless, Lambda and API Gateway
 
-## Limites Críticos do Lambda
+## Critical Lambda Limits
 
-| Parâmetro | Valor |
+| Parameter | Value |
 |---|---|
-| Timeout máximo | 15 minutos |
-| Memória | 128 MB a 10.240 MB |
-| Payload síncrono (request/response) | 6 MB cada |
-| Payload assíncrono | 256 KB |
-| Tamanho do package (zip) | 50 MB (zip) / 250 MB (descomprimido) |
-| Concurrent executions por conta/região | 1.000 (default, aumentável) |
-| Layers máximos por função | 5 |
-| Variáveis de ambiente | 4 KB total |
-| Tmp storage (/tmp) | 512 MB a 10.240 MB |
+| Maximum timeout | 15 minutes |
+| Memory | 128 MB to 10,240 MB |
+| Synchronous payload (request/response) | 6 MB each |
+| Asynchronous payload | 256 KB |
+| Package size (zip) | 50 MB (zip) / 250 MB (unzipped) |
+| Concurrent executions per account/Region | 1,000 (default, can be increased) |
+| Maximum layers per function | 5 |
+| Environment variables | 4 KB total |
+| Tmp storage (/tmp) | 512 MB to 10,240 MB |
 
 ---
 
-## Tipos de Invocação Lambda
+## Lambda Invocation Types
 
-| Tipo | Quem Usa | Retry | DLQ |
+| Type | Used By | Retry | DLQ |
 |---|---|---|---|
-| **Síncrono** | API GW, ALB, SDK, CLI | Nenhum (cliente retry) | N/A |
-| **Assíncrono** | S3, SNS, EventBridge, SES | 2 retries automáticos | SQS/SNS via Destinations |
-| **Event Source Mapping** | SQS, Kinesis, DynamoDB Streams, MSK | Retry até expirar (Kinesis) ou maxReceiveCount (SQS) | DLQ configurada na fila |
+| **Synchronous** | API GW, ALB, SDK, CLI | None (client retries) | N/A |
+| **Asynchronous** | S3, SNS, EventBridge, SES | 2 automatic retries | SQS/SNS via Destinations |
+| **Event Source Mapping** | SQS, Kinesis, DynamoDB Streams, MSK | Retry until expiry (Kinesis) or maxReceiveCount (SQS) | DLQ configured on the queue |
 
 ---
 
-## Concurrency Lambda
+## Lambda Concurrency
 
-| Tipo | Descrição | Custo |
+| Type | Description | Cost |
 |---|---|---|
-| **On-demand** | Escala automático conforme demanda | Padrão (pay-per-use) |
-| **Reserved** | Garante capacity exclusiva para a função; limita ao máximo definido | Padrão |
-| **Provisioned** | Pré-aquece instâncias (elimina cold start) | $0.015/GB-hora provisionada |
+| **On-demand** | Scales automatically with demand | Standard (pay-per-use) |
+| **Reserved** | Guarantees exclusive capacity for the function; caps it at the defined maximum | Standard |
+| **Provisioned** | Pre-warms instances (eliminates cold start) | $0.015/provisioned GB-hour |
 
-**Throttling:** se `concurrent executions > reserved/account limit` → **HTTP 429** (sync) ou evento vai para fila de retry (async).
+**Throttling:** if `concurrent executions > reserved/account limit` → **HTTP 429** (sync) or the event goes to a retry queue (async).
 
 ---
 
-## API Gateway — Tipos de API
+## API Gateway — API Types
 
-| Tipo | Features | Custo | Melhor Para |
+| Type | Features | Cost | Best For |
 |---|---|---|---|
-| **REST API** | Stages, caching, usage plans, API keys, full transform | Médio | APIs produção completas |
-| **HTTP API** | JWT/OAuth nativo, sem mapping templates | ~70% mais barato | Microsserviços simples |
-| **WebSocket API** | Conexões bidirecionais persistentes | Por conexão + mensagem | Chat, real-time updates |
+| **REST API** | Stages, caching, usage plans, API keys, full transform | Medium | Full production APIs |
+| **HTTP API** | Native JWT/OAuth, no mapping templates | ~70% cheaper | Simple microservices |
+| **WebSocket API** | Persistent bidirectional connections | Per connection + message | Chat, real-time updates |
 
 ---
 
 ## API Gateway Throttling
 
-| Limite | Valor Padrão |
+| Limit | Default Value |
 |---|---|
-| Request rate por conta | 10.000 req/s |
-| Burst | 5.000 req concorrentes |
-| HTTP 429 | Too Many Requests (quando excede) |
+| Request rate per account | 10,000 req/s |
+| Burst | 5,000 concurrent requests |
+| HTTP 429 | Too Many Requests (when exceeded) |
 
 ---
 
-## Integrações do API Gateway
+## API Gateway Integrations
 
-| Tipo | Descrição |
+| Type | Description |
 |---|---|
-| **Lambda Proxy** | Event completo para Lambda; Lambda retorna statusCode + headers + body |
-| **Lambda Custom** | Mapping templates (VTL) transformam request/response |
-| **HTTP Proxy** | Redireciona request HTTP sem transformação |
-| **AWS Service** | Chama AWS API diretamente (ex: SQS SendMessage sem Lambda) |
-| **Mock** | Retorna resposta estática (para testes, CORS OPTIONS) |
-| **VPC Link** | Acessa NLB em VPC privada |
+| **Lambda Proxy** | Full event to Lambda; Lambda returns statusCode + headers + body |
+| **Lambda Custom** | Mapping templates (VTL) transform the request/response |
+| **HTTP Proxy** | Forwards the HTTP request without transformation |
+| **AWS Service** | Calls the AWS API directly (e.g., SQS SendMessage without Lambda) |
+| **Mock** | Returns a static response (for testing, CORS OPTIONS) |
+| **VPC Link** | Accesses an NLB in a private VPC |
 
 ---
 
-## Autorizadores do API Gateway
+## API Gateway Authorizers
 
-| Tipo | Como Funciona |
+| Type | How It Works |
 |---|---|
-| **Lambda Authorizer Token** | Token no header → Lambda avalia → retorna IAM Policy (ALLOW/DENY) |
-| **Lambda Authorizer Request** | Headers + query params → Lambda → IAM Policy; flexível |
-| **Cognito User Pools** | Token JWT do Cognito validado nativamente pelo API GW |
+| **Lambda Authorizer Token** | Token in header → Lambda evaluates → returns IAM Policy (ALLOW/DENY) |
+| **Lambda Authorizer Request** | Headers + query params → Lambda → IAM Policy; flexible |
+| **Cognito User Pools** | Cognito JWT token validated natively by API GW |
 
-Cache de resultado: até **3600 segundos** (configurable, default 300s).
+Result cache: up to **3600 seconds** (configurable, default 300s).
 
 ---
 
@@ -91,11 +91,11 @@ INVOKE phase   → execute handler function
 SHUTDOWN phase → cleanup (response to SIGTERM)
 ```
 
-**Cold Start** ocorre em: primeira invocação, após período idle, novo deployment, aumento de concurrency além das instâncias warm.
+**Cold Start** occurs on: first invocation, after an idle period, a new deployment, and concurrency increases beyond the warm instances.
 
 ---
 
-## Lambda + VPC — Diagrama de Conectividade
+## Lambda + VPC — Connectivity Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -106,39 +106,39 @@ SHUTDOWN phase → cleanup (response to SIGTERM)
 │  │                 │     │  │ Private  │ │ RDS / EC2│ │   │
 │  └─────────────────┘     │  │ Subnet   │ │          │ │   │
 │                          │  └──────────┘ └──────────┘ │   │
-│                          │         ↓ NAT GW (se precisa internet) │   │
+│                          │         ↓ NAT GW (if internet needed) │   │
 │                          └─────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Sem NAT GW**: Lambda em VPC não tem acesso à internet (SSM, DynamoDB precisam de VPC Endpoint ou NAT GW).
+**Without a NAT GW**: Lambda in a VPC has no internet access (SSM and DynamoDB need a VPC Endpoint or NAT GW).
 
 ---
 
-## Lambda vs Outros Computes — Quando Usar
+## Lambda vs Other Compute — When to Use
 
-| Cenário | Serviço |
+| Scenario | Service |
 |---|---|
 | Event-driven, < 15 min, stateless | Lambda |
-| Containerizado, microservices, > 15 min | ECS Fargate |
-| Precisa de GPU, HPC, software específico | EC2 |
-| Job batch longo (horas/dias) | AWS Batch |
-| Workflow orquestrado multi-step | Step Functions + Lambda |
+| Containerized, microservices, > 15 min | ECS Fargate |
+| Needs GPU, HPC, specific software | EC2 |
+| Long batch job (hours/days) | AWS Batch |
+| Orchestrated multi-step workflow | Step Functions + Lambda |
 | ML Training/Inference | SageMaker |
 
 ---
 
-## Dicas de Prova — Padrões Comuns
+## Exam Tips — Common Patterns
 
-| Pista no Enunciado | Resposta Provável |
+| Clue in the Question | Likely Answer |
 |---|---|
 | "Cold start" + Java | Lambda SnapStart |
-| "Latência consistente" servlerless | Provisioned Concurrency |
-| "Autenticação personalizada" API GW | Lambda Authorizer |
+| "Consistent latency" serverless | Provisioned Concurrency |
+| "Custom authentication" API GW | Lambda Authorizer |
 | "JWT / OAuth" API GW | HTTP API + JWT Authorizer |
-| "Lambda não acessa RDS" | Verificar SG + VPC config + NAT GW |
-| "Lambda precisa de 30 min" | Lambda NÃO serve → ECS Fargate ou AWS Batch |
-| "Deploy gradual 10% → 100%" | Lambda Alias com pesos (canary) |
-| "Múltiplos ambientes (dev/staging/prod)" | API GW Stages |
-| "Montar dependências entre funções" | Lambda Layers |
-| "Lambda não deve ser invocada mais de N vezes/s" | Reserved Concurrency |
+| "Lambda can't access RDS" | Check SG + VPC config + NAT GW |
+| "Lambda needs 30 min" | Lambda does NOT fit → ECS Fargate or AWS Batch |
+| "Gradual deploy 10% → 100%" | Lambda Alias with weights (canary) |
+| "Multiple environments (dev/staging/prod)" | API GW Stages |
+| "Share dependencies between functions" | Lambda Layers |
+| "Lambda must not be invoked more than N times/s" | Reserved Concurrency |

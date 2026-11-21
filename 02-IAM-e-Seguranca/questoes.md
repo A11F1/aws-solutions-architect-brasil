@@ -1,316 +1,316 @@
-# Questões — IAM e Segurança
+# Questions — IAM and Security
 
-## Questão 1
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Médio
+## Question 1
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Medium
 
-Uma equipe de segurança quer garantir que desenvolvedores possam criar IAM roles para as suas aplicações, mas que essas roles nunca possam ter permissão para acessar o serviço de faturamento da AWS ou exportar chaves do KMS. Qual mecanismo IAM deve ser configurado?
+A security team wants to ensure that developers can create IAM roles for their applications, but that these roles can never have permission to access the AWS billing service or export KMS keys. Which IAM mechanism should be configured?
 
-- A) AWS Organizations SCP aplicada à OU dos desenvolvedores
-- B) IAM Permission Boundary aplicada às roles criadas pelos desenvolvedores
-- C) IAM Group com Explicit Deny para Billing e KMS
-- D) S3 Bucket Policy com condição PrincipalOrgID
-
-<details>
-<summary>✅ Resposta e Explicação</summary>
-
-**Resposta correta: B**
-
-Permission Boundaries definem o teto de permissões efetivas de uma role ou usuário. Mesmo que um desenvolvedor crie uma role com permissão full access, se o boundary não inclui Billing ou KMS:ExportKey, esses acessos são bloqueados. A alternativa A seria correta para restringir toda uma conta, mas não resolve o problema de roles criadas pelos próprios desenvolvedores dentro da conta. A alternativa C bloqueia o grupo de dev, mas não as roles que eles criam. A alternativa D é uma resource-based policy de S3, não resolve o caso.
-
-**Conceito-chave:** Permission Boundary como teto para delegação controlada
-</details>
-
-## Questão 2
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Difícil
-
-Uma empresa tem múltiplas contas AWS numa organização. A equipe de segurança quer garantir que nenhuma conta, independentemente de qualquer admin local, consiga desabilitar o CloudTrail. Qual solução resolve isso?
-
-- A) Criar IAM Permission Boundary com Deny para cloudtrail:StopLogging em cada conta
-- B) Criar uma SCP na organização com Deny para cloudtrail:StopLogging e aplicar à raiz
-- C) Criar IAM Policy com Deny para CloudTrail no nível de conta
-- D) Configurar uma bucket policy no bucket do CloudTrail
+- A) AWS Organizations SCP applied to the developers' OU
+- B) IAM Permission Boundary applied to the roles created by the developers
+- C) IAM Group with Explicit Deny for Billing and KMS
+- D) S3 Bucket Policy with a PrincipalOrgID condition
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-SCPs aplicadas à raiz da organização afetam todas as contas (exceto o management account) e nenhum administrador local pode sobrepor um explicit deny de SCP. A alternativa A exige configuração em cada conta individualmente e pode ser removida por um admin local. A alternativa C é uma IAM policy que também pode ser modificada por um admin da conta. A alternativa D protege o bucket, mas não impede o StopLogging ou DeleteTrail antes dos logs chegarem ao bucket.
+Permission Boundaries define the ceiling of effective permissions for a role or user. Even if a developer creates a role with full access permission, if the boundary does not include Billing or KMS:ExportKey, those accesses are blocked. Option A would be correct to restrict an entire account, but does not solve the problem of roles created by the developers themselves within the account. Option C blocks the dev group, but not the roles they create. Option D is an S3 resource-based policy and does not solve the case.
 
-**Conceito-chave:** SCP como guardrail organizacional imutável para admins locais
+**Key concept:** Permission Boundary as a ceiling for controlled delegation
 </details>
 
-## Questão 3
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Médio
+## Question 2
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Hard
 
-Uma aplicação Flask rodando em EC2 precisa ler segredos do banco de dados com rotação automática a cada 30 dias. O requisito de compliance exige que as credenciais nunca sejam armazenadas em código ou arquivos de configuração. Qual é a solução mais adequada?
+A company has multiple AWS accounts in an organization. The security team wants to ensure that no account, regardless of any local admin, can disable CloudTrail. Which solution accomplishes this?
 
-- A) Armazenar as credenciais em variáveis de ambiente na instância
-- B) Usar AWS Secrets Manager com role IAM na EC2 e rotação automática configurada
-- C) Armazenar as credenciais em Parameter Store Standard e ler no cloud-init
-- D) Embutir as credenciais no User Data da instância
+- A) Create an IAM Permission Boundary with Deny for cloudtrail:StopLogging in each account
+- B) Create an SCP in the organization with Deny for cloudtrail:StopLogging and apply it to the root
+- C) Create an IAM Policy with Deny for CloudTrail at the account level
+- D) Configure a bucket policy on the CloudTrail bucket
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Secrets Manager é a solução preferida para credenciais rotacionáveis. A EC2 usa uma IAM role (Instance Profile) para chamar a API do Secrets Manager sem expor credenciais. A rotação automática é nativa para RDS, Redshift e outros banco. A alternativa A armazena em plaintext em variáveis de ambiente. A alternativa C não tem rotação nativa. A alternativa D expõe credenciais no User Data, visível via metadata.
+SCPs applied to the organization root affect all accounts (except the management account) and no local administrator can override an SCP explicit deny. Option A requires configuration in each account individually and can be removed by a local admin. Option C is an IAM policy that can also be modified by an account admin. Option D protects the bucket, but does not prevent StopLogging or DeleteTrail before the logs reach the bucket.
 
-**Conceito-chave:** Secrets Manager + Instance Profile para credenciais rotacionáveis
+**Key concept:** SCP as an organizational guardrail that local admins cannot override
 </details>
 
-## Questão 4
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Difícil
+## Question 3
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Medium
 
-Uma equipe quer que chamadas ao Amazon S3 de uma VPC específica sejam permitidas apenas para objetos com prefixo `/reports/`. Via bucket policy, qual combinação de elementos implementa isso corretamente?
+A Flask application running on EC2 needs to read database secrets with automatic rotation every 30 days. The compliance requirement states that credentials must never be stored in code or configuration files. What is the most appropriate solution?
 
-- A) Condition: aws:SourceIp apontando para o CIDR da VPC + resource com prefixo /reports/*
-- B) Condition: aws:SourceVpce apontando para o VPC Endpoint ID + resource com prefixo /reports/*
-- C) Permission Boundary com s3:prefix = /reports/
-- D) SCP com Condition: aws:SourceVpc e resource do bucket
+- A) Store the credentials in environment variables on the instance
+- B) Use AWS Secrets Manager with an IAM role on the EC2 instance and automatic rotation configured
+- C) Store the credentials in Parameter Store Standard and read them in cloud-init
+- D) Embed the credentials in the instance User Data
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-`aws:SourceVpce` identifica o tráfego que passa por um VPC Endpoint específico, sendo mais preciso que o IP da VPC (que pode mudar). Combinado com o resource `arn:aws:s3:::bucket/reports/*`, restringe acesso ao prefixo correto. A alternativa A usa IP, que não é a forma recomendada para restrição via VPC. A alternativa C aplica Permission Boundary, que não resolve a restrição de prefixo em bucket policy. A alternativa D, SCPs não operam em resource policies de serviços específicos.
+Secrets Manager is the preferred solution for rotatable credentials. The EC2 instance uses an IAM role (Instance Profile) to call the Secrets Manager API without exposing credentials. Automatic rotation is native for RDS, Redshift, and other databases. Option A stores them in plaintext in environment variables. Option C has no native rotation. Option D exposes credentials in User Data, visible via metadata.
 
-**Conceito-chave:** aws:SourceVpce em bucket policy para acesso via VPC Endpoint
+**Key concept:** Secrets Manager + Instance Profile for rotatable credentials
 </details>
 
-## Questão 5
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Médio
+## Question 4
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Hard
 
-Uma empresa criptografa dados no Amazon RDS usando KMS. Um auditor quer verificar qual tipo de CMK foi usada para garantir que a empresa controla todo o ciclo de vida da chave. Qual tipo de CMK atende a esse requisito?
+A team wants calls to Amazon S3 from a specific VPC to be allowed only for objects with the prefix `/reports/`. Via bucket policy, which combination of elements implements this correctly?
+
+- A) Condition: aws:SourceIp pointing to the VPC CIDR + resource with prefix /reports/*
+- B) Condition: aws:SourceVpce pointing to the VPC Endpoint ID + resource with prefix /reports/*
+- C) Permission Boundary with s3:prefix = /reports/
+- D) SCP with Condition: aws:SourceVpc and the bucket resource
+
+<details>
+<summary>✅ Answer and Explanation</summary>
+
+**Correct answer: B**
+
+`aws:SourceVpce` identifies traffic passing through a specific VPC Endpoint, and is more precise than the VPC IP (which can change). Combined with the resource `arn:aws:s3:::bucket/reports/*`, it restricts access to the correct prefix. Option A uses an IP, which is not the recommended way to restrict via VPC. Option C applies a Permission Boundary, which does not solve the prefix restriction in a bucket policy. For option D, SCPs do not operate on service-specific resource policies.
+
+**Key concept:** aws:SourceVpce in a bucket policy for access via VPC Endpoint
+</details>
+
+## Question 5
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Medium
+
+A company encrypts data in Amazon RDS using KMS. An auditor wants to verify which type of CMK was used to ensure that the company controls the entire key lifecycle. Which CMK type meets this requirement?
 
 - A) AWS-owned CMK
 - B) AWS-managed CMK (aws/rds)
-- C) Customer-managed CMK criada pelo cliente
-- D) Data key gerada pelo RDS
+- C) Customer-managed CMK created by the customer
+- D) Data key generated by RDS
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: C**
+**Correct answer: C**
 
-Somente o customer-managed CMK dá ao cliente controle total: definição da key policy, habilitação/desabilitação, rotação controlada e audit via CloudTrail com nível de detalhe. AWS-owned CMK não é visível na conta. AWS-managed CMK é visível, mas o cliente não gerencia. Data key é derivada de uma CMK e não é o que o auditor pergunta.
+Only the customer-managed CMK gives the customer full control: key policy definition, enabling/disabling, controlled rotation, and detailed auditing via CloudTrail. An AWS-owned CMK is not visible in the account. An AWS-managed CMK is visible, but the customer does not manage it. A data key is derived from a CMK and is not what the auditor is asking about.
 
-**Conceito-chave:** customer-managed CMK para controle do ciclo de vida criptográfico
+**Key concept:** customer-managed CMK for control of the cryptographic lifecycle
 </details>
 
-## Questão 6
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Médio
+## Question 6
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Medium
 
-Uma funcionalidade nova precisa requisitar objetos do S3 de uma conta B a partir de uma Lambda na conta A. A equipe prefere evitar criação de role na conta B por simplicidade. Qual abordagem funciona?
+A new feature needs to request S3 objects from account B using a Lambda in account A. The team prefers to avoid creating a role in account B for simplicity. Which approach works?
 
-- A) Adicionar uma SCP na conta B que permite o ARN da Lambda
-- B) Adicionar a conta A como principal na bucket policy do bucket na conta B
-- C) Criar um IAM user na conta B e usar as credenciais na Lambda da conta A
-- D) Configurar VPC Peering entre as contas
+- A) Add an SCP in account B that allows the Lambda ARN
+- B) Add account A as a principal in the bucket policy of the bucket in account B
+- C) Create an IAM user in account B and use the credentials in the Lambda in account A
+- D) Configure VPC Peering between the accounts
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Uma resource-based policy (bucket policy) pode especificar um principal de outra conta sem necessidade de criação de role. A Lambda na conta A precisa ter permissão para s3:GetObject na sua execution role, e o bucket na conta B precisa ter a bucket policy que permite aquele ARN. Essa é a forma mais simples de cross-account sem role assumption. A alternativa A, SCP não concede permissão, apenas restringe. A alternativa C compartilha credenciais long-term, má prática. A alternativa D não resolve IAM; VPC Peering é sobre rede.
+A resource-based policy (bucket policy) can specify a principal from another account without needing to create a role. The Lambda in account A must have permission for s3:GetObject in its execution role, and the bucket in account B must have the bucket policy that allows that ARN. This is the simplest form of cross-account access without role assumption. In option A, an SCP does not grant permission, it only restricts. Option C shares long-term credentials, which is bad practice. Option D does not solve IAM; VPC Peering is about networking.
 
-**Conceito-chave:** cross-account via resource-based policy sem role assumption
+**Key concept:** cross-account via resource-based policy without role assumption
 </details>
 
-## Questão 7
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Difícil
+## Question 7
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Hard
 
-Um arquiteto precisa implementar envelope encryption para dados sensíveis armazenados em S3. Qual é a sequência correta de operações?
+An architect needs to implement envelope encryption for sensitive data stored in S3. What is the correct sequence of operations?
 
-- A) Criptografar o dado com a CMK diretamente, armazenar no S3
-- B) Gerar uma data key via KMS, criptografar o dado com ela em plaintext, criptografar a data key com a CMK, armazenar dado criptografado + data key criptografada
-- C) Armazenar a data key em plaintext junto com o dado criptografado
-- D) Usar somente a data key sem qualquer CMK
+- A) Encrypt the data directly with the CMK, store it in S3
+- B) Generate a data key via KMS, encrypt the data with it in plaintext, encrypt the data key with the CMK, store the encrypted data + encrypted data key
+- C) Store the data key in plaintext together with the encrypted data
+- D) Use only the data key without any CMK
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Envelope encryption funciona: (1) chamada GenerateDataKey ao KMS retorna data key em plaintext e ciphertext; (2) criptografar o dado com a data key plaintext; (3) descartar a data key plaintext da memória; (4) armazenar o dado criptografado junto com a data key ciphertext. Para descriptografar, enviar a data key ciphertext ao KMS (Decrypt) para obter a plaintext de volta. A alternativa A criptografa diretamente com CMK, o que é ineficiente para grandes volumes e não escala. A alternativa C expõe a data key. A alternativa D não protege a data key.
+Envelope encryption works as follows: (1) a GenerateDataKey call to KMS returns the data key in plaintext and ciphertext; (2) encrypt the data with the plaintext data key; (3) discard the plaintext data key from memory; (4) store the encrypted data together with the ciphertext data key. To decrypt, send the ciphertext data key to KMS (Decrypt) to get the plaintext back. Option A encrypts directly with the CMK, which is inefficient for large volumes and does not scale. Option C exposes the data key. Option D does not protect the data key.
 
-**Conceito-chave:** sequência correta de envelope encryption com KMS
+**Key concept:** correct sequence of envelope encryption with KMS
 </details>
 
-## Questão 8
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Médio
+## Question 8
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Medium
 
-Uma empresa multinacional quer que todos os funcionários de diferentes subsidiárias acessem múltiplas contas AWS com login único (SSO) via Active Directory corporativo existente. Qual serviço é mais adequado?
+A multinational company wants all employees from different subsidiaries to access multiple AWS accounts with single sign-on (SSO) via the existing corporate Active Directory. Which service is most suitable?
 
-- A) Criar IAM Users em cada conta AWS
-- B) IAM Identity Center integrado com Active Directory via SAML ou SCIM
+- A) Create IAM Users in each AWS account
+- B) IAM Identity Center integrated with Active Directory via SAML or SCIM
 - C) AWS Cognito User Pools
-- D) IAM Roles com ADFS como IdP por conta individualmente
+- D) IAM Roles with ADFS as the IdP per individual account
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-IAM Identity Center oferece gerenciamento centralizado de acesso para múltiplas contas, integração nativa com AD via AWS Managed AD ou AD Connector (também suporta SAML/SCIM com outros IDPs como Okta), e permission sets que mapeiam nível de acesso por conta. Elimina a necessidade de gerenciar usuários IAM em cada conta. A alternativa A é a abordagem de mais esforço e menos segura. A alternativa C é para autenticação de clientes/usuários de aplicações, não funcionários internos. A alternativa D é operacionalmente complexo de manter em escala.
+IAM Identity Center offers centralized access management for multiple accounts, native integration with AD via AWS Managed AD or AD Connector (it also supports SAML/SCIM with other IdPs such as Okta), and permission sets that map the access level per account. It eliminates the need to manage IAM users in each account. Option A is the highest-effort and least secure approach. Option C is for authenticating customers/application users, not internal employees. Option D is operationally complex to maintain at scale.
 
-**Conceito-chave:** IAM Identity Center para SSO centralizado multi-conta
+**Key concept:** IAM Identity Center for centralized multi-account SSO
 </details>
 
-## Questão 9
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Médio
+## Question 9
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Medium
 
-Um desenvolvedor inadvertidamente deletou uma CMK customer-managed do KMS que estava sendo usada para criptografar dados no EBS. Qual é o estado da CMK após a ação de delete?
+A developer inadvertently deleted a customer-managed CMK from KMS that was being used to encrypt data on EBS. What is the state of the CMK after the delete action?
 
-- A) A CMK é deletada imediatamente e os dados são irrecuperáveis
-- B) A CMK entra em período de espera de 7 a 30 dias antes da deleção efetiva, podendo ser cancelada
-- C) A CMK é desabilitada mas permanece disponível indefinidamente
-- D) A CMK é arquivada no S3 automaticamente
+- A) The CMK is deleted immediately and the data is unrecoverable
+- B) The CMK enters a waiting period of 7 to 30 days before effective deletion, and the deletion can be canceled
+- C) The CMK is disabled but remains available indefinitely
+- D) The CMK is automatically archived to S3
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-O KMS implementa um período de espera de 7 a 30 dias (configurável, padrão 30 dias) antes da deleção efetiva de uma CMK. Durante esse período, a deleção pode ser cancelada. Nenhuma operação criptográfica pode ser feita com a chave no período de espera. Isso protege contra exclusão acidental. Se a deleção ocorrer, dados criptografados exclusivamente por aquela chave se tornam irrecuperáveis.
+KMS implements a waiting period of 7 to 30 days (configurable, default 30 days) before the effective deletion of a CMK. During this period, the deletion can be canceled. No cryptographic operation can be performed with the key during the waiting period. This protects against accidental deletion. If the deletion occurs, data encrypted exclusively by that key becomes unrecoverable.
 
-**Conceito-chave:** período de espera de deleção de CMK no KMS
+**Key concept:** CMK deletion waiting period in KMS
 </details>
 
-## Questão 10
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Médio
+## Question 10
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Medium
 
-Uma aplicação de múltiplos microserviços usa uma VPC com subnets privadas. Cada microserviço precisa de acesso ao S3 sem expor tráfego à internet pública. Qual solução é mais eficiente e segura?
+A multi-microservice application uses a VPC with private subnets. Each microservice needs access to S3 without exposing traffic to the public internet. Which solution is the most efficient and secure?
 
-- A) Configurar NAT Gateway para tráfego S3
-- B) Criar um VPC Gateway Endpoint para S3
-- C) Criar um VPC Interface Endpoint para S3
-- D) Usar Direct Connect para acessar S3
+- A) Configure a NAT Gateway for S3 traffic
+- B) Create a VPC Gateway Endpoint for S3
+- C) Create a VPC Interface Endpoint for S3
+- D) Use Direct Connect to access S3
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-O Gateway Endpoint para S3 (e DynamoDB) é gratuito e acessado via route table. O tráfego permanece dentro da rede AWS sem precisar de NAT Gateway. É a solução mais econômica. A alternativa A envolve custo de processamento e transferência do NAT Gateway além de rotear para internet. A alternativa C, Interface Endpoint para S3 (PrivateLink) também funciona, mas tem custo por hora e por GB — preferível quando é necessário acessar S3 a partir de on-premises via Direct Connect. A alternativa D é para conectividade on-premises.
+The Gateway Endpoint for S3 (and DynamoDB) is free and is reached via the route table. Traffic stays within the AWS network without needing a NAT Gateway. It is the most cost-effective solution. Option A involves NAT Gateway processing and transfer costs in addition to routing to the internet. In option C, an Interface Endpoint for S3 (PrivateLink) also works, but has an hourly and per-GB cost — preferable when you need to access S3 from on-premises via Direct Connect. Option D is for on-premises connectivity.
 
-**Conceito-chave:** Gateway Endpoint para S3 sem custo de dados vs Interface Endpoint com custo
+**Key concept:** Gateway Endpoint for S3 with no data cost vs Interface Endpoint with cost
 </details>
 
-## Questão 11
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Fácil
+## Question 11
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Easy
 
-Uma policy IAM tem as seguintes declarações: uma Allow para s3:GetObject em qualquer bucket, e uma Deny explícita para s3:GetObject no bucket `logs-confidenciais`. O que acontece quando o usuário tenta acessar um objeto em `logs-confidenciais`?
+An IAM policy has the following statements: an Allow for s3:GetObject on any bucket, and an explicit Deny for s3:GetObject on the bucket `logs-confidenciais`. What happens when the user tries to access an object in `logs-confidenciais`?
 
-- A) O Allow da primeira declaração prevalece
-- B) O Deny explícito prevalece e o acesso é negado
-- C) Depende da ordem das declarações no JSON
-- D) É preciso de outra policy Allow para resolver o conflito
+- A) The Allow in the first statement prevails
+- B) The explicit Deny prevails and access is denied
+- C) It depends on the order of the statements in the JSON
+- D) Another Allow policy is needed to resolve the conflict
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-A regra fundamental da avaliação IAM é: um explicit Deny sempre sobrepõe qualquer Allow, independentemente da ordem das declarações ou de quantas policies permitem. Não existe como um Allow superar um explicit Deny na mesma conta.
+The fundamental rule of IAM evaluation is: an explicit Deny always overrides any Allow, regardless of the order of statements or how many policies allow. There is no way for an Allow to override an explicit Deny in the same account.
 
-**Conceito-chave:** explicit Deny tem prioridade absoluta sobre Allow
+**Key concept:** explicit Deny has absolute priority over Allow
 </details>
 
-## Questão 12
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Difícil
+## Question 12
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Hard
 
-Uma empresa quer que certificados TLS de APIs expostas via ALB sejam gerenciados centralmente, com renovação automática sem intervenção manual. Qual combinação de serviços resolve isso?
+A company wants TLS certificates for APIs exposed via ALB to be managed centrally, with automatic renewal and no manual intervention. Which combination of services accomplishes this?
 
-- A) CloudFront com certificado auto-assinado criado pela equipe
-- B) ACM com certificado público para o domínio, DNS validation, integrado ao ALB
-- C) Gerar certificado com OpenSSL, importar no IAM e anexar ao ALB
-- D) EC2 com Nginx gerenciando certificados manualmente
+- A) CloudFront with a self-signed certificate created by the team
+- B) ACM with a public certificate for the domain, DNS validation, integrated with the ALB
+- C) Generate a certificate with OpenSSL, import it into IAM, and attach it to the ALB
+- D) EC2 with Nginx managing certificates manually
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-ACM provisiona e renova certificados públicos automaticamente. DNS validation é o método preferido por ser automatizado via CNAME record. O certificado é integrado diretamente ao ALB sem necessidade de exportar chave privada. A alternativa A não é gerenciamento centralizado e auto-assinado não é para produção. A alternativa C requer deleção e recriação manual na renovação. A alternativa D aumenta esforço operacional desnecessariamente.
+ACM provisions and renews public certificates automatically. DNS validation is the preferred method because it is automated via a CNAME record. The certificate is integrated directly with the ALB without needing to export the private key. Option A is not centralized management and self-signed is not for production. Option C requires manual deletion and recreation at renewal. Option D unnecessarily increases operational effort.
 
-**Conceito-chave:** ACM com DNS validation para renovação zero-touch
+**Key concept:** ACM with DNS validation for zero-touch renewal
 </details>
 
-## Questão 13
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Médio
+## Question 13
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Medium
 
-Uma equipe precisa diferenciar Parameter Store de Secrets Manager ao escolher onde armazenar uma feature flag booleana sem valor sensível e uma senha de banco de dados rotacionável. Qual alocação está correta?
+A team needs to differentiate Parameter Store from Secrets Manager when choosing where to store a boolean feature flag with no sensitive value and a rotatable database password. Which allocation is correct?
 
-- A) Ambos no Secrets Manager para padronizar
-- B) Feature flag no Parameter Store Standard; senha de banco no Secrets Manager
-- C) Ambos no Parameter Store Advanced
-- D) Feature flag no Secrets Manager; senha de banco no EC2 Systems Manager agent
+- A) Both in Secrets Manager to standardize
+- B) Feature flag in Parameter Store Standard; database password in Secrets Manager
+- C) Both in Parameter Store Advanced
+- D) Feature flag in Secrets Manager; database password in the EC2 Systems Manager agent
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Parameter Store Standard é gratuito e ideal para configuração não sensível ou segredos simples sem rotação. Secrets Manager é o mais adequado para credenciais que exigem rotação automática. Usar Secrets Manager para feature flags paga por algo que não precisava. A alternativa C usa Advanced sem necessidade. A alternativa D mistura conceitos incorretamente.
+Parameter Store Standard is free and ideal for non-sensitive configuration or simple secrets without rotation. Secrets Manager is the most suitable for credentials that require automatic rotation. Using Secrets Manager for feature flags pays for something that was not needed. Option C uses Advanced unnecessarily. Option D mixes concepts incorrectly.
 
-**Conceito-chave:** Parameter Store para config/segredos simples; Secrets Manager para rotação
+**Key concept:** Parameter Store for config/simple secrets; Secrets Manager for rotation
 </details>
 
-## Questão 14
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Difícil
+## Question 14
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Hard
 
-Uma organização precisa que uma chave KMS seja usada tanto em us-east-1 quanto em eu-west-1 para criptografar e descriptografar dados sem necessidade de re-encrypt ao mover dados entre regiões. Qual recurso KMS atende a esse requisito?
+An organization needs a KMS key to be used in both us-east-1 and eu-west-1 to encrypt and decrypt data without needing to re-encrypt when moving data between regions. Which KMS feature meets this requirement?
 
-- A) Cross-region replication de CMK via S3
-- B) KMS Multi-Region Keys com réplica em eu-west-1
-- C) Usar a mesma data key exportada em ambas as regiões
-- D) Criar CMKs independentes em cada região e usar AWS DataSync para sincronizar
+- A) Cross-region replication of a CMK via S3
+- B) KMS Multi-Region Keys with a replica in eu-west-1
+- C) Using the same exported data key in both regions
+- D) Create independent CMKs in each region and use AWS DataSync to synchronize
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Multi-Region Keys compartilham o mesmo material de chave entre regiões distintas, usando o mesmo key ID (com prefixo mrk-). Um dado criptografado em us-east-1 pode ser descriptografado em eu-west-1 sem re-encrypt, pois as chaves são criptograficamente equivalentes. A alternativa A não existe. A alternativa C data key exportada expõe o material fora do KMS — rompe o modelo de segurança. A alternativa D cria chaves com materiais diferentes, impedindo cross-region decrypt direto.
+Multi-Region Keys share the same key material across distinct regions, using the same key ID (with the mrk- prefix). Data encrypted in us-east-1 can be decrypted in eu-west-1 without re-encrypting, because the keys are cryptographically equivalent. Option A does not exist. Option C, an exported data key, exposes the material outside KMS — it breaks the security model. Option D creates keys with different material, preventing direct cross-region decrypt.
 
-**Conceito-chave:** KMS Multi-Region Keys para encrypt/decrypt cross-region
+**Key concept:** KMS Multi-Region Keys for cross-region encrypt/decrypt
 </details>
 
-## Questão 15
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Médio
+## Question 15
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Medium
 
-Uma EC2 num ambiente de produção precisa apenas de permissões para colocar métricas no CloudWatch e nada mais. Qual é a melhor abordagem de menor privilégio?
+An EC2 instance in a production environment needs only permissions to put metrics into CloudWatch and nothing else. What is the best least-privilege approach?
 
-- A) Criar um IAM User com a policy AmazonCloudWatchFullAccess
-- B) Criar uma IAM Role com uma customer-managed policy concedendo apenas cloudwatch:PutMetricData e associar à instância via Instance Profile
-- C) Criar uma IAM Group com permissão de CloudWatch e adicionar a instância ao grupo
-- D) Usar a access key do admin na variável de ambiente AWS_ACCESS_KEY_ID
+- A) Create an IAM User with the AmazonCloudWatchFullAccess policy
+- B) Create an IAM Role with a customer-managed policy granting only cloudwatch:PutMetricData and associate it with the instance via Instance Profile
+- C) Create an IAM Group with CloudWatch permission and add the instance to the group
+- D) Use the admin access key in the AWS_ACCESS_KEY_ID environment variable
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-IAM Roles com Instance Profile fornecem credenciais temporárias automaticamente rotacionadas. A policy deve ser mínima: apenas `cloudwatch:PutMetricData` no resource `*`. Evita uso de credenciais long-term. A alternativa A usa usuário (long-term credentials) e permissões Full Access — viola least privilege. A alternativa C, instâncias não podem ser membros de grupos IAM. A alternativa D é a pior prática: credentials hardcodadas no ambiente.
+IAM Roles with Instance Profile provide automatically rotated temporary credentials. The policy should be minimal: only `cloudwatch:PutMetricData` on resource `*`. It avoids the use of long-term credentials. Option A uses a user (long-term credentials) and Full Access permissions — it violates least privilege. For option C, instances cannot be members of IAM groups. Option D is the worst practice: hardcoded credentials in the environment.
 
-**Conceito-chave:** Instance Profile + least privilege policy para EC2
+**Key concept:** Instance Profile + least privilege policy for EC2
 </details>

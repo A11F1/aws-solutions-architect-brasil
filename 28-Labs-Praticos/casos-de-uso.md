@@ -1,113 +1,113 @@
-# Casos de Uso Reais — Labs Práticos (Módulo 18)
+# Real-World Use Cases — Hands-On Labs (Module 18)
 
-## Caso 1 — Debug: Lambda não consegue acessar RDS
+## Case 1 — Debug: Lambda Cannot Access RDS
 
-**Contexto:** Time de desenvolvimento implantou Lambda que deve gravar dados em RDS MySQL dentro de uma VPC privada. Lambda funciona localmente mas retorna timeout em produção.
+**Context:** The development team deployed a Lambda function that must write data to an RDS MySQL database inside a private VPC. The Lambda works locally but times out in production.
 
-**Diagnóstico Passo a Passo:**
+**Step-by-Step Diagnosis:**
 ```
-SINTOMA: Lambda invocation timeout (sem erro de conexão explícito)
+SYMPTOM: Lambda invocation timeout (no explicit connection error)
 
-PASSO 1 — Verificar VpcConfig da Lambda:
+STEP 1 — Check the Lambda VpcConfig:
 aws lambda get-function-configuration \
-  --function-name MinhaFuncao \
+  --function-name MyFunction \
   --query 'VpcConfig'
 
-Resultado esperado:
+Expected result:
 {
   "SubnetIds": ["subnet-aaa", "subnet-bbb"],
   "SecurityGroupIds": ["sg-lambda"],
   "VpcId": "vpc-xxx"
 }
-Se SubnetIds vazio → Lambda não está na VPC → Adicionar VpcConfig
+If SubnetIds is empty → Lambda is not in the VPC → Add VpcConfig
 
-PASSO 2 — Verificar tipo de subnet (deve ser PRIVADA):
+STEP 2 — Check the subnet type (must be PRIVATE):
 aws ec2 describe-subnets \
   --subnet-ids subnet-aaa \
   --query 'Subnets[*].[SubnetId,MapPublicIpOnLaunch,AvailabilityZone]'
 
-Se MapPublicIpOnLaunch=True → subnet pública → usar subnet privada
+If MapPublicIpOnLaunch=True → public subnet → use a private subnet
 
-PASSO 3 — Verificar Security Groups:
-SG Lambda: permite saída para porta 3306 ao SG RDS?
+STEP 3 — Check Security Groups:
+Lambda SG: does it allow outbound to port 3306 to the RDS SG?
 aws ec2 describe-security-groups --group-ids sg-lambda
-→ Verificar: Outbound rule: TCP 3306 → sg-rds (ou CIDR)
+→ Verify: Outbound rule: TCP 3306 → sg-rds (or CIDR)
 
-SG RDS: permite entrada do SG Lambda?
+RDS SG: does it allow inbound from the Lambda SG?
 aws ec2 describe-security-groups --group-ids sg-rds  
-→ Verificar: Inbound rule: TCP 3306 → sg-lambda
+→ Verify: Inbound rule: TCP 3306 → sg-lambda
 
-PASSO 4 — Verificar IAM Role da Lambda:
+STEP 4 — Check the Lambda IAM Role:
 aws lambda get-function-configuration \
-  --function-name MinhaFuncao --query 'Role'
-→ Role deve ter: AWSLambdaVPCAccessExecutionRole (para criar ENI)
+  --function-name MyFunction --query 'Role'
+→ Role must have: AWSLambdaVPCAccessExecutionRole (to create the ENI)
 
-PASSO 5 — Verificar timeout da Lambda (deve ser > tempo de conexão):
+STEP 5 — Check the Lambda timeout (must be > connection time):
 aws lambda get-function-configuration \
-  --function-name MinhaFuncao --query 'Timeout'
-→ Padrão é 3s. RDS cold connection pode levar 1-2s. Aumentar para 30s.
+  --function-name MyFunction --query 'Timeout'
+→ Default is 3s. An RDS cold connection can take 1-2s. Increase to 30s.
 
-SOLUÇÃO APLICADA:
-1. Lambda estava em subnet PÚBLICA (sem acesso ao RDS privado)
-2. Corrigir: mover Lambda para subnets privadas com NAT GW
-3. Aumentar timeout de 3s para 30s
+SOLUTION APPLIED:
+1. Lambda was in a PUBLIC subnet (no access to the private RDS)
+2. Fix: move Lambda to private subnets with a NAT GW
+3. Increase timeout from 3s to 30s
 ```
 
 ---
 
-## Caso 2 — Debug: S3 retornando 403 Forbidden
+## Case 2 — Debug: S3 Returning 403 Forbidden
 
-**Contexto:** Aplicação ECS recebe 403 ao tentar fazer PutObject em bucket S3. Funciona na máquina do desenvolvedor mas não na AWS.
+**Context:** An ECS application receives a 403 when trying to PutObject into an S3 bucket. It works on the developer's machine but not on AWS.
 
-**Diagnóstico:**
+**Diagnosis:**
 ```
-PASSO 1 — Identificar qual identity está fazendo o request:
-Na máquina local: usa credenciais pessoais do dev (com permissão total)
-Na ECS: usa IAM Role da task (pode não ter permissão)
+STEP 1 — Identify which identity is making the request:
+On the local machine: uses the dev's personal credentials (with full permissions)
+On ECS: uses the task's IAM Role (may lack permissions)
 
-Ver qual role o container está usando:
-curl http://169.254.170.2/v2/credentials  (apenas de dentro do container ECS)
-→ Retorna temporaryCredentials com RoleArn
+See which role the container is using:
+curl http://169.254.170.2/v2/credentials  (only from inside the ECS container)
+→ Returns temporaryCredentials with RoleArn
 
-PASSO 2 — Verificar a Task Role:
-aws ecs describe-task-definition --task-definition MinhaTask \
+STEP 2 — Check the Task Role:
+aws ecs describe-task-definition --task-definition MyTask \
   --query 'taskDefinition.taskRoleArn'
-→ Se null → sem Task Role → nenhuma permissão S3
+→ If null → no Task Role → no S3 permissions
 
-Corrigir: criar IAM Role para task com:
+Fix: create an IAM Role for the task with:
 {
   "Effect": "Allow",
   "Action": ["s3:PutObject", "s3:GetObject"],
-  "Resource": "arn:aws:s3:::meu-bucket/*"
+  "Resource": "arn:aws:s3:::my-bucket/*"
 }
-Atribuir como taskRoleArn na task definition
+Assign it as taskRoleArn in the task definition
 
-PASSO 3 — Verificar Bucket Policy:
-aws s3api get-bucket-policy --bucket meu-bucket
-→ Se Deny explícito para a role → corrigir bucket policy
-→ Se Condition: aws:SourceVpc → Lambda/ECS deve estar na VPC correta
+STEP 3 — Check the Bucket Policy:
+aws s3api get-bucket-policy --bucket my-bucket
+→ If there is an explicit Deny for the role → fix the bucket policy
+→ If Condition: aws:SourceVpc → Lambda/ECS must be in the correct VPC
 
-PASSO 4 — Verificar Block Public Access:
-aws s3api get-public-access-block --bucket meu-bucket
-→ Não é o problema se tentando com IAM Role (não é acesso público)
+STEP 4 — Check Block Public Access:
+aws s3api get-public-access-block --bucket my-bucket
+→ Not the problem when using an IAM Role (it is not public access)
 
-PASSO 5 — Verificar KMS (se bucket usa SSE-KMS):
-A role tem permissão de kms:GenerateDataKey e kms:Decrypt na key?
+STEP 5 — Check KMS (if the bucket uses SSE-KMS):
+Does the role have kms:GenerateDataKey and kms:Decrypt permissions on the key?
 aws kms list-grants --key-id arn:aws:kms:...:key/xxx
 
-SOLUÇÃO:
-Task Role não existed → criar e associar com permissões corretas
+SOLUTION:
+Task Role did not exist → create it and attach it with the correct permissions
 ```
 
 ---
 
-## Caso 3 — Deploy com Terraform: State Lock e Conflito de Equipe
+## Case 3 — Deploying with Terraform: State Lock and Team Conflicts
 
-**Contexto:** Time A e Time B ambos executam `terraform apply` ao mesmo tempo. Time B recebe erro de state lock. Ao destravar, ambos tiveram mudanças conflitantes no state.
+**Context:** Team A and Team B both run `terraform apply` at the same time. Team B gets a state lock error. After unlocking, both had made conflicting changes to the state.
 
-**Conceito e Resolução:**
+**Concept and Resolution:**
 ```
-CONFIGURAÇÃO RECOMENDADA (S3 Backend + DynamoDB Lock):
+RECOMMENDED SETUP (S3 Backend + DynamoDB Lock):
 # versions.tf
 terraform {
   backend "s3" {
@@ -116,46 +116,46 @@ terraform {
     region         = "us-east-1"
     encrypt        = true
     kms_key_id     = "arn:aws:kms:..."  # SSE-KMS
-    dynamodb_table = "terraform-locks"  # para state locking
+    dynamodb_table = "terraform-locks"  # for state locking
   }
 }
 
-# DynamoDB table (criada manualmente ou com script bootstrap):
+# DynamoDB table (created manually or with a bootstrap script):
 aws dynamodb create-table \
   --table-name terraform-locks \
   --attribute-definitions AttributeName=LockID,AttributeType=S \
   --key-schema AttributeName=LockID,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST
 
-QUANDO STATE FICA TRAVADO (apply foi interrompido):
+WHEN THE STATE IS STUCK LOCKED (apply was interrupted):
 terraform force-unlock LOCK_ID
-# LOCK_ID é mostrado na mensagem de erro
+# LOCK_ID is shown in the error message
 
-MELHOR PRÁTICA PARA TIMES:
-1. Cada equipe tem seu próprio state file (keys diferentes no S3)
-2. Ou: usar workspaces do Terraform
-3. Ou: usar Terraform Cloud/Enterprise (locking nativo)
-4. CI/CD pipeline (GitHub Actions) garante que apenas 1 apply roda por vez
+BEST PRACTICES FOR TEAMS:
+1. Each team has its own state file (different keys in S3)
+2. Or: use Terraform workspaces
+3. Or: use Terraform Cloud/Enterprise (native locking)
+4. A CI/CD pipeline (GitHub Actions) ensures only 1 apply runs at a time
 
-DEBUG CONFLITO:
-terraform state list  (ver quais recursos estão no state)
-terraform state show aws_instance.web  (ver estado atual do recurso)
-terraform import aws_instance.web i-1234567890  (importar recurso existente)
+DEBUGGING CONFLICTS:
+terraform state list  (see which resources are in the state)
+terraform state show aws_instance.web  (see the current state of the resource)
+terraform import aws_instance.web i-1234567890  (import an existing resource)
 ```
 
 ---
 
-## Caso 4 — SAM: Lambda com Camada (Layer) de Dependências
+## Case 4 — SAM: Lambda with a Dependency Layer
 
-**Contexto:** Lambda Python precisa de biblioteca pandas (100 MB) que excede o limite de upload zip de 50 MB. Deploy está falhando.
+**Context:** A Python Lambda needs the pandas library (100 MB), which exceeds the 50 MB zip upload limit. The deployment is failing.
 
-**Solução com SAM Layers:**
+**Solution with SAM Layers:**
 ```
-ESTRUTURA DO PROJETO:
-projeto-lambda/
+PROJECT STRUCTURE:
+lambda-project/
   template.yaml
   src/
-    app.py  (código principal)
+    app.py  (main code)
   layers/
     pandas-layer/
       python/
@@ -171,9 +171,9 @@ Resources:
       CompatibleRuntimes:
         - python3.12
     Metadata:
-      BuildMethod: python3.12  # SAM build compila dependências
+      BuildMethod: python3.12  # SAM build compiles dependencies
 
-  MinhaFuncao:
+  MyFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
@@ -181,67 +181,67 @@ Resources:
       Runtime: python3.12
       Layers:
         - !Ref PandasLayer
-      MemorySize: 512  # pandas precisa de memória suficiente
+      MemorySize: 512  # pandas needs enough memory
       Timeout: 60
 
-COMANDOS:
-sam build  (compila layer + código)
-sam deploy --guided  (primeira vez)
+COMMANDS:
+sam build  (builds layer + code)
+sam deploy --guided  (first time)
 
-VERIFICAR:
+VERIFY:
 aws lambda list-layers
 aws lambda get-layer-version --layer-name pandas-layer --version-number 1
 
-LIMITE IMPORTANTE:
-- Código + layers descomprimidos: máximo 250 MB
-- Se pandas ainda > 250 MB: usar container image Lambda (até 10 GB)
+IMPORTANT LIMIT:
+- Code + layers unzipped: maximum 250 MB
+- If pandas is still > 250 MB: use a Lambda container image (up to 10 GB)
 ```
 
 ---
 
-## Caso 5 — Debugging ECS Fargate Task que para Imediatamente
+## Case 5 — Debugging an ECS Fargate Task That Stops Immediately
 
-**Contexto:** ECS Fargate task é iniciada mas para em segundos com status STOPPED. Console mostra razão genérica. Time não sabe o que está errado.
+**Context:** An ECS Fargate task starts but stops within seconds with a STOPPED status. The console shows a generic reason. The team does not know what is wrong.
 
-**Diagnóstico Completo:**
+**Full Diagnosis:**
 ```
-PASSO 1 — Ver stoppedReason:
+STEP 1 — See the stoppedReason:
 aws ecs describe-tasks \
-  --cluster meu-cluster \
+  --cluster my-cluster \
   --tasks arn:aws:ecs:...:task/TASK_ID \
   --query 'tasks[0].{stoppedReason:stoppedReason,status:lastStatus,containers:containers[*].{name:name,reason:reason,exitCode:exitCode}}'
 
-MOTIVOS COMUNS + SOLUÇÕES:
+COMMON CAUSES + SOLUTIONS:
 
 A) "CannotPullContainerError: ... no such host"
-   → ECR está em VPC privada sem endpoint
-   Solução: Criar VPC Endpoint para ECR (ecr.api, ecr.dkr, s3)
-   OU: Usar subnet pública com NAT GW
+   → ECR is in a private VPC without an endpoint
+   Solution: Create a VPC Endpoint for ECR (ecr.api, ecr.dkr, s3)
+   OR: Use a public subnet with a NAT GW
 
 B) "CannotPullContainerError: 403 Forbidden"  
-   → Task Execution Role não tem permissão ECR
-   Solução: Adicionar AmazonECRReadOnly à Task Execution Role
+   → Task Execution Role lacks ECR permissions
+   Solution: Add AmazonECRReadOnly to the Task Execution Role
 
 C) exitCode: 1, reason: "Essential container exited"
-   → App crashou. Ver logs no CloudWatch:
-   aws logs tail /ecs/minha-task --follow
-   Verificar: variáveis de ambiente, secrets do Secrets Manager
+   → The app crashed. Check logs in CloudWatch:
+   aws logs tail /ecs/my-task --follow
+   Check: environment variables, Secrets Manager secrets
 
 D) "OutOfMemoryError: Container killed"
-   → memoryReservation muito baixo
-   Solução: Aumentar memória na task definition
+   → memoryReservation too low
+   Solution: Increase memory in the task definition
 
 E) "ResourceInitializationError: unable to pull secrets"
-   → Secrets Manager ou SSM Parameter Store inacessível
-   Solução: VPC Endpoint para secretsmanager ou rota para internet
+   → Secrets Manager or SSM Parameter Store is unreachable
+   Solution: VPC Endpoint for secretsmanager or a route to the internet
 
-PASSO 2 — Ver logs detalhados:
+STEP 2 — See detailed logs:
 aws logs describe-log-groups | grep ecs
 aws logs get-log-events \
-  --log-group-name /ecs/minha-task \
+  --log-group-name /ecs/my-task \
   --log-stream-name ecs/container-name/TASK_ID
 
-PASSO 3 — Testar localmente:
-docker run -e DATABASE_URL=... -e SECRET=... minha-imagem:latest
-→ Reproduzir erro localmente é muito mais rápido
+STEP 3 — Test locally:
+docker run -e DATABASE_URL=... -e SECRET=... my-image:latest
+→ Reproducing the error locally is much faster
 ```

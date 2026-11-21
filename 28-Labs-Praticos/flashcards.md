@@ -1,14 +1,14 @@
-# Flashcards — Módulo 18: Labs Práticos
+# Flashcards — Module 18: Hands-On Labs
 
-> **Formato:** P = Pergunta | R = Resposta  
+> **Format:** Q = Question | A = Answer  
 > **Total:** 25 flashcards
 
 ---
 
-**P:** Como criar uma Lambda Function com permissão para DynamoDB via CLI?  
-**R:**
+**Q:** How do you create a Lambda Function with DynamoDB permissions via the CLI?  
+**A:**
 ```bash
-# 1. Criar IAM Role
+# 1. Create IAM Role
 aws iam create-role --role-name LambdaDynamoRole \
   --assume-role-policy-document file://trust-lambda.json
 
@@ -24,8 +24,8 @@ aws lambda create-function --function-name MyFunc \
 
 ---
 
-**P:** Como criar uma VPC com subnet pública e privada via Terraform?  
-**R:**
+**Q:** How do you create a VPC with a public and a private subnet via Terraform?  
+**A:**
 ```hcl
 resource "aws_vpc" "main" { cidr_block = "10.0.0.0/16" }
 resource "aws_subnet" "public" {
@@ -41,39 +41,39 @@ resource "aws_internet_gateway" "igw" { vpc_id = aws_vpc.main.id }
 
 ---
 
-**P:** Como verificar se uma EC2 em subnet privada tem conectividade com a internet?  
-**R:** A instância privada precisa de um **NAT Gateway** na subnet pública com rota na subnet privada: `0.0.0.0/0 → NAT GW`. Para testar: `curl -I https://aws.amazon.com` (dentro da instância via SSM Session Manager). Sem NAT GW: timeout. Com NAT GW + rota correta: HTTP 200.
+**Q:** How do you check whether an EC2 instance in a private subnet has internet connectivity?  
+**A:** The private instance needs a **NAT Gateway** in the public subnet with a route in the private subnet: `0.0.0.0/0 → NAT GW`. To test: `curl -I https://aws.amazon.com` (from inside the instance via SSM Session Manager). Without a NAT GW: timeout. With a NAT GW + correct route: HTTP 200.
 
 ---
 
-**P:** Qual é o comando AWS CLI para fazer upload de arquivo para S3 com criptografia SSE-KMS?  
-**R:**
+**Q:** What is the AWS CLI command to upload a file to S3 with SSE-KMS encryption?  
+**A:**
 ```bash
-aws s3 cp arquivo.txt s3://meu-bucket/arquivo.txt \
+aws s3 cp file.txt s3://my-bucket/file.txt \
   --sse aws:kms \
   --sse-kms-key-id arn:aws:kms:us-east-1:123456:key/key-id
 ```
-Verificar:
+Verify:
 ```bash
-aws s3api head-object --bucket meu-bucket --key arquivo.txt \
+aws s3api head-object --bucket my-bucket --key file.txt \
   --query 'ServerSideEncryption'
 ```
 
 ---
 
-**P:** Como testar uma API Gateway + Lambda localmente antes do deploy?  
-**R:**
+**Q:** How do you test an API Gateway + Lambda locally before deploying?  
+**A:**
 ```bash
-# Instalar SAM CLI
+# Install SAM CLI
 pip install aws-sam-cli
 
-# Invocar Lambda localmente
-sam local invoke "NomeFuncao" -e events/event.json
+# Invoke Lambda locally
+sam local invoke "FunctionName" -e events/event.json
 
-# Subir API local (porta 3000)
+# Start local API (port 3000)
 sam local start-api
 
-# Testar
+# Test
 curl -X POST http://localhost:3000/endpoint \
   -H "Content-Type: application/json" \
   -d '{"key": "value"}'
@@ -81,28 +81,28 @@ curl -X POST http://localhost:3000/endpoint \
 
 ---
 
-**P:** Qual comando Terraform visualiza as mudanças antes de aplicar?  
-**R:**
+**Q:** Which Terraform command previews changes before applying?  
+**A:**
 ```bash
-terraform plan -out=tfplan    # mostra mudanças + salva plano
-terraform show tfplan         # visualiza o plano salvo
-terraform apply tfplan        # aplica exatamente o plano salvo
+terraform plan -out=tfplan    # shows changes + saves the plan
+terraform show tfplan         # views the saved plan
+terraform apply tfplan        # applies exactly the saved plan
 ```
-O `-out=tfplan` garante que `apply` aplica exatamente o que foi revisado no `plan`, sem surpresas de mudanças no estado entre plan e apply.
+`-out=tfplan` ensures `apply` applies exactly what was reviewed in `plan`, with no surprises from state changes between plan and apply.
 
 ---
 
-**P:** Como configurar o Auto Scaling Group para escalar baseado em CPU via CLI?  
-**R:**
+**Q:** How do you configure an Auto Scaling Group to scale based on CPU via the CLI?  
+**A:**
 ```bash
-# Criar scaling policy
+# Create scaling policy
 aws autoscaling put-scaling-policy \
   --auto-scaling-group-name MyASG \
   --policy-name cpu-scale-out \
   --scaling-adjustment 1 \
   --adjustment-type ChangeInCapacity
 
-# Criar CloudWatch Alarm que aciona a policy
+# Create a CloudWatch Alarm that triggers the policy
 aws cloudwatch put-metric-alarm \
   --alarm-name High-CPU \
   --metric-name CPUUtilization --namespace AWS/EC2 \
@@ -113,29 +113,29 @@ aws cloudwatch put-metric-alarm \
 
 ---
 
-**P:** Como habilitar versionamento no S3 e listar versões de um objeto?  
-**R:**
+**Q:** How do you enable versioning on S3 and list the versions of an object?  
+**A:**
 ```bash
-# Habilitar versionamento
+# Enable versioning
 aws s3api put-bucket-versioning \
-  --bucket meu-bucket \
+  --bucket my-bucket \
   --versioning-configuration Status=Enabled
 
-# Listar versões de um objeto
+# List versions of an object
 aws s3api list-object-versions \
-  --bucket meu-bucket --prefix arquivo.txt \
+  --bucket my-bucket --prefix file.txt \
   --query 'Versions[*].[VersionId,LastModified,IsLatest]'
 
-# Restaurar versão específica
-aws s3api copy-object --bucket meu-bucket \
-  --copy-source "meu-bucket/arquivo.txt?versionId=abc123" \
-  --key arquivo.txt
+# Restore a specific version
+aws s3api copy-object --bucket my-bucket \
+  --copy-source "my-bucket/file.txt?versionId=abc123" \
+  --key file.txt
 ```
 
 ---
 
-**P:** Como criar uma RDS instance Multi-AZ com Terraform?  
-**R:**
+**Q:** How do you create a Multi-AZ RDS instance with Terraform?  
+**A:**
 ```hcl
 resource "aws_db_instance" "main" {
   identifier        = "prod-db"
@@ -156,25 +156,25 @@ resource "aws_db_instance" "main" {
 
 ---
 
-**P:** Como verificar os logs de uma função Lambda no CloudWatch via CLI?  
-**R:**
+**Q:** How do you check a Lambda function's logs in CloudWatch via the CLI?  
+**A:**
 ```bash
-# Listar log streams (invocações)
+# List log streams (invocations)
 aws logs describe-log-streams \
-  --log-group-name /aws/lambda/MinhaFuncao \
+  --log-group-name /aws/lambda/MyFunction \
   --order-by LastEventTime --descending --max-items 5
 
-# Ver logs da última invocação
+# View logs of the latest invocation
 aws logs get-log-events \
-  --log-group-name /aws/lambda/MinhaFuncao \
+  --log-group-name /aws/lambda/MyFunction \
   --log-stream-name "2024/01/01/[$LATEST]abc123" \
   --query 'events[*].message'
 ```
 
 ---
 
-**P:** Como criar um DynamoDB table com GSI via Terraform?  
-**R:**
+**Q:** How do you create a DynamoDB table with a GSI via Terraform?  
+**A:**
 ```hcl
 resource "aws_dynamodb_table" "orders" {
   name         = "Orders"
@@ -196,8 +196,8 @@ resource "aws_dynamodb_table" "orders" {
 
 ---
 
-**P:** Como configurar CORS no API Gateway via Terraform?  
-**R:**
+**Q:** How do you configure CORS in API Gateway via Terraform?  
+**A:**
 ```hcl
 resource "aws_api_gateway_method" "options" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
@@ -210,22 +210,22 @@ resource "aws_api_gateway_integration" "options" {
   type        = "MOCK"
   request_templates = { "application/json" = "{\"statusCode\": 200}" }
 }
-# + method_response e integration_response com headers CORS
+# + method_response and integration_response with CORS headers
 ```
 
 ---
 
-**P:** Como criar um CloudWatch Alarm para monitorar erros da Lambda e enviar para SNS?  
-**R:**
+**Q:** How do you create a CloudWatch Alarm to monitor Lambda errors and send them to SNS?  
+**A:**
 ```bash
-# Criar tópico SNS
+# Create SNS topic
 aws sns create-topic --name lambda-errors-alert
 
-# Criar alarme
+# Create alarm
 aws cloudwatch put-metric-alarm \
-  --alarm-name "LambdaErrors-MinhaFuncao" \
+  --alarm-name "LambdaErrors-MyFunction" \
   --metric-name Errors --namespace AWS/Lambda \
-  --dimensions Name=FunctionName,Value=MinhaFuncao \
+  --dimensions Name=FunctionName,Value=MyFunction \
   --statistic Sum --period 60 \
   --threshold 5 --comparison-operator GreaterThanOrEqualToThreshold \
   --evaluation-periods 1 \
@@ -234,34 +234,34 @@ aws cloudwatch put-metric-alarm \
 
 ---
 
-**P:** Como fazer limpeza (cleanup) de recursos Terraform para evitar custos?  
-**R:**
+**Q:** How do you clean up Terraform resources to avoid costs?  
+**A:**
 ```bash
-# Destruir todos os recursos do state
+# Destroy all resources in the state
 terraform destroy
 
-# Verificar o que será destruído antes
+# Check what will be destroyed beforehand
 terraform plan -destroy
 
-# Forçar destruição de bucket S3 com objetos (force_destroy=true no .tf)
-# ou via CLI:
-aws s3 rm s3://meu-bucket --recursive
-aws s3api delete-bucket --bucket meu-bucket
+# Force destruction of an S3 bucket with objects (force_destroy=true in the .tf)
+# or via the CLI:
+aws s3 rm s3://my-bucket --recursive
+aws s3api delete-bucket --bucket my-bucket
 
-# Verificar recursos remanescentes na conta
+# Check for remaining resources in the account
 aws resourcegroupstaggingapi get-resources \
   --tag-filters Key=Environment,Values=lab
 ```
 
 ---
 
-**P:** Como diagnosticar por que uma Lambda não consegue acessar uma instância RDS em VPC?  
-**R:** Checklist: (1) Lambda tem VPC config com subnet privada? (2) Security Group do Lambda tem outbound na porta 3306? (3) Security Group RDS tem inbound da porta 3306 **do SG da Lambda** (não do CIDR)? (4) Subnets da Lambda roteiam para NAT GW (para chamar APIs AWS)? (5) RDS está na mesma VPC que a Lambda? (6) RDS endpoint correto (não o IP)?
+**Q:** How do you diagnose why a Lambda cannot reach an RDS instance in a VPC?  
+**A:** Checklist: (1) Does the Lambda have a VPC config with a private subnet? (2) Does the Lambda Security Group have outbound on port 3306? (3) Does the RDS Security Group have inbound on port 3306 **from the Lambda's SG** (not from the CIDR)? (4) Do the Lambda's subnets route to a NAT GW (to call AWS APIs)? (5) Is RDS in the same VPC as the Lambda? (6) Is the RDS endpoint correct (not the IP)?
 
 ---
 
-**P:** Como criar um ECS Fargate Service com Terraform?  
-**R:**
+**Q:** How do you create an ECS Fargate Service with Terraform?  
+**A:**
 ```hcl
 resource "aws_ecs_service" "app" {
   name            = "my-app"
@@ -284,23 +284,23 @@ resource "aws_ecs_service" "app" {
 
 ---
 
-**P:** Como usar o AWS CLI para testar uma IAM Policy sem aplicar?  
-**R:**
+**Q:** How do you use the AWS CLI to test an IAM Policy without applying it?  
+**A:**
 ```bash
-# Simula se uma ação é permitida para o principal
+# Simulates whether an action is allowed for the principal
 aws iam simulate-principal-policy \
-  --policy-source-arn arn:aws:iam::ACCOUNT:role/MinhaRole \
+  --policy-source-arn arn:aws:iam::ACCOUNT:role/MyRole \
   --action-names "s3:GetObject" \
-  --resource-arns "arn:aws:s3:::meu-bucket/*"
+  --resource-arns "arn:aws:s3:::my-bucket/*"
 
-# Resultado: allowed/denied + qual policy bloqueou
-# Também útil: iam simulate-custom-policy para testar policy JSON diretamente
+# Result: allowed/denied + which policy blocked it
+# Also useful: iam simulate-custom-policy to test a JSON policy directly
 ```
 
 ---
 
-**P:** Como fazer o deploy de uma aplicação Lambda com SAM e criar API Gateway automaticamente?  
-**R:**
+**Q:** How do you deploy a Lambda application with SAM and create an API Gateway automatically?  
+**A:**
 ```yaml
 # template.yaml
 AWSTemplateFormatVersion: '2010-09-09'
@@ -324,16 +324,16 @@ sam build && sam deploy --guided
 
 ---
 
-**P:** Qual é o comando CLI para listar instâncias EC2 em execução por região?  
-**R:**
+**Q:** What is the CLI command to list running EC2 instances by region?  
+**A:**
 ```bash
-# Instâncias em running na região default
+# Running instances in the default region
 aws ec2 describe-instances \
   --filters "Name=instance-state-name,Values=running" \
   --query 'Reservations[*].Instances[*].[InstanceId,InstanceType,PublicIpAddress,Tags[?Key==`Name`].Value|[0]]' \
   --output table
 
-# Todas as regiões (script bash)
+# All regions (bash script)
 for region in $(aws ec2 describe-regions --query 'Regions[*].RegionName' --output text); do
   echo "Region: $region"
   aws ec2 describe-instances --region $region --filters "Name=instance-state-name,Values=running" --query 'Reservations[*].Instances[*].InstanceId' --output text
@@ -342,11 +342,11 @@ done
 
 ---
 
-**P:** Como configurar S3 Lifecycle Policy para transição para Glacier via CLI?  
-**R:**
+**Q:** How do you configure an S3 Lifecycle Policy to transition to Glacier via the CLI?  
+**A:**
 ```bash
 aws s3api put-bucket-lifecycle-configuration \
-  --bucket meu-bucket \
+  --bucket my-bucket \
   --lifecycle-configuration '{
     "Rules": [{
       "ID": "move-to-glacier",
@@ -363,31 +363,31 @@ aws s3api put-bucket-lifecycle-configuration \
 
 ---
 
-**P:** Como debugar um erro 403 Forbidden no S3?  
-**R:** Checklist: (1) Bucket Policy bloqueia? `aws s3api get-bucket-policy --bucket bucket`. (2) Block Public Access habilitado? `aws s3api get-public-access-block --bucket bucket`. (3) IAM Policy da role/user tem `s3:GetObject`? `aws iam simulate-principal-policy`. (4) ACL do objeto? `aws s3api get-object-acl --bucket bucket --key key`. (5) KMS key: a role tem `kms:Decrypt`?
+**Q:** How do you debug a 403 Forbidden error on S3?  
+**A:** Checklist: (1) Is the Bucket Policy blocking it? `aws s3api get-bucket-policy --bucket bucket`. (2) Is Block Public Access enabled? `aws s3api get-public-access-block --bucket bucket`. (3) Does the role/user IAM Policy have `s3:GetObject`? `aws iam simulate-principal-policy`. (4) Object ACL? `aws s3api get-object-acl --bucket bucket --key key`. (5) KMS key: does the role have `kms:Decrypt`?
 
 ---
 
-**P:** Qual é o comando para escalar manualmente um ECS Service?  
-**R:**
+**Q:** What is the command to manually scale an ECS Service?  
+**A:**
 ```bash
-# Aumentar desired count para 5
+# Increase desired count to 5
 aws ecs update-service \
-  --cluster meu-cluster \
-  --service meu-servico \
+  --cluster my-cluster \
+  --service my-service \
   --desired-count 5
 
-# Verificar deploy
+# Check the deployment
 aws ecs describe-services \
-  --cluster meu-cluster \
-  --services meu-servico \
+  --cluster my-cluster \
+  --services my-service \
   --query 'services[0].[runningCount,desiredCount,deployments]'
 ```
 
 ---
 
-**P:** Como configurar CloudFront com S3 origin usando OAC (Origin Access Control)?  
-**R:**
+**Q:** How do you configure CloudFront with an S3 origin using OAC (Origin Access Control)?  
+**A:**
 ```hcl
 resource "aws_cloudfront_origin_access_control" "oac" {
   name = "my-oac"
@@ -395,22 +395,22 @@ resource "aws_cloudfront_origin_access_control" "oac" {
   signing_behavior = "always"
   signing_protocol = "sigv4"
 }
-# Na distribuição CloudFront: origin com origin_access_control_id = oac.id
-# Bucket Policy: permitir apenas cloudfront.amazonaws.com com condition
+# In the CloudFront distribution: origin with origin_access_control_id = oac.id
+# Bucket Policy: allow only cloudfront.amazonaws.com with the condition
 # "aws:SourceArn": "arn:aws:cloudfront::ACCOUNT:distribution/DISTID"
 ```
 
 ---
 
-**P:** Como verificar o custo estimado de recursos provisionados pelo Terraform?  
-**R:** Opção 1: **Infracost** (tool open-source): `infracost breakdown --path .` — mostra custo mensal estimado por recurso Terraform. Opção 2: **AWS Pricing Calculator** (manual). Opção 3: **Terraform Cloud** tem cost estimation integrado. Opção 4: após `terraform apply`, verificar AWS Cost Explorer com tags do projeto.
+**Q:** How do you check the estimated cost of resources provisioned by Terraform?  
+**A:** Option 1: **Infracost** (open-source tool): `infracost breakdown --path .` — shows the estimated monthly cost per Terraform resource. Option 2: **AWS Pricing Calculator** (manual). Option 3: **Terraform Cloud** has built-in cost estimation. Option 4: after `terraform apply`, check AWS Cost Explorer using the project's tags.
 
 ---
 
-**P:** Como criar um Secret no Secrets Manager e recuperar com Lambda?  
-**R:**
+**Q:** How do you create a Secret in Secrets Manager and retrieve it with Lambda?  
+**A:**
 ```bash
-# Criar secret
+# Create secret
 aws secretsmanager create-secret \
   --name prod/db/credentials \
   --secret-string '{"username":"admin","password":"supersecret"}'
@@ -422,6 +422,6 @@ def lambda_handler(event, context):
     sm = boto3.client('secretsmanager')
     secret = sm.get_secret_value(SecretId='prod/db/credentials')
     creds = json.loads(secret['SecretString'])
-    # usar creds['username'] e creds['password']
+    # use creds['username'] and creds['password']
 ```
-Lambda Role precisa de `secretsmanager:GetSecretValue`.
+The Lambda Role needs `secretsmanager:GetSecretValue`.

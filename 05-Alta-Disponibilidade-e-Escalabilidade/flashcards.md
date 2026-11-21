@@ -1,103 +1,103 @@
-# Flashcards — Alta Disponibilidade e Escalabilidade
+# Flashcards — High Availability and Scalability
 
-> Revise um cartão de cada vez. Tente responder antes de revelar a resposta.
-
----
-
-**P:** Qual é a diferença fundamental entre ALB e NLB?  
-**R:** ALB opera na camada 7 (HTTP/HTTPS/HTTP2/gRPC), roteamento por conteúdo (path, host, header, query string). NLB opera na camada 4 (TCP/UDP/TLS), ultra-baixa latência, IP estático por AZ, preserva IP de origem do cliente por padrão.
+> Review one card at a time. Try to answer before revealing the answer.
 
 ---
 
-**P:** O que é GWLB (Gateway Load Balancer) e quando usar?  
-**R:** Camada 3, protocolo GENEVE, projetado para inserção transparente de appliances de segurança (firewalls next-gen, IDS/IPS, inspeção profunda de pacotes). Encapsula tráfego e o envia aos appliances (EC2 com NVA) no target group. Use com VPC Routing e GWLB Endpoints.
+**Q:** What is the fundamental difference between ALB and NLB?  
+**A:** ALB operates at layer 7 (HTTP/HTTPS/HTTP2/gRPC), with content-based routing (path, host, header, query string). NLB operates at layer 4 (TCP/UDP/TLS), ultra-low latency, static IP per AZ, and preserves the client's source IP by default.
 
 ---
 
-**P:** O que é cross-zone load balancing e qual é o padrão em cada tipo de ELB?  
-**R:** Distribui tráfego igualmente entre todas as instâncias registradas, independente de AZ. ALB: habilitado por padrão, sem cobrança extra. NLB/GWLB: desabilitado por padrão, habilitação cobra por tráfego inter-AZ. CLB: habilitado por padrão via console, sem cobrança.
+**Q:** What is GWLB (Gateway Load Balancer) and when should you use it?  
+**A:** Layer 3, GENEVE protocol, designed for transparent insertion of security appliances (next-gen firewalls, IDS/IPS, deep packet inspection). It encapsulates traffic and sends it to the appliances (EC2 with NVA) in the target group. Use with VPC Routing and GWLB Endpoints.
 
 ---
 
-**P:** O que é Connection Draining (Deregistration Delay)?  
-**R:** Período (padrão 300s, 0–3600s) em que o ELB aguarda conexões em andamento completarem antes de desregistrar/interromper uma instância. Durante esse período, o ALB para de enviar novas requisições para a instância mas mantém as existentes. Reduzir para aplicações com requisições curtas; aumentar para uploads longos.
+**Q:** What is cross-zone load balancing and what is the default for each ELB type?  
+**A:** Distributes traffic evenly across all registered instances, regardless of AZ. ALB: enabled by default, no extra charge. NLB/GWLB: disabled by default, enabling it charges for inter-AZ traffic. CLB: enabled by default via console, no charge.
 
 ---
 
-**P:** Quais tipos de targets o ALB suporta?  
-**R:** Instâncias EC2 (por instance ID), endereços IP (recursos on-premises, outros serviços com IP), funções Lambda (para serverless backends), e outros ALBs (para arquiteturas de microserviços encadeadas).
+**Q:** What is Connection Draining (Deregistration Delay)?  
+**A:** Period (default 300s, 0–3600s) during which the ELB waits for in-flight connections to complete before deregistering/stopping an instance. During this period, the ALB stops sending new requests to the instance but keeps the existing ones. Reduce it for applications with short requests; increase it for long uploads.
 
 ---
 
-**P:** O ALB preserva o IP de origem do cliente?  
-**R:** O ALB NÃO preserva o IP de origem diretamente — ele termina a conexão TCP e faz nova requisição para o target. O IP do cliente original está no header `X-Forwarded-For`. O NLB SIM preserva o IP de origem (pass-through na camada 4).
+**Q:** Which target types does the ALB support?  
+**A:** EC2 instances (by instance ID), IP addresses (on-premises resources, other services with an IP), Lambda functions (for serverless backends), and other ALBs (for chained microservices architectures).
 
 ---
 
-**P:** O que é Launch Template vs Launch Configuration?  
-**R:** Launch Configuration: legado, imutável (não pode editar, só criar novo), não suporta multiple instance types, não suporta spot com on-demand mix. Launch Template: recomendado, tem versões ($Latest, $Default), suporta mixed instances policy, spot fleet, placamento em grupos, T2/T3 unlimited.
+**Q:** Does the ALB preserve the client's source IP?  
+**A:** The ALB does NOT preserve the source IP directly — it terminates the TCP connection and makes a new request to the target. The original client IP is in the `X-Forwarded-For` header. The NLB DOES preserve the source IP (layer 4 pass-through).
 
 ---
 
-**P:** Quais são as 4 políticas de Auto Scaling?  
-**R:** 1) Target Tracking: mantém métrica em um valor alvo (ex: CPU 50%), cria alarmes automaticamente. 2) Step Scaling: escalona em passos baseados em ranges de métricas, requer alarme CloudWatch. 3) Scheduled Scaling: baseado em data/hora, para padrões previsíveis. 4) Predictive Scaling: usa ML para prever carga e pre-provisiona.
+**Q:** What is the difference between Launch Template and Launch Configuration?  
+**A:** Launch Configuration: legacy, immutable (cannot be edited, only a new one created), does not support multiple instance types, does not support a Spot and On-Demand mix. Launch Template: recommended, has versions ($Latest, $Default), supports mixed instances policy, Spot Fleet, placement groups, T2/T3 unlimited.
 
 ---
 
-**P:** O que é cooldown period no Auto Scaling?  
-**R:** Período (padrão 300s) após uma atividade de scaling durante o qual o ASG não inicia outra ação de scaling. Objetivo: deixar a nova instância começar a absorver carga antes de decidir escalar mais. Target Tracking tem warmup period separado que substitui o cooldown para scale-out.
+**Q:** What are the 4 Auto Scaling policies?  
+**A:** 1) Target Tracking: keeps a metric at a target value (e.g., CPU 50%), creates alarms automatically. 2) Step Scaling: scales in steps based on metric ranges, requires a CloudWatch alarm. 3) Scheduled Scaling: based on date/time, for predictable patterns. 4) Predictive Scaling: uses ML to forecast load and pre-provisions.
 
 ---
 
-**P:** O que é Lifecycle Hook no ASG?  
-**R:** Permite pausar o ASG durante transições do ciclo de vida da instância: `Pending:Wait` (antes de entrar em serviço) e `Terminating:Wait` (antes de ser terminada). O hook pode acionar Lambda, SNS, SQS ou EventBridge. Timeout padrão: 3600s. Para continuar: `CompleteLifecycleAction(CONTINUE)` ou `ABANDON`.
+**Q:** What is the cooldown period in Auto Scaling?  
+**A:** Period (default 300s) after a scaling activity during which the ASG does not start another scaling action. Purpose: let the new instance start absorbing load before deciding to scale further. Target Tracking has a separate warmup period that replaces the cooldown for scale-out.
 
 ---
 
-**P:** O que é a política de terminação padrão do ASG?  
-**R:** 1) Seleciona AZ com mais instâncias (rebalancear); 2) Instância com Launch Configuration/Template mais antigo; 3) Instância mais próxima da próxima hora de cobrança; 4) Aleatório se empate. Também existem políticas: `OldestInstance`, `NewestInstance`, `ClosestToNextInstanceHour`, `AllocationStrategy`.
+**Q:** What is a Lifecycle Hook in the ASG?  
+**A:** Allows pausing the ASG during instance lifecycle transitions: `Pending:Wait` (before entering service) and `Terminating:Wait` (before being terminated). The hook can trigger Lambda, SNS, SQS or EventBridge. Default timeout: 3600s. To continue: `CompleteLifecycleAction(CONTINUE)` or `ABANDON`.
 
 ---
 
-**P:** O que é Predictive Scaling e qual é o requisito?  
-**R:** Usa ML para analisar histórico de métricas e pré-provisionar capacidade antes do pico esperado. Requer pelo menos 14 dias de histórico de métricas para gerar previsões. Pode ser usado combinado com Target Tracking para cobertura proativa e reativa.
+**Q:** What is the ASG's default termination policy?  
+**A:** 1) Selects the AZ with the most instances (rebalance); 2) Instance with the oldest Launch Configuration/Template; 3) Instance closest to the next billing hour; 4) Random if tied. Other policies also exist: `OldestInstance`, `NewestInstance`, `ClosestToNextInstanceHour`, `AllocationStrategy`.
 
 ---
 
-**P:** O que é PrivateLink e como o NLB se relaciona com ele?  
-**R:** AWS PrivateLink permite expor um serviço de uma VPC para consumidores de outras VPCs/contas sem peering, via Interface Endpoints. O NLB é o pré-requisito: o serviço precisa estar atrás de um NLB para ser registrado como VPC Endpoint Service. Consumidores criam Interface VPC Endpoints que apontam ao serviço.
+**Q:** What is Predictive Scaling and what is its requirement?  
+**A:** Uses ML to analyze metric history and pre-provision capacity before the expected peak. Requires at least 14 days of metric history to generate forecasts. Can be used together with Target Tracking for proactive and reactive coverage.
 
 ---
 
-**P:** Como funciona o health check do ALB vs do ASG?  
-**R:** ALB verifica saúde das instâncias no target group (HTTP path, código de resposta, intervalo). ASG pode usar dois tipos: EC2 (status de sistema) ou ELB (delegado ao ELB). Na produção, SEMPRE configurar o ASG para usar ELB health check, pois detecta falhas de aplicação que EC2 health check não detecta.
+**Q:** What is PrivateLink and how does the NLB relate to it?  
+**A:** AWS PrivateLink allows exposing a service from one VPC to consumers in other VPCs/accounts without peering, via Interface Endpoints. The NLB is the prerequisite: the service must sit behind an NLB to be registered as a VPC Endpoint Service. Consumers create Interface VPC Endpoints that point to the service.
 
 ---
 
-**P:** O que é warm-up period no ASG Target Tracking?  
-**R:** Período (em segundos) durante o qual uma nova instância não é considerada nas métricas de scaling, dando tempo para ela inicializar. Evita que o ASG interprete uma instância "aquecendo" como baixa performance e escale mais desnecessariamente.
+**Q:** How does the ALB health check differ from the ASG's?  
+**A:** The ALB checks the health of instances in the target group (HTTP path, response code, interval). The ASG can use two types: EC2 (system status) or ELB (delegated to the ELB). In production, ALWAYS configure the ASG to use ELB health check, since it detects application failures that EC2 health check does not.
 
 ---
 
-**P:** Como implementar blue/green deployment com ALB e ASG?  
-**R:** Criar dois target groups: `tg-blue` (versão atual) e `tg-green` (nova versão). Configurar listener rule com weighted target groups (ex: 95% blue, 5% green). Gradualmente aumentar peso do green. Se sucesso, redirecionar 100% ao green. Se falha, voltar ao 100% blue imediatamente.
+**Q:** What is the warm-up period in ASG Target Tracking?  
+**A:** Period (in seconds) during which a new instance is not counted in the scaling metrics, giving it time to initialize. Prevents the ASG from interpreting a "warming up" instance as low performance and needlessly scaling out more.
 
 ---
 
-**P:** O que é Sticky Sessions no ALB?  
-**R:** Garante que requisições do mesmo cliente vão para a mesma instância durante um período. Usa cookie: `AWSALB` (gerado pelo ALB, duração 1s–7 dias) ou cookie definido pela aplicação. Útil para sessões com estado. Pode causar desbalanceamento se uma instância receber muitas sessões longas.
+**Q:** How do you implement blue/green deployment with ALB and ASG?  
+**A:** Create two target groups: `tg-blue` (current version) and `tg-green` (new version). Configure a listener rule with weighted target groups (e.g., 95% blue, 5% green). Gradually increase the green weight. If successful, redirect 100% to green. If it fails, go back to 100% blue immediately.
 
 ---
 
-**P:** O que é NLB Zonal DNS e static IP?  
-**R:** Todo NLB recebe um DNS host-name (ex: `my-nlb-xxxx.elb.amazonaws.com`). Cada AZ habilitada tem um nó NLB com IP estático atribuível ao Elastic IP. Para whitelisting de IP no cliente, use o Elastic IP do NLB. O DNS resolve para todos os nós; para IP fixo por AZ, use o IP diretamente.
+**Q:** What are Sticky Sessions on the ALB?  
+**A:** Ensures that requests from the same client go to the same instance for a period of time. Uses a cookie: `AWSALB` (generated by the ALB, duration 1s–7 days) or an application-defined cookie. Useful for stateful sessions. Can cause imbalance if one instance receives many long sessions.
 
 ---
 
-**P:** Qual é a diferença entre Step Scaling e Simple Scaling?  
-**R:** Simple Scaling (legado): dispara uma ação e espera o cooldown antes de qualquer outra ação. Tudo ou nada. Step Scaling: permite múltiplos passos baseados em ranges de métrica sem cooldown entre steps diferentes — reage mais rápido a mudanças graduais ou bruscas de carga.
+**Q:** What are NLB Zonal DNS and static IP?  
+**A:** Every NLB gets a DNS host name (e.g., `my-nlb-xxxx.elb.amazonaws.com`). Each enabled AZ has an NLB node with a static IP that can be assigned an Elastic IP. For client-side IP allowlisting, use the NLB's Elastic IP. DNS resolves to all nodes; for a fixed IP per AZ, use the IP directly.
 
 ---
 
-**P:** Como funciona a Mixed Instance Policy no ASG com Spot?  
-**R:** Define um pool de tipos de instância e a porcentagem de On-Demand vs Spot. O ASG tenta lançar Spot do tipo mais barato disponível. Se interrompido, tenta outro tipo do pool. Estratégia `capacityOptimized` minimiza interrupções escolhendo pools com mais capacidade disponível.
+**Q:** What is the difference between Step Scaling and Simple Scaling?  
+**A:** Simple Scaling (legacy): triggers one action and waits for the cooldown before any other action. All or nothing. Step Scaling: allows multiple steps based on metric ranges without cooldown between different steps — reacts faster to gradual or sudden load changes.
+
+---
+
+**Q:** How does the Mixed Instance Policy work in the ASG with Spot?  
+**A:** Defines a pool of instance types and the percentage of On-Demand vs Spot. The ASG tries to launch Spot of the cheapest type available. If interrupted, it tries another type from the pool. The `capacityOptimized` strategy minimizes interruptions by choosing pools with the most available capacity.

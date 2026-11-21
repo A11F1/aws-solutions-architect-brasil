@@ -1,28 +1,28 @@
-# Cheatsheet - AWS Organizations, Governanca e Custos
+# Cheatsheet - AWS Organizations, Governance, and Costs
 
-## Mapa rapido
+## Quick map
 
-| Necessidade | Servico/Padrao | Dica de prova |
+| Need | Service/Pattern | Exam tip |
 |---|---|---|
-| Guardrail de permissao em varias contas | SCP | Lembrar: nao concede, apenas restringe |
-| Provisionar landing zone padrao | Control Tower | Menor overhead para multi-account |
-| Acesso centralizado de usuarios | IAM Identity Center | Evita IAM users em cada conta |
-| Alertar estouro de orcamento | AWS Budgets | Alerta antes da fatura fechar |
-| Analise detalhada de gastos | CUR + Athena | Visao granular por servico/tag |
-| Reduzir custo de compute previsivel | Savings Plans / RI | Compromisso de uso reduz preco |
+| Permission guardrail across several accounts | SCP | Remember: it does not grant, it only restricts |
+| Provision a standard landing zone | Control Tower | Lowest overhead for multi-account |
+| Centralized user access | IAM Identity Center | Avoids IAM users in every account |
+| Alert on budget overrun | AWS Budgets | Alerts before the bill closes |
+| Detailed spend analysis | CUR + Athena | Granular view by service/tag |
+| Reduce predictable compute cost | Savings Plans / RI | Usage commitment lowers the price |
 
-## Otimizacao de custo
+## Cost optimization
 
-- rightsizing de EC2 e RDS
-- desligamento de ambientes nao produtivos
-- classes de storage adequadas (S3 lifecycle)
-- usar Spot em workloads stateless
-- revisar transferencias entre AZ/regioes
+- rightsizing of EC2 and RDS
+- shutting down non-production environments
+- appropriate storage classes (S3 lifecycle)
+- use Spot for stateless workloads
+- review transfers between AZs/regions
 
-## Frases gatilho
+## Trigger phrases
 
 - "across multiple AWS accounts" => Organizations/Control Tower
 - "prevent specific actions" => SCP
 - "cost visibility by team" => Cost Allocation Tags + CUR
 - "predictable usage" => RI/Savings Plans
-- "variable workload" => Savings Plans ou on-demand + autoscaling
+- "variable workload" => Savings Plans or on-demand + autoscaling

@@ -1,66 +1,66 @@
-# Módulo 09 — Desacoplamento: SQS, SNS, EventBridge
+# Module 09 — Decoupling: SQS, SNS, EventBridge
 
-## Por Que Desacoplar?
+## Why Decouple?
 
-Arquiteturas tightly-coupled criam cascatas de falhas: se o consumidor está lento ou falho, o produtor para. Serviços de mensageria e eventos introduzem um buffer ou roteador entre produtor e consumidor, aumentando resiliência, escalabilidade independente e tolerância a falhas.
+Tightly-coupled architectures create cascading failures: if the consumer is slow or failing, the producer stops. Messaging and event services introduce a buffer or router between producer and consumer, increasing resilience, independent scalability, and fault tolerance.
 
 ---
 
 ## Amazon SQS (Simple Queue Service)
 
-Serviço de fila de mensagens totalmente gerenciado.
+Fully managed message queue service.
 
 ### Standard vs FIFO
 
-| Característica | Standard | FIFO |
+| Characteristic | Standard | FIFO |
 |---|---|---|
-| Throughput | **Ilimitado** | 300 TPS (sem batching), 3.000 TPS (com batching de 10) |
-| Ordem | Best-effort (pode sair fora de ordem) | **Strict FIFO** (First In, First Out) |
-| Deduplicação | Possível entregar duplicatas | **Exatamente uma vez** (deduplication window 5 min) |
-| Naming | Qualquer nome | Deve terminar em `.fifo` |
-| Uso típico | Alto throughput, tolerante a duplicatas | Pedidos financeiros, comandos em sequência |
+| Throughput | **Unlimited** | 300 TPS (without batching), 3,000 TPS (with batching of 10) |
+| Ordering | Best-effort (may arrive out of order) | **Strict FIFO** (First In, First Out) |
+| Deduplication | Duplicates may be delivered | **Exactly once** (5-min deduplication window) |
+| Naming | Any name | Must end in `.fifo` |
+| Typical use | High throughput, duplicate-tolerant | Financial orders, sequential commands |
 
 ### Visibility Timeout
-- Quando uma mensagem é recebida, ela fica **invisível** por um período (padrão: 30s, máx: 12h)
-- Durante esse tempo, o processamento deve concluir e deletar a mensagem
-- Se o processamento falhar e o timeout expirar, a mensagem reaparece para outro consumidor
-- **ChangeMessageVisibility**: estende o timeout se o processamento demorar mais
+- When a message is received, it becomes **invisible** for a period (default: 30s, max: 12h)
+- During that time, processing must complete and delete the message
+- If processing fails and the timeout expires, the message reappears for another consumer
+- **ChangeMessageVisibility**: extends the timeout if processing takes longer
 
 ### DLQ (Dead-Letter Queue)
-- Mensagens que falharam `maxReceiveCount` vezes são movidas para a DLQ
-- Permite inspecionar e reprocessar mensagens problemáticas
-- DLQ precisa ser do mesmo tipo da fila origem (FIFO → FIFO DLQ, Standard → Standard DLQ)
-- **DLQ Redrive**: reprocessar mensagens da DLQ de volta à fila origem
+- Messages that failed `maxReceiveCount` times are moved to the DLQ
+- Allows inspecting and reprocessing problematic messages
+- The DLQ must be the same type as the source queue (FIFO → FIFO DLQ, Standard → Standard DLQ)
+- **DLQ Redrive**: reprocess messages from the DLQ back to the source queue
 
 ### Long Polling
-- `waitTimeSeconds` > 0 (máx 20s): a requisição de recebimento espera até ter mensagem ou timeout
-- Reduz chamadas de API vazias (e custo) vs. Short Polling (retorna imediatamente, mesmo sem mensagem)
-- **Habilitar Long Polling**: configurar na fila ou na chamada `ReceiveMessage`
+- `waitTimeSeconds` > 0 (max 20s): the receive request waits until a message is available or the timeout elapses
+- Reduces empty API calls (and cost) vs. Short Polling (returns immediately, even with no message)
+- **Enable Long Polling**: configure it on the queue or in the `ReceiveMessage` call
 
-### Outras Configurações Chave
-| Parâmetro | Default | Máximo | Descrição |
+### Other Key Settings
+| Parameter | Default | Maximum | Description |
 |---|---|---|---|
-| Message Retention | 4 dias | 14 dias | Tempo que mensagem fica na fila |
-| Message Size | — | 256 KB | Por mensagem (use S3 + SQS Extended Client para maior) |
-| Delay Queue | 0 | 15 min | Atraso antes de a mensagem ser visível |
+| Message Retention | 4 days | 14 days | How long a message stays in the queue |
+| Message Size | — | 256 KB | Per message (use S3 + SQS Extended Client for larger) |
+| Delay Queue | 0 | 15 min | Delay before the message becomes visible |
 | Receive Request Wait Time | 0 | 20s | Long polling window |
 
 ### SQS + Auto Scaling
-- ASG escala baseado em `ApproximateNumberOfMessagesVisible` (via CloudWatch Custom Metric)
-- Padrão: instâncias "worker" consomem da fila, ASG escala com o backlog
+- ASG scales based on `ApproximateNumberOfMessagesVisible` (via CloudWatch Custom Metric)
+- Pattern: "worker" instances consume from the queue, ASG scales with the backlog
 
 ---
 
 ## Amazon SNS (Simple Notification Service)
 
-Serviço de pub/sub totalmente gerenciado. Producers publicam em **Topics**, Subscribers recebem.
+Fully managed pub/sub service. Producers publish to **Topics**, Subscribers receive.
 
-### Modelos de Distribuição
-- **Fan-out**: 1 publicação → múltiplos subscribers (SQS, Lambda, HTTP, Email, SMS, Mobile Push)
-- Tipicamente: aplicação publica no SNS → SNS distribui para múltiplas SQS filas (fan-out sem acoplamento)
+### Distribution Models
+- **Fan-out**: 1 publish → multiple subscribers (SQS, Lambda, HTTP, Email, SMS, Mobile Push)
+- Typically: the application publishes to SNS → SNS distributes to multiple SQS queues (fan-out without coupling)
 
 ```
-Evento de Compra
+Purchase Event
     │
     ▼
 SNS Topic: order-created
@@ -71,13 +71,13 @@ SNS Topic: order-created
 ```
 
 ### FIFO Topics
-- Like FIFO SQS mas para pub/sub
-- Subscribers devem ser SQS FIFO Queues
-- 300 publishes/s, ordenado, sem duplicatas
+- Like FIFO SQS but for pub/sub
+- Subscribers must be SQS FIFO Queues
+- 300 publishes/s, ordered, no duplicates
 
 ### Message Filtering
-- Cada subscriber pode ter uma **filter policy** (JSON) que define quais atributos de mensagem receber
-- Reduz processamento desnecessário no subscriber
+- Each subscriber can have a **filter policy** (JSON) that defines which message attributes to receive
+- Reduces unnecessary processing in the subscriber
 ```json
 {"event_type": ["ORDER_PLACED", "ORDER_FAILED"]}
 ```
@@ -85,102 +85,102 @@ SNS Topic: order-created
 ### SNS vs SQS
 | SNS | SQS |
 |---|---|
-| Pub/Sub (1 → N) | Fila (1:1 pull) |
-| Push para subscribers | Consumers fazem poll/pull |
-| Sem retenção de mensagem | Retenção até 14 dias |
-| Fan-out | Ponto a ponto |
+| Pub/Sub (1 → N) | Queue (1:1 pull) |
+| Push to subscribers | Consumers poll/pull |
+| No message retention | Retention up to 14 days |
+| Fan-out | Point-to-point |
 
 ---
 
 ## Amazon EventBridge
 
-Barramento de eventos serverless. Evolução do CloudWatch Events.
+Serverless event bus. Evolution of CloudWatch Events.
 
 ### Event Buses
-| Tipo | Descrição |
+| Type | Description |
 |---|---|
-| **Default** | Eventos de serviços AWS (EC2 state-change, S3 object created, etc.) |
-| **Custom** | Você cria, para seus próprios eventos de aplicação |
-| **Partner** | Eventos de SaaS parceiros (Zendesk, Datadog, PagerDuty, Auth0) |
+| **Default** | Events from AWS services (EC2 state-change, S3 object created, etc.) |
+| **Custom** | You create it, for your own application events |
+| **Partner** | Events from SaaS partners (Zendesk, Datadog, PagerDuty, Auth0) |
 
 ### Rules
-- Definem **event pattern** (what triggers) + **target** (what executes)
-- Targets: Lambda, SQS, SNS, Step Functions, Kinesis, CodePipeline, EventBridge de outra conta, e 20+ outros
-- **Schedule**: regras baseadas em cron ou rate (não precisa de evento)
-- **Event Archive**: arquiva todos os eventos (ou filtrados) para replay
-- **Event Replay**: reprocessa eventos arquivados (útil para debugging e novos consumers retroativos)
+- Define an **event pattern** (what triggers) + **target** (what executes)
+- Targets: Lambda, SQS, SNS, Step Functions, Kinesis, CodePipeline, another account's EventBridge, and 20+ others
+- **Schedule**: cron- or rate-based rules (no event needed)
+- **Event Archive**: archives all events (or filtered ones) for replay
+- **Event Replay**: reprocesses archived events (useful for debugging and retroactive new consumers)
 
 ### Schema Registry
-- Descobre e registra esquemas de eventos automaticamente
-- Gera código bindings (Java, Python, TypeScript) para trabalhar com eventos tipados
-- Valida eventos contra schemas
+- Automatically discovers and registers event schemas
+- Generates code bindings (Java, Python, TypeScript) to work with typed events
+- Validates events against schemas
 
 ### EventBridge vs SNS vs SQS
-| Aspecto | EventBridge | SNS | SQS |
+| Aspect | EventBridge | SNS | SQS |
 |---|---|---|---|
-| Modelo | Event bus (rules + targets) | Pub/Sub (topics) | Fila |
-| Roteamento | Filtragem por conteúdo (JSON path) | Filter policies básicas | N/A |
-| Fontes | AWS services, custom, SaaS partners | Suas aplicações | — |
-| Replay | Sim (archive + replay) | Não | Não |
-| Targets | 20+ tipos | SQS, Lambda, HTTP, etc. | Pull por consumers |
-| Uso | Orquestração de eventos complexos | Fan-out simples | Buffer/decoupling |
+| Model | Event bus (rules + targets) | Pub/Sub (topics) | Queue |
+| Routing | Content-based filtering (JSON path) | Basic filter policies | N/A |
+| Sources | AWS services, custom, SaaS partners | Your applications | — |
+| Replay | Yes (archive + replay) | No | No |
+| Targets | 20+ types | SQS, Lambda, HTTP, etc. | Pull by consumers |
+| Use | Complex event orchestration | Simple fan-out | Buffer/decoupling |
 
 ---
 
 ## Amazon Kinesis
 
-Plataforma para processamento de dados de streaming em tempo real.
+Platform for real-time streaming data processing.
 
 ### Kinesis Data Streams
 
-- **Shards**: unidade de capacidade (1 MB/s entrada, 2 MB/s saída por shard)
-- Retenção: 24h padrão, até 365 dias
+- **Shards**: unit of capacity (1 MB/s in, 2 MB/s out per shard)
+- Retention: 24h default, up to 365 days
 - **Producers**: SDK, Kinesis Agent, Kinesis Producer Library (KPL — batching + compression)
 - **Consumers**: Lambda, Kinesis Data Analytics, KCL (Kinesis Client Library), Firehose
-- **Enhanced Fan-Out**: 2 MB/s por consumer por shard (push via HTTP/2, vs poll padrão)
-- **Partition Key**: determina qual shard recebe o record (igual ao DynamoDB partition key — alta cardinalidade evita hot shards)
+- **Enhanced Fan-Out**: 2 MB/s per consumer per shard (push via HTTP/2, vs standard poll)
+- **Partition Key**: determines which shard receives the record (same as the DynamoDB partition key — high cardinality avoids hot shards)
 
 ### Kinesis Data Firehose
 
-- **Fully managed**, sem administração de shards (serverless)
-- **Destinos**: S3, Redshift (via S3), OpenSearch, Splunk, DataDog, HTTP custom
-- Não é armazenado (streaming, sem replay)
-- **Buffer**: agrupa registros antes de entregar (buffer size ou buffer interval)
-- Pode aplicar transformações com Lambda antes de entregar
-- **Firehose ≠ Streams**: Firehose é near-real-time (latência de segundos/minutos); Streams é real-time
+- **Fully managed**, no shard administration (serverless)
+- **Destinations**: S3, Redshift (via S3), OpenSearch, Splunk, DataDog, custom HTTP
+- Not stored (streaming, no replay)
+- **Buffer**: groups records before delivering (buffer size or buffer interval)
+- Can apply transformations with Lambda before delivering
+- **Firehose ≠ Streams**: Firehose is near-real-time (latency of seconds/minutes); Streams is real-time
 
 ### Kinesis Data Streams vs Firehose
-| Característica | Data Streams | Data Firehose |
+| Characteristic | Data Streams | Data Firehose |
 |---|---|---|
-| Latência | Real-time (<200ms) | Near-real-time (60s–900s buffer) |
-| Gerenciamento | Manual (shards) | Serverless (automático) |
-| Replay | Sim (até 365 dias) | Não |
-| Destinos | Consumers customizados | S3, Redshift, OpenSearch, etc. |
-| Custo | Por shard-hora | Por GB ingerido |
+| Latency | Real-time (<200ms) | Near-real-time (60s–900s buffer) |
+| Management | Manual (shards) | Serverless (automatic) |
+| Replay | Yes (up to 365 days) | No |
+| Destinations | Custom consumers | S3, Redshift, OpenSearch, etc. |
+| Cost | Per shard-hour | Per GB ingested |
 
 ---
 
 ## Amazon MQ
 
-Broker de mensagens gerenciado compatível com protocolos de mensageria abertos: **AMQP, MQTT, OpenWire, STOMP**.
+Managed message broker compatible with open messaging protocols: **AMQP, MQTT, OpenWire, STOMP**.
 
-- Suporta **Apache ActiveMQ** e **RabbitMQ**
-- Diferente de SQS/SNS (protocolos proprietários da AWS)
-- Usado para **lift-and-shift de aplicações existentes** que já usam ActiveMQ/RabbitMQ
-- Deploy em 1 ou 2 AZs (Active/Standby para HA)
-- Para novos projetos: prefira SQS/SNS (serverless, mais escalável)
+- Supports **Apache ActiveMQ** and **RabbitMQ**
+- Unlike SQS/SNS (AWS proprietary protocols)
+- Used for **lift-and-shift of existing applications** that already use ActiveMQ/RabbitMQ
+- Deployed in 1 or 2 AZs (Active/Standby for HA)
+- For new projects: prefer SQS/SNS (serverless, more scalable)
 
 ---
 
-## Dicas de Prova
+## Exam Tips
 
-- **SQS + SNS fan-out** = padrão clássico de desacoplamento — SNS distribui para múltiplas SQS
-- **SQS FIFO**: exatamente-uma-vez + ordenado, mas limitado a 300/3.000 TPS
-- **Visibility Timeout** menor que o tempo de processamento = duplicatas; maior = delay na reentrega
-- **DLQ** é para mensagens que falharam `maxReceiveCount` vezes — não para mensagens lentas
-- **Long Polling** (waitTimeSeconds=20) reduz custo e número de chamadas vazias
-- **EventBridge** é preferível ao CloudWatch Events (EventBridge é a mesma coisa, mas com mais features)
-- EventBridge **archive + replay** = debug retroativo e onboarding de novos consumers
-- **Kinesis Data Streams** para real-time analytics + replay; **Firehose** para near-real-time → S3/Redshift
-- **Hot shard no Kinesis** = partition key com baixa cardinalidade (ex: apenas "user"/"event") — distribuir melhor as chaves
-- **Amazon MQ** = migração lift-and-shift de ActiveMQ/RabbitMQ; para novos projetos, use SQS/SNS
+- **SQS + SNS fan-out** = classic decoupling pattern — SNS distributes to multiple SQS queues
+- **SQS FIFO**: exactly-once + ordered, but limited to 300/3,000 TPS
+- **Visibility Timeout** lower than the processing time = duplicates; higher = delay in redelivery
+- **DLQ** is for messages that failed `maxReceiveCount` times — not for slow messages
+- **Long Polling** (waitTimeSeconds=20) reduces cost and the number of empty calls
+- **EventBridge** is preferable to CloudWatch Events (EventBridge is the same thing, but with more features)
+- EventBridge **archive + replay** = retroactive debugging and onboarding of new consumers
+- **Kinesis Data Streams** for real-time analytics + replay; **Firehose** for near-real-time → S3/Redshift
+- **Hot shard in Kinesis** = partition key with low cardinality (e.g., only "user"/"event") — distribute keys better
+- **Amazon MQ** = lift-and-shift migration of ActiveMQ/RabbitMQ; for new projects, use SQS/SNS

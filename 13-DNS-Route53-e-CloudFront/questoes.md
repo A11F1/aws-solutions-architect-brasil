@@ -1,25 +1,25 @@
-# Questões de Prova — Módulo 08: DNS, Route 53 e CloudFront
+# Exam Questions — Module 08: DNS, Route 53, and CloudFront
 
-<!-- Domínio SAA-C03: Design High-Performing Architectures / Design Secure Architectures -->
+<!-- SAA-C03 Domain: Design High-Performing Architectures / Design Secure Architectures -->
 
 ---
 
-**1.** Uma empresa tem um ALB e quer registrar `api.empresa.com` apontando para ele. O domínio raiz (`empresa.com`) precisa apontar para o mesmo ALB. Qual tipo de record usar para o domínio raiz?
+**1.** A company has an ALB and wants to register `api.company.com` pointing to it. The root domain (`company.com`) must point to the same ALB. Which record type should be used for the root domain?
 
-- A) CNAME record apontando para o DNS do ALB
-- B) A record apontando para o IP do ALB
-- C) Alias record apontando para o ALB
-- D) NS record delegando para o ALB
+- A) CNAME record pointing to the ALB DNS name
+- B) A record pointing to the ALB IP
+- C) Alias record pointing to the ALB
+- D) NS record delegating to the ALB
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — Alias record**
-CNAME **não pode** ser usado no domínio raiz (zona apex) — é limitação do DNS. Alias é extensão Route 53 que funciona no apex e aponta para recursos AWS (ALB, CloudFront, S3, API Gateway, etc.) sem custo de query adicional. IP do ALB é dinâmico — nunca use A record direto para ALB.
+CNAME **cannot** be used at the root domain (zone apex) — this is a DNS limitation. Alias is a Route 53 extension that works at the apex and points to AWS resources (ALB, CloudFront, S3, API Gateway, etc.) at no additional query cost. The ALB IP is dynamic — never use an A record directly for an ALB.
 </details>
 
 ---
 
-**2.** Uma aplicação global precisa rotear usuários para a região AWS com menor latência. Qual política de roteamento Route 53 usar?
+**2.** A global application needs to route users to the AWS Region with the lowest latency. Which Route 53 routing policy should be used?
 
 - A) Geolocation routing
 - B) Latency-based routing
@@ -27,14 +27,14 @@ CNAME **não pode** ser usado no domínio raiz (zona apex) — é limitação do
 - D) Geoproximity routing
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — Latency-based routing**
-Latency routing mede latência entre o cliente e cada região AWS e redireciona para a região com menor latência. Geolocation roteia baseado na localização geográfica (país/continente) — não mede latência real. Geoproximity roteia baseado em distância geográfica (pode ter bias configurável) via Traffic Flow.
+Latency routing measures latency between the client and each AWS Region and redirects to the Region with the lowest latency. Geolocation routes based on geographic location (country/continent) — it does not measure real latency. Geoproximity routes based on geographic distance (with a configurable bias) via Traffic Flow.
 </details>
 
 ---
 
-**3.** Qual política de roteamento Route 53 é usada para realizar testes A/B, enviando 10% do tráfego para uma nova versão da aplicação?
+**3.** Which Route 53 routing policy is used to run A/B tests, sending 10% of traffic to a new version of the application?
 
 - A) Failover routing
 - B) Latency routing
@@ -42,187 +42,187 @@ Latency routing mede latência entre o cliente e cada região AWS e redireciona 
 - D) Multivalue routing
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — Weighted routing**
-Weighted permite atribuir pesos (0-255) a múltiplos records. Para 10%/90%: record A com peso 10, record B com peso 90. Útil para canary deployments, blue/green testing, migrações graduais. Soma dos pesos define a proporção; peso 0 retira o record da rotação sem apagá-lo.
+Weighted lets you assign weights (0-255) to multiple records. For 10%/90%: record A with weight 10, record B with weight 90. Useful for canary deployments, blue/green testing, and gradual migrations. The sum of the weights defines the proportion; weight 0 removes the record from rotation without deleting it.
 </details>
 
 ---
 
-**4.** Uma empresa tem aplicação em us-east-1 (primária) e ap-southeast-1 (backup). Quer failover automático. Qual configuração Route 53?
+**4.** A company has an application in us-east-1 (primary) and ap-southeast-1 (backup). It wants automatic failover. Which Route 53 configuration should it use?
 
-- A) Weighted routing com peso 90/10
-- B) Failover routing com Health Check na região primária
-- C) Latency routing (automático para menor latência)
-- D) Multivalue routing com 2 registros
+- A) Weighted routing with 90/10 weights
+- B) Failover routing with a Health Check on the primary Region
+- C) Latency routing (automatic for lowest latency)
+- D) Multivalue routing with 2 records
 
 <details>
-<summary>Resposta</summary>
-**B — Failover routing com Health Check**
-Failover routing define um record PRIMARY e um SECONDARY. Route 53 usa Health Checks para monitorar o primário; se falhar, automaticamente responde com o SECONDARY. É o padrão para Active-Passive DR. Health Check pode monitorar endpoint, outra rota ou CloudWatch Alarm.
+<summary>Answer</summary>
+**B — Failover routing with Health Check**
+Failover routing defines a PRIMARY and a SECONDARY record. Route 53 uses Health Checks to monitor the primary; if it fails, it automatically answers with the SECONDARY. This is the standard for Active-Passive DR. A Health Check can monitor an endpoint, another Health Check, or a CloudWatch Alarm.
 </details>
 
 ---
 
-**5.** Uma empresa quer servir conteúdo estático (imagens, CSS, JS) do S3 via CloudFront com máxima segurança, sem tornar o bucket S3 público. Qual é o mecanismo atual recomendado pela AWS?
+**5.** A company wants to serve static content (images, CSS, JS) from S3 via CloudFront with maximum security, without making the S3 bucket public. What is the mechanism currently recommended by AWS?
 
-- A) Origin Access Identity (OAI) com bucket policy
-- B) Origin Access Control (OAC) com bucket policy
-- C) Signed URLs no CloudFront
-- D) S3 presigned URLs geradas pelo Lambda
+- A) Origin Access Identity (OAI) with bucket policy
+- B) Origin Access Control (OAC) with bucket policy
+- C) Signed URLs on CloudFront
+- D) S3 presigned URLs generated by Lambda
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — Origin Access Control (OAC)**
-OAC é o sucessor do OAI (lançado em 2022). Suporta S3 em todas as regiões, SSE-KMS, HTTP methods adicionais e S3 Object Lambda. O bucket precisa de bucket policy permitindo o CloudFront distribution ID via OAC. OAI ainda funciona mas é considerado legacy. O bucket permanece privado.
+OAC is the successor to OAI (launched in 2022). It supports S3 in all Regions, SSE-KMS, additional HTTP methods, and S3 Object Lambda. The bucket needs a bucket policy allowing the CloudFront distribution ID via OAC. OAI still works but is considered legacy. The bucket remains private.
 </details>
 
 ---
 
-**6.** Um site de streaming precisa servir conteúdo premium pago apenas para usuários autenticados via CloudFront. Qual mecanismo usar?
+**6.** A streaming site needs to serve paid premium content only to authenticated users via CloudFront. Which mechanism should be used?
 
-- A) WAF com regra de autenticação
-- B) CloudFront Signed URLs ou Signed Cookies
-- C) OAC com bucket policy restritiva
-- D) CloudFront Geo Restriction para países não-pagantes
+- A) WAF with an authentication rule
+- B) CloudFront Signed URLs or Signed Cookies
+- C) OAC with a restrictive bucket policy
+- D) CloudFront Geo Restriction for non-paying countries
 
 <details>
-<summary>Resposta</summary>
-**B — Signed URLs ou Signed Cookies**
-Signed URLs: para um arquivo específico por usuário (video-id específico). Signed Cookies: para múltiplos arquivos ou todo o conteúdo premium (netflix-style). Assinados com chave privada pelo backend; CloudFront valida com key pair. OAC protege o S3, não os usuários finais. WAF não autentica usuários.
+<summary>Answer</summary>
+**B — Signed URLs or Signed Cookies**
+Signed URLs: for a specific file per user (a specific video-id). Signed Cookies: for multiple files or all premium content (Netflix-style). Signed with a private key by the backend; CloudFront validates with the key pair. OAC protects S3, not end users. WAF does not authenticate users.
 </details>
 
 ---
 
-**7.** Qual é a diferença entre CloudFront Functions e Lambda@Edge?
+**7.** What is the difference between CloudFront Functions and Lambda@Edge?
 
-- A) CloudFront Functions suportam apenas Viewer Request/Response; Lambda@Edge suporta também Origin Request/Response
-- B) CloudFront Functions têm latência < 1ms e menor custo; Lambda@Edge é mais poderoso (Node.js/Python, até 10s)
-- C) Lambda@Edge pode acessar body da requisição; CloudFront Functions não (em Viewer Request)
-- D) Todas as acima são verdadeiras
+- A) CloudFront Functions support only Viewer Request/Response; Lambda@Edge also supports Origin Request/Response
+- B) CloudFront Functions have < 1ms latency and lower cost; Lambda@Edge is more powerful (Node.js/Python, up to 10s)
+- C) Lambda@Edge can access the request body; CloudFront Functions cannot (in Viewer Request)
+- D) All of the above are true
 
 <details>
-<summary>Resposta</summary>
-**D — Todas são verdadeiras**
-CloudFront Functions: apenas Viewer Request/Response, JavaScript, sub-milissegundo, < $0,0000001, sem acesso a body. Lambda@Edge: suporte a 4 eventos incluindo Origin Request/Response, Node.js/Python, até 30s (Origin), até 5s (Viewer), pode acessar body. Lambda@Edge = casos complexos (auth, rewrite, A/B); CF Functions = transformações simples (headers, redirect).
+<summary>Answer</summary>
+**D — All are true**
+CloudFront Functions: only Viewer Request/Response, JavaScript, sub-millisecond, < $0.0000001, no access to the body. Lambda@Edge: supports 4 events including Origin Request/Response, Node.js/Python, up to 30s (Origin), up to 5s (Viewer), can access the body. Lambda@Edge = complex cases (auth, rewrite, A/B); CF Functions = simple transformations (headers, redirect).
 </details>
 
 ---
 
-**8.** Uma empresa quer bloquear acesso ao CloudFront para países em lista denegrida. Qual recurso usar?
+**8.** A company wants to block access to CloudFront for countries on a deny list. Which feature should it use?
 
-- A) WAF com Geographic Match rule
-- B) CloudFront Geo Restriction (Allowlist ou Denylist)
-- C) Route 53 Geolocation routing com NXDOMAIN
-- D) Lambda@Edge verificando X-Forwarded-For
+- A) WAF with a Geographic Match rule
+- B) CloudFront Geo Restriction (Allowlist or Denylist)
+- C) Route 53 Geolocation routing with NXDOMAIN
+- D) Lambda@Edge checking X-Forwarded-For
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — CloudFront Geo Restriction**
-CloudFront Geo Restriction usa MaxMind GeoIP database para bloquear (Denylist) ou permitir apenas (Allowlist) países específicos — retorna HTTP 403. WAF Geographic Match também funciona mas tem custo adicional e é mais complexo. Route 53 Geolocation seria contornável. Geo Restriction é a solução nativa e mais simples.
+CloudFront Geo Restriction uses the MaxMind GeoIP database to block (Denylist) or allow only (Allowlist) specific countries — it returns HTTP 403. WAF Geographic Match also works but has additional cost and is more complex. Route 53 Geolocation could be bypassed. Geo Restriction is the native and simplest solution.
 </details>
 
 ---
 
-**9.** Qual é a principal diferença entre Route 53 e AWS Global Accelerator para melhorar performance global?
+**9.** What is the main difference between Route 53 and AWS Global Accelerator for improving global performance?
 
-- A) Route 53 usa anycast IPs; Global Accelerator usa DNS
-- B) Global Accelerator usa 2 IPs Anycast estáticos e roteia pelo backbone AWS; Route 53 usa DNS-based routing
-- C) Route 53 tem menor latência; Global Accelerator é mais barato
-- D) Global Accelerator só funciona com ALB; Route 53 funciona com qualquer endpoint
+- A) Route 53 uses anycast IPs; Global Accelerator uses DNS
+- B) Global Accelerator uses 2 static Anycast IPs and routes over the AWS backbone; Route 53 uses DNS-based routing
+- C) Route 53 has lower latency; Global Accelerator is cheaper
+- D) Global Accelerator only works with ALB; Route 53 works with any endpoint
 
 <details>
-<summary>Resposta</summary>
-**B — Correto**
-Global Accelerator: 2 IPs Anycast estáticos, tráfego entra no edge AWS mais próximo e trafega pelo backbone privado da AWS até o endpoint. Benefício: não depende de DNS TTL, failover em segundos, consistência de IP (whitelisting de firewall). Route 53: DNS-based, depende de TTL propagation para failover, IP muda. Para: non-HTTP ou requisito de IP fixo → GA. Para simples roteamento HTTP/S → Route 53.
+<summary>Answer</summary>
+**B — Correct**
+Global Accelerator: 2 static Anycast IPs; traffic enters the nearest AWS edge and travels over the AWS private backbone to the endpoint. Benefits: does not depend on DNS TTL, failover in seconds, IP consistency (firewall whitelisting). Route 53: DNS-based, depends on TTL propagation for failover, IP changes. For non-HTTP or a fixed-IP requirement → GA. For simple HTTP/S routing → Route 53.
 </details>
 
 ---
 
-**10.** Uma empresa usa CloudFront e percebe que uma atualização de conteúdo no S3 não aparece para usuários. O que fazer imediatamente (sem esperar o TTL expirar)?
+**10.** A company uses CloudFront and notices that a content update in S3 does not show up for users. What should be done immediately (without waiting for the TTL to expire)?
 
-- A) Apagar e recriar a CloudFront Distribution
-- B) Criar Invalidation no CloudFront para o arquivo ou path afetado
-- C) Habilitar S3 versioning e criar nova versão
-- D) Alterar o TTL para 0 no Origin
+- A) Delete and recreate the CloudFront Distribution
+- B) Create an Invalidation in CloudFront for the affected file or path
+- C) Enable S3 versioning and create a new version
+- D) Change the TTL to 0 on the Origin
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — CloudFront Invalidation**
-Invalidation força os edge caches a descartarem objetos específicos (ex: `/images/logo.png` ou `/*`). O novo request ao edge faz cache miss e busca a versão atual da origin. Primeiros 1.000 paths de invalidation por mês são gratuitos; depois há custo. Melhor prática a longo prazo: usar versionamento nos arquivos (asset hashing) para evitar invalidações.
+Invalidation forces the edge caches to discard specific objects (e.g., `/images/logo.png` or `/*`). The next request to the edge causes a cache miss and fetches the current version from the origin. The first 1,000 invalidation paths per month are free; after that there is a cost. Long-term best practice: use file versioning (asset hashing) to avoid invalidations.
 </details>
 
 ---
 
-**11.** Um serviço de aplicação precisa de Health Checks para um recurso interno numa subnet privada (sem IP público). Como configurar Health Check no Route 53?
+**11.** An application service needs Health Checks for an internal resource in a private subnet (no public IP). How do you configure a Health Check in Route 53?
 
-- A) Não é possível — Route 53 só monitora endpoints públicos
-- B) Criar um Health Check do tipo "CloudWatch Alarm" baseado em métricas do recurso privado
-- C) Usar um Calculated Health Check combinando outros HCs
-- D) Instalar o Route 53 Health Check Agent na instância privada
+- A) It is not possible — Route 53 only monitors public endpoints
+- B) Create a Health Check of type "CloudWatch Alarm" based on metrics of the private resource
+- C) Use a Calculated Health Check combining other HCs
+- D) Install the Route 53 Health Check Agent on the private instance
 
 <details>
-<summary>Resposta</summary>
-**B — Health Check de CloudWatch Alarm**
-Route 53 Health Checkers operam da internet pública e não alcançam recursos privados. Para monitorar recursos privados: crie uma métrica CloudWatch customizada, configure um Alarm, e crie um Route 53 Health Check baseado nesse Alarm. Quando o Alarm dispara → Health Check falha → failover DNS ativado.
+<summary>Answer</summary>
+**B — CloudWatch Alarm Health Check**
+Route 53 Health Checkers operate from the public internet and cannot reach private resources. To monitor private resources: create a custom CloudWatch metric, configure an Alarm, and create a Route 53 Health Check based on that Alarm. When the Alarm fires → Health Check fails → DNS failover is activated.
 </details>
 
 ---
 
-**12.** Uma empresa quer usar WAF para proteger sua API no API Gateway contra ataques SQL Injection e XSS. Qual configuração usar?
+**12.** A company wants to use WAF to protect its API in API Gateway against SQL Injection and XSS attacks. Which configuration should it use?
 
-- A) WAF Classic com IP-based rules
-- B) AWS WAF v2 com AWS Managed Rules (AWSManagedRulesCommonRuleSet)
-- C) Shield Standard integrado ao API Gateway
-- D) Security Groups no API Gateway
+- A) WAF Classic with IP-based rules
+- B) AWS WAF v2 with AWS Managed Rules (AWSManagedRulesCommonRuleSet)
+- C) Shield Standard integrated with API Gateway
+- D) Security Groups on API Gateway
 
 <details>
-<summary>Resposta</summary>
-**B — AWS WAF v2 com Managed Rules**
-AWS WAF v2 pode ser associado ao API Gateway, ALB, CloudFront e AppSync. AWSManagedRulesCommonRuleSet inclui proteções contra SQL injection, XSS e outras vulnerabilidades OWASP. AWS mantém as regras atualizadas. Shield Standard protege contra DDoS de camada de rede, não SQL injection. API Gateway não tem Security Groups.
+<summary>Answer</summary>
+**B — AWS WAF v2 with Managed Rules**
+AWS WAF v2 can be associated with API Gateway, ALB, CloudFront, and AppSync. AWSManagedRulesCommonRuleSet includes protections against SQL injection, XSS, and other OWASP vulnerabilities. AWS keeps the rules updated. Shield Standard protects against network-layer DDoS, not SQL injection. API Gateway does not have Security Groups.
 </details>
 
 ---
 
-**13.** O que é "Resolver" no Route 53 e qual sua função?
+**13.** What is "Resolver" in Route 53 and what is its function?
 
-- A) Serviço que resolve nomes DNS para IPs fora da AWS
-- B) Route 53 Resolver DNS para VPC + Endpoints de Inbound/Outbound para DNS híbrido
-- C) Componente que converte nomes Route 53 em aliases para recursos AWS
-- D) Ferramenta de debug de propagação DNS global
+- A) A service that resolves DNS names to IPs outside AWS
+- B) Route 53 Resolver DNS for the VPC + Inbound/Outbound Endpoints for hybrid DNS
+- C) A component that converts Route 53 names into aliases for AWS resources
+- D) A global DNS propagation debugging tool
 
 <details>
-<summary>Resposta</summary>
-**B — Route 53 Resolver com Endpoints**
-Route 53 Resolver responde queries DNS dentro da VPC (169.254.169.253). Para DNS híbrido: **Inbound Endpoint** permite que on-premises resolva nomes AWS (DNS queries chegam de on-prem para a VPC); **Outbound Endpoint** permite que a VPC resolva nomes on-premises (por regras de forwarding para servidores DNS on-prem via DX/VPN).
+<summary>Answer</summary>
+**B — Route 53 Resolver with Endpoints**
+Route 53 Resolver answers DNS queries inside the VPC (169.254.169.253). For hybrid DNS: the **Inbound Endpoint** lets on-premises resolve AWS names (DNS queries arrive from on-prem into the VPC); the **Outbound Endpoint** lets the VPC resolve on-premises names (via forwarding rules to on-prem DNS servers over DX/VPN).
 </details>
 
 ---
 
-**14.** Uma PLataforma de conteúdo usa CloudFront. Como forçar que todo tráfego use HTTPS (redirecionar HTTP para HTTPS)?
+**14.** A content platform uses CloudFront. How do you force all traffic to use HTTPS (redirect HTTP to HTTPS)?
 
-- A) Configurar bucket S3 para redirecionar HTTP→HTTPS
-- B) No CloudFront Behavior: Viewer Protocol Policy = "Redirect HTTP to HTTPS"
-- C) No CloudFront Distribution: Force SSL/TLS via ACM sempre
-- D) Usar Lambda@Edge para inspecionar e redirecionar
+- A) Configure the S3 bucket to redirect HTTP→HTTPS
+- B) In the CloudFront Behavior: Viewer Protocol Policy = "Redirect HTTP to HTTPS"
+- C) In the CloudFront Distribution: always Force SSL/TLS via ACM
+- D) Use Lambda@Edge to inspect and redirect
 
 <details>
-<summary>Resposta</summary>
-**B — Viewer Protocol Policy no Behavior**
-Cada CloudFront Behavior tem "Viewer Protocol Policy" com opções: HTTP and HTTPS, Redirect HTTP to HTTPS, ou HTTPS Only. Definir "Redirect HTTP to HTTPS" faz CloudFront retornar 301 para requests HTTP → HTTPS automaticamente. É a configuração nativa, sem Lambda@Edge necessário.
+<summary>Answer</summary>
+**B — Viewer Protocol Policy in the Behavior**
+Each CloudFront Behavior has a "Viewer Protocol Policy" with options: HTTP and HTTPS, Redirect HTTP to HTTPS, or HTTPS Only. Setting "Redirect HTTP to HTTPS" makes CloudFront automatically return a 301 for HTTP requests → HTTPS. This is the native configuration; no Lambda@Edge is needed.
 </details>
 
 ---
 
-**15.** Qual record type DNS é necessário para verificação de domínio de certificados ACM e para receber email?
+**15.** Which DNS record types are needed for ACM certificate domain validation and for receiving email?
 
-- A) CNAME (para ACM) e MX (para email)
-- B) TXT (para ACM) e NS (para email)
-- C) A record para ambos
-- D) Alias (para ACM) e SPF record (para email)
+- A) CNAME (for ACM) and MX (for email)
+- B) TXT (for ACM) and NS (for email)
+- C) A record for both
+- D) Alias (for ACM) and SPF record (for email)
 
 <details>
-<summary>Resposta</summary>
-**A — CNAME (ACM) e MX (email)**
-ACM (AWS Certificate Manager) oferece validação de domínio via CNAME: você adiciona o CNAME gerado pelo ACM ao seu DNS e a AWS verifica periodicamente. MX records apontam para servidores de email (ex: SES, Office 365, Google Workspace) e são obrigatórios para receber email no domínio. TXT records são usados para SPF/DKIM/verificação de domínio em outros serviços.
+<summary>Answer</summary>
+**A — CNAME (ACM) and MX (email)**
+ACM (AWS Certificate Manager) offers domain validation via CNAME: you add the CNAME generated by ACM to your DNS and AWS checks it periodically. MX records point to mail servers (e.g., SES, Office 365, Google Workspace) and are required to receive email on the domain. TXT records are used for SPF/DKIM/domain verification in other services.
 </details>

@@ -1,25 +1,25 @@
-# Módulo 18 — Labs Práticos
+# Module 18 — Hands-On Labs
 
-## Sobre Este Módulo
+## About This Module
 
-Este módulo consolida os principais laboratórios AWS para estudo prático do SAA-C03. Cada lab inclui comandos AWS CLI e código Terraform equivalente para reforçar o aprendizado hands-on.
+This module consolidates the main AWS labs for hands-on SAA-C03 study. Each lab includes AWS CLI commands and equivalent Terraform code to reinforce hands-on learning.
 
-> **Custo estimado total dos labs**: < $5 (sempre execute cleanup após cada lab)
+> **Total estimated lab cost**: < $5 (always run cleanup after each lab)
 
 ---
 
-## Lab 1: Serverless API com Lambda + DynamoDB + API Gateway
+## Lab 1: Serverless API with Lambda + DynamoDB + API Gateway
 
-**Objetivo**: Criar uma API serverless completa com CRUD em DynamoDB.
+**Goal**: Build a complete serverless API with CRUD on DynamoDB.
 
-**Arquitetura:**
+**Architecture:**
 ```
 API Gateway HTTP API → Lambda → DynamoDB
 ```
 
-**CLI — Passo a passo:**
+**CLI — Step by step:**
 ```bash
-# 1. Criar tabela DynamoDB
+# 1. Create DynamoDB table
 aws dynamodb create-table \
   --table-name Products \
   --attribute-definitions AttributeName=productId,AttributeType=S \
@@ -27,7 +27,7 @@ aws dynamodb create-table \
   --billing-mode PAY_PER_REQUEST \
   --region us-east-1
 
-# 2. Criar role IAM para Lambda
+# 2. Create IAM role for Lambda
 aws iam create-role \
   --role-name lambda-products-role \
   --assume-role-policy-document file://lambda-trust-policy.json
@@ -36,7 +36,7 @@ aws iam attach-role-policy \
   --role-name lambda-products-role \
   --policy-arn arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
 
-# 3. Deploy da função Lambda
+# 3. Deploy the Lambda function
 zip function.zip index.js
 aws lambda create-function \
   --function-name products-api \
@@ -45,7 +45,7 @@ aws lambda create-function \
   --zip-file fileb://function.zip \
   --role arn:aws:iam::ACCOUNT_ID:role/lambda-products-role
 
-# 4. Criar API Gateway HTTP API
+# 4. Create API Gateway HTTP API
 aws apigatewayv2 create-api \
   --name products-api \
   --protocol-type HTTP \
@@ -57,7 +57,7 @@ aws dynamodb delete-table --table-name Products
 aws apigatewayv2 delete-api --api-id API_ID
 ```
 
-**Terraform equivalente:**
+**Equivalent Terraform:**
 ```hcl
 terraform {
   required_providers {
@@ -105,17 +105,17 @@ resource "aws_lambda_function" "api" {
 
 ---
 
-## Lab 2: VPC com Sub-redes Públicas e Privadas
+## Lab 2: VPC with Public and Private Subnets
 
-**Objetivo**: Criar uma VPC completa com subnets públicas e privadas, NAT Gateway, bastion host.
+**Goal**: Build a complete VPC with public and private subnets, a NAT Gateway, and a bastion host.
 
 ```bash
-# 1. Criar VPC
+# 1. Create VPC
 VPC_ID=$(aws ec2 create-vpc --cidr-block 10.0.0.0/16 \
   --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=lab-vpc}]' \
   --query Vpc.VpcId --output text)
 
-# 2. Criar subnets (duas AZs)
+# 2. Create subnets (two AZs)
 PUB_SUB_1=$(aws ec2 create-subnet --vpc-id $VPC_ID \
   --cidr-block 10.0.1.0/24 --availability-zone us-east-1a \
   --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=pub-1a}]' \
@@ -130,44 +130,44 @@ PRIV_SUB_1=$(aws ec2 create-subnet --vpc-id $VPC_ID \
 IGW_ID=$(aws ec2 create-internet-gateway --query InternetGateway.InternetGatewayId --output text)
 aws ec2 attach-internet-gateway --internet-gateway-id $IGW_ID --vpc-id $VPC_ID
 
-# 4. Route table pública
+# 4. Public route table
 PUB_RT=$(aws ec2 create-route-table --vpc-id $VPC_ID --query RouteTable.RouteTableId --output text)
 aws ec2 create-route --route-table-id $PUB_RT --destination-cidr-block 0.0.0.0/0 --gateway-id $IGW_ID
 aws ec2 associate-route-table --route-table-id $PUB_RT --subnet-id $PUB_SUB_1
 
-# 5. NAT Gateway (para subnet privada)
+# 5. NAT Gateway (for the private subnet)
 EIP=$(aws ec2 allocate-address --domain vpc --query AllocationId --output text)
 NAT_ID=$(aws ec2 create-nat-gateway --subnet-id $PUB_SUB_1 \
   --allocation-id $EIP --query NatGateway.NatGatewayId --output text)
-# Aguardar NAT estar available
+# Wait for the NAT to be available
 aws ec2 wait nat-gateway-available --filter Name=nat-gateway-id,Values=$NAT_ID
 
-# 6. Route table privada (via NAT)
+# 6. Private route table (via NAT)
 PRIV_RT=$(aws ec2 create-route-table --vpc-id $VPC_ID --query RouteTable.RouteTableId --output text)
 aws ec2 create-route --route-table-id $PRIV_RT --destination-cidr-block 0.0.0.0/0 --nat-gateway-id $NAT_ID
 aws ec2 associate-route-table --route-table-id $PRIV_RT --subnet-id $PRIV_SUB_1
 
-echo "VPC criada: $VPC_ID"
+echo "VPC created: $VPC_ID"
 ```
 
 ---
 
-## Lab 3: S3 com Versionamento, Ciclo de Vida e Replicação
+## Lab 3: S3 with Versioning, Lifecycle, and Replication
 
 ```bash
-# 1. Criar buckets
-aws s3api create-bucket --bucket meu-bucket-principal-$(date +%s) --region us-east-1
-aws s3api create-bucket --bucket meu-bucket-replica-$(date +%s) \
+# 1. Create buckets
+aws s3api create-bucket --bucket my-primary-bucket-$(date +%s) --region us-east-1
+aws s3api create-bucket --bucket my-replica-bucket-$(date +%s) \
   --create-bucket-configuration LocationConstraint=us-west-2 --region us-west-2
 
-# 2. Habilitar versionamento nos dois buckets
+# 2. Enable versioning on both buckets
 aws s3api put-bucket-versioning \
-  --bucket meu-bucket-principal \
+  --bucket my-primary-bucket \
   --versioning-configuration Status=Enabled
 
-# 3. Lifecycle policy (move para IA após 30d, Glacier após 90d, exclui após 365d)
+# 3. Lifecycle policy (move to IA after 30d, Glacier after 90d, delete after 365d)
 aws s3api put-bucket-lifecycle-configuration \
-  --bucket meu-bucket-principal \
+  --bucket my-primary-bucket \
   --lifecycle-configuration file://lifecycle.json
 
 # lifecycle.json:
@@ -184,18 +184,18 @@ aws s3api put-bucket-lifecycle-configuration \
 #   }]
 # }
 
-# 4. Replicação entre regiões (CRR)
+# 4. Cross-Region Replication (CRR)
 aws s3api put-bucket-replication \
-  --bucket meu-bucket-principal \
+  --bucket my-primary-bucket \
   --replication-configuration file://replication.json
 ```
 
 ---
 
-## Lab 4: CloudWatch Alarme + Auto Scaling
+## Lab 4: CloudWatch Alarm + Auto Scaling
 
 ```bash
-# 1. Criar Launch Template
+# 1. Create Launch Template
 aws ec2 create-launch-template \
   --launch-template-name web-template \
   --launch-template-data '{
@@ -204,14 +204,14 @@ aws ec2 create-launch-template \
     "SecurityGroupIds": ["sg-xxx"]
   }'
 
-# 2. Criar Auto Scaling Group
+# 2. Create Auto Scaling Group
 aws autoscaling create-auto-scaling-group \
   --auto-scaling-group-name web-asg \
   --launch-template LaunchTemplateName=web-template,Version='$Latest' \
   --min-size 1 --max-size 5 --desired-capacity 2 \
   --vpc-zone-identifier "subnet-aaa,subnet-bbb"
 
-# 3. Criar política de escalonamento
+# 3. Create scaling policy
 aws autoscaling put-scaling-policy \
   --auto-scaling-group-name web-asg \
   --policy-name cpu-scale-out \
@@ -229,16 +229,16 @@ aws autoscaling delete-auto-scaling-group --auto-scaling-group-name web-asg --fo
 
 ---
 
-## Lab 5: RDS Multi-AZ com Snapshot e Restore
+## Lab 5: RDS Multi-AZ with Snapshot and Restore
 
 ```bash
-# 1. Criar grupo de subnets para RDS
+# 1. Create DB subnet group for RDS
 aws rds create-db-subnet-group \
   --db-subnet-group-name lab-db-subnet \
   --db-subnet-group-description "Lab DB subnets" \
   --subnet-ids subnet-aaa subnet-bbb
 
-# 2. Criar instância RDS MySQL Multi-AZ
+# 2. Create a Multi-AZ RDS MySQL instance
 aws rds create-db-instance \
   --db-instance-identifier lab-rds \
   --db-instance-class db.t3.micro \
@@ -251,15 +251,15 @@ aws rds create-db-instance \
   --db-subnet-group-name lab-db-subnet \
   --no-publicly-accessible
 
-# 3. Aguardar disponibilidade
+# 3. Wait until available
 aws rds wait db-instance-available --db-instance-identifier lab-rds
 
-# 4. Criar snapshot
+# 4. Create snapshot
 aws rds create-db-snapshot \
   --db-instance-identifier lab-rds \
   --db-snapshot-identifier lab-rds-snap-$(date +%Y%m%d)
 
-# 5. Restaurar de snapshot (para novo endpoint)
+# 5. Restore from snapshot (to a new endpoint)
 aws rds restore-db-instance-from-db-snapshot \
   --db-instance-identifier lab-rds-restored \
   --db-snapshot-identifier lab-rds-snap-YYYYMMDD
@@ -270,7 +270,7 @@ aws rds delete-db-instance --db-instance-identifier lab-rds --skip-final-snapsho
 
 ---
 
-## Referência de Comandos CLI Essenciais
+## Essential CLI Command Reference
 
 ```bash
 # EC2
@@ -282,33 +282,33 @@ aws ec2 terminate-instances --instance-ids i-xxx
 # IAM
 aws iam list-roles --query 'Roles[*].RoleName'
 aws iam get-role --role-name ROLE_NAME
-aws sts get-caller-identity  # mostra conta/user/role atual
+aws sts get-caller-identity  # shows current account/user/role
 
 # S3
-aws s3 ls s3://meu-bucket --recursive
-aws s3 cp arquivo.txt s3://meu-bucket/
-aws s3 sync ./pasta s3://meu-bucket/
-aws s3api get-bucket-policy --bucket meu-bucket
+aws s3 ls s3://my-bucket --recursive
+aws s3 cp file.txt s3://my-bucket/
+aws s3 sync ./folder s3://my-bucket/
+aws s3api get-bucket-policy --bucket my-bucket
 
 # Lambda
 aws lambda list-functions
-aws lambda invoke --function-name minha-funcao --payload '{"key":"value"}' output.json
-aws lambda update-function-code --function-name minha-funcao --zip-file fileb://function.zip
+aws lambda invoke --function-name my-function --payload '{"key":"value"}' output.json
+aws lambda update-function-code --function-name my-function --zip-file fileb://function.zip
 
 # DynamoDB
 aws dynamodb scan --table-name Products --max-items 10
 aws dynamodb put-item --table-name Products \
-  --item '{"productId": {"S": "p001"}, "name": {"S": "Produto Teste"}}'
+  --item '{"productId": {"S": "p001"}, "name": {"S": "Test Product"}}'
 aws dynamodb get-item --table-name Products \
   --key '{"productId": {"S": "p001"}}'
 ```
 
 ---
 
-## Dicas para os Labs
+## Tips for the Labs
 
-1. **Sempre limpe os recursos** após o lab para evitar custos desnecessários
-2. **Use tags** em todos os recursos criados (ex: `Project=lab`, `Environment=test`)
-3. **Terraform destroy** é mais confiável que deletar recursos manualmente um a um
-4. Use `aws configure` para configurar credenciais ou configure variáveis de ambiente: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`
-5. Para verificar custos dos labs: AWS Cost Explorer → Last 7 days → filter by service
+1. **Always clean up resources** after the lab to avoid unnecessary costs
+2. **Use tags** on all resources you create (e.g., `Project=lab`, `Environment=test`)
+3. **Terraform destroy** is more reliable than deleting resources manually one by one
+4. Use `aws configure` to set up credentials, or set environment variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`
+5. To check lab costs: AWS Cost Explorer → Last 7 days → filter by service

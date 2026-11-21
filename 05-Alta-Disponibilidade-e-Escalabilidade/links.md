@@ -1,35 +1,35 @@
-# Links de Referência — Alta Disponibilidade e Escalabilidade
+# Reference Links — High Availability and Scalability
 
-## Documentação Oficial AWS
+## Official AWS Documentation
 
 ### Elastic Load Balancing
-- [ELB User Guide](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/) — Visão geral e comparativo de tipos
+- [ELB User Guide](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/) — Overview and type comparison
 - [ALB User Guide](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/) — Application Load Balancer
 - [NLB User Guide](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/) — Network Load Balancer
 - [GWLB User Guide](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/) — Gateway Load Balancer
-- [CLB User Guide](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/) — Classic (legado)
+- [CLB User Guide](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/) — Classic (legacy)
 
-### ALB — Roteamento e Recursos
-- [ALB Listener Rules](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-update-rules.html) — Condições e ações
+### ALB — Routing and Features
+- [ALB Listener Rules](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-update-rules.html) — Conditions and actions
 - [Weighted Target Groups (ALB)](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html) — Canary/Blue-Green
-- [ALB Sticky Sessions](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/sticky-sessions.html) — Duration e Application-based
-- [ALB Lambda Targets](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html) — Usar Lambda como target
+- [ALB Sticky Sessions](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/sticky-sessions.html) — Duration and Application-based
+- [ALB Lambda Targets](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html) — Using Lambda as a target
 
 ### NLB
-- [NLB Static IP Addresses](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html) — IP estático e Elastic IP
+- [NLB Static IP Addresses](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html) — Static IP and Elastic IP
 - [NLB with PrivateLink](https://docs.aws.amazon.com/vpc/latest/privatelink/create-endpoint-service.html) — VPC Endpoint Service
 
 ### GWLB
-- [GWLB and Appliances](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/introduction.html) — GENEVE e appliances
-- [VPC Ingress Routing with GWLB](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html#ingress-routing) — Roteamento de entrada com GWLB
+- [GWLB and Appliances](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/introduction.html) — GENEVE and appliances
+- [VPC Ingress Routing with GWLB](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html#ingress-routing) — Ingress routing with GWLB
 
 ### Auto Scaling
-- [EC2 Auto Scaling User Guide](https://docs.aws.amazon.com/autoscaling/ec2/userguide/) — Guia completo
-- [Launch Templates](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html) — Substituição dos Launch Configurations
+- [EC2 Auto Scaling User Guide](https://docs.aws.amazon.com/autoscaling/ec2/userguide/) — Complete guide
+- [Launch Templates](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html) — Replacement for Launch Configurations
 - [Scaling Policies](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scale-based-on-demand.html) — Target Tracking, Step, Simple
 - [Predictive Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-predictive-scaling.html) — ML-based scaling
 - [Scheduled Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/schedule_time.html)
-- [Lifecycle Hooks](https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html) — Pending:Wait e Terminating:Wait
+- [Lifecycle Hooks](https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html) — Pending:Wait and Terminating:Wait
 - [Termination Policies](https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
 - [Mixed Instance Policy](https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups.html) — Spot + On-Demand mix
 - [Health Check Types](https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-health-checks.html) — EC2 vs ELB vs Custom
@@ -38,45 +38,45 @@
 
 ## Whitepapers
 
-- [Reliability Pillar — Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/) — Pilar de confiabilidade
-- [Performance Efficiency Pillar](https://docs.aws.amazon.com/wellarchitected/latest/performance-efficiency-pillar/) — Scaling e elasticidade
-- [AWS Architecture Center — High Availability](https://aws.amazon.com/architecture/high-availability/) — Patterns de HA
+- [Reliability Pillar — Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/) — Reliability pillar
+- [Performance Efficiency Pillar](https://docs.aws.amazon.com/wellarchitected/latest/performance-efficiency-pillar/) — Scaling and elasticity
+- [AWS Architecture Center — High Availability](https://aws.amazon.com/architecture/high-availability/) — HA patterns
 
 ---
 
-## AWS Blog Posts Técnicos
+## Technical AWS Blog Posts
 
-- [Building a Scalable and Highly Available Application](https://aws.amazon.com/blogs/architecture/) — Blog AWS Architecture
+- [Building a Scalable and Highly Available Application](https://aws.amazon.com/blogs/architecture/) — AWS Architecture Blog
 - [Introducing GWLB](https://aws.amazon.com/blogs/networking-and-content-delivery/introducing-aws-gateway-load-balancer/) — Gateway Load Balancer launch blog
-- [Blue/Green Deployments with ALB Weighted Target Groups](https://aws.amazon.com/blogs/devops/use-aws-codedeploy-to-implement-blue-green-deployments-for-aws-lambda-functions/) — Deploy sem downtime
+- [Blue/Green Deployments with ALB Weighted Target Groups](https://aws.amazon.com/blogs/devops/use-aws-codedeploy-to-implement-blue-green-deployments-for-aws-lambda-functions/) — Deployment with no downtime
 
 ---
 
-## FAQs para o Exame
+## FAQs for the Exam
 
 - [Elastic Load Balancing FAQ](https://aws.amazon.com/elasticloadbalancing/faqs/)
 - [EC2 Auto Scaling FAQ](https://aws.amazon.com/ec2/autoscaling/faqs/)
 
 ---
 
-## Ferramentas Úteis
+## Useful Tools
 
-- [ELB Access Logs](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html) — Para debug de roteamento
-- [ASG Activity History](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-verify-scaling-activity.html) — Ver histórico de scaling
+- [ELB Access Logs](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html) — For routing debugging
+- [ASG Activity History](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-verify-scaling-activity.html) — View scaling history
 
 ---
 
-## Conceitos SAA-C03 Chave Neste Módulo
+## Key SAA-C03 Concepts in This Module
 
-| Conceito | Frequência no Exame |
+| Concept | Exam Frequency |
 |---|---|
-| ALB vs NLB: quando usar cada (IP estático → NLB) | Alta |
-| GWLB para inserção de appliances de segurança | Alta |
-| ALB weighted target groups para canary/blue-green | Alta |
-| ELB health check no ASG (não apenas EC2 health) | Alta |
-| Target Tracking cria alarmes automaticamente | Alta |
-| Lifecycle Hooks para inicialização/drenagem custom | Alta |
-| Cross-zone LB: padrão/custo por tipo de ELB | Média |
-| Launch Template > Launch Configuration | Média |
-| PrivateLink exige NLB como backend | Alta |
-| Predictive Scaling requer 14 dias de histórico | Média |
+| ALB vs NLB: when to use each (static IP → NLB) | High |
+| GWLB for security appliance insertion | High |
+| ALB weighted target groups for canary/blue-green | High |
+| ELB health check on the ASG (not just EC2 health) | High |
+| Target Tracking creates alarms automatically | High |
+| Lifecycle Hooks for custom initialization/draining | High |
+| Cross-zone LB: default/cost per ELB type | Medium |
+| Launch Template > Launch Configuration | Medium |
+| PrivateLink requires NLB as backend | High |
+| Predictive Scaling requires 14 days of history | Medium |

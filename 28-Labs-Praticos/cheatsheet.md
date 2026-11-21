@@ -1,61 +1,61 @@
-# Cheatsheet — Labs Práticos (Módulo 18)
+# Cheatsheet — Hands-On Labs (Module 18)
 
-## Comandos AWS CLI — Referência Rápida
+## AWS CLI Commands — Quick Reference
 
 ### Lambda
 ```bash
-# Criar função
+# Create function
 aws lambda create-function \
-  --function-name minha-funcao \
+  --function-name my-function \
   --runtime python3.12 \
   --role arn:aws:iam::ACCOUNT:role/lambda-role \
   --handler app.lambda_handler \
   --zip-file fileb://function.zip
 
-# Invocar (síncrono)
-aws lambda invoke --function-name minha-funcao output.json
+# Invoke (synchronous)
+aws lambda invoke --function-name my-function output.json
 
-# Invocar (assíncrono)
-aws lambda invoke --function-name minha-funcao \
+# Invoke (asynchronous)
+aws lambda invoke --function-name my-function \
   --invocation-type Event output.json
 
-# Ver logs recentes
-aws logs tail /aws/lambda/minha-funcao --follow
+# View recent logs
+aws logs tail /aws/lambda/my-function --follow
 ```
 
 ### S3
 ```bash
-# Criar bucket
-aws s3api create-bucket --bucket meu-bucket --region us-east-1
+# Create bucket
+aws s3api create-bucket --bucket my-bucket --region us-east-1
 
 # Upload
-aws s3 cp arquivo.txt s3://meu-bucket/
+aws s3 cp file.txt s3://my-bucket/
 
-# Sync diretório
-aws s3 sync ./local/ s3://meu-bucket/prefixo/
+# Sync directory
+aws s3 sync ./local/ s3://my-bucket/prefix/
 
-# Ativar versionamento
+# Enable versioning
 aws s3api put-bucket-versioning \
-  --bucket meu-bucket \
+  --bucket my-bucket \
   --versioning-configuration Status=Enabled
 
 # Block public access
 aws s3api put-public-access-block \
-  --bucket meu-bucket \
+  --bucket my-bucket \
   --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
 ```
 
 ### EC2 / Auto Scaling
 ```bash
-# Listar instâncias em execução
+# List running instances
 aws ec2 describe-instances \
   --filters "Name=instance-state-name,Values=running" \
   --query "Reservations[*].Instances[*].[InstanceId,InstanceType,State.Name]" \
   --output table
 
-# Criar Auto Scaling Group
+# Create Auto Scaling Group
 aws autoscaling create-auto-scaling-group \
-  --auto-scaling-group-name meu-asg \
+  --auto-scaling-group-name my-asg \
   --min-size 1 --max-size 5 --desired-capacity 2 \
   --launch-template LaunchTemplateId=lt-xxx,Version='$Latest' \
   --vpc-zone-identifier "subnet-aaa,subnet-bbb"
@@ -63,56 +63,56 @@ aws autoscaling create-auto-scaling-group \
 
 ### CloudWatch
 ```bash
-# Criar alarme CPU > 80%
+# Create CPU > 80% alarm
 aws cloudwatch put-metric-alarm \
-  --alarm-name "CPU-Alto" \
+  --alarm-name "High-CPU" \
   --metric-name CPUUtilization \
   --namespace AWS/EC2 \
   --statistic Average \
   --period 300 \
   --threshold 80 \
   --comparison-operator GreaterThanThreshold \
-  --dimensions Name=AutoScalingGroupName,Value=meu-asg \
+  --dimensions Name=AutoScalingGroupName,Value=my-asg \
   --evaluation-periods 2 \
-  --alarm-actions arn:aws:sns:us-east-1:ACCOUNT:alertas
+  --alarm-actions arn:aws:sns:us-east-1:ACCOUNT:alerts
 
-# Publicar métrica customizada
+# Publish a custom metric
 aws cloudwatch put-metric-data \
-  --namespace "MinhaApp/Performance" \
-  --metric-name "PedidosPorSegundo" \
+  --namespace "MyApp/Performance" \
+  --metric-name "OrdersPerSecond" \
   --value 42 --unit Count
 ```
 
 ### DynamoDB
 ```bash
-# Criar tabela
+# Create table
 aws dynamodb create-table \
-  --table-name Pedidos \
-  --attribute-definitions AttributeName=pedidoId,AttributeType=S \
-  --key-schema AttributeName=pedidoId,KeyType=HASH \
+  --table-name Orders \
+  --attribute-definitions AttributeName=orderId,AttributeType=S \
+  --key-schema AttributeName=orderId,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST
 
-# Inserir item
+# Insert item
 aws dynamodb put-item \
-  --table-name Pedidos \
-  --item '{"pedidoId": {"S": "001"}, "status": {"S": "pendente"}}'
+  --table-name Orders \
+  --item '{"orderId": {"S": "001"}, "status": {"S": "pending"}}'
 ```
 
 ---
 
-## Terraform — Recursos Comuns
+## Terraform — Common Resources
 
-### Estrutura de Projeto
+### Project Structure
 ```
-projeto/
-  main.tf          # recursos principais
-  variables.tf     # declaração de variáveis
+project/
+  main.tf          # main resources
+  variables.tf     # variable declarations
   outputs.tf       # outputs
-  terraform.tfvars # valores das variáveis
+  terraform.tfvars # variable values
   versions.tf      # required_providers
 ```
 
-### Bloco de Versões (padrão)
+### Versions Block (standard)
 ```hcl
 terraform {
   required_version = ">= 1.5"
@@ -129,9 +129,9 @@ provider "aws" {
 }
 ```
 
-### Recursos Mais Cobrados no Exame
+### Most Tested Resources on the Exam
 
-| Recurso Terraform | Serviço AWS |
+| Terraform Resource | AWS Service |
 |------------------|-------------|
 | `aws_vpc` + `aws_subnet` | VPC / Subnets |
 | `aws_security_group` | Security Groups |
@@ -147,126 +147,126 @@ provider "aws" {
 
 ---
 
-## Terraform — Comandos Essenciais
+## Terraform — Essential Commands
 
-| Comando | O que faz |
+| Command | What it does |
 |---------|-----------|
-| `terraform init` | Inicializa providers, baixa plugins |
-| `terraform validate` | Valida sintaxe HCL |
-| `terraform plan` | Preview de mudanças sem aplicar |
-| `terraform plan -out=tfplan` | Salva plano para aplicar depois |
-| `terraform apply` | Aplica mudanças (pede confirmação) |
-| `terraform apply -auto-approve` | Aplica sem confirmação |
-| `terraform apply tfplan` | Aplica plano salvo |
-| `terraform destroy` | Destrói toda infraestrutura |
-| `terraform state list` | Lista recursos no state |
-| `terraform state show aws_instance.web` | Detalhes de recurso específico |
-| `terraform output` | Exibe outputs definidos |
-| `terraform fmt` | Formata arquivos HCL |
-| `terraform graph` | Gera grafo de dependências |
+| `terraform init` | Initializes providers, downloads plugins |
+| `terraform validate` | Validates HCL syntax |
+| `terraform plan` | Previews changes without applying |
+| `terraform plan -out=tfplan` | Saves the plan to apply later |
+| `terraform apply` | Applies changes (asks for confirmation) |
+| `terraform apply -auto-approve` | Applies without confirmation |
+| `terraform apply tfplan` | Applies a saved plan |
+| `terraform destroy` | Destroys all infrastructure |
+| `terraform state list` | Lists resources in the state |
+| `terraform state show aws_instance.web` | Details of a specific resource |
+| `terraform output` | Displays defined outputs |
+| `terraform fmt` | Formats HCL files |
+| `terraform graph` | Generates a dependency graph |
 
 ---
 
-## SAM — Comandos Essenciais
+## SAM — Essential Commands
 
 ```bash
-# Inicializar projeto SAM
+# Initialize a SAM project
 sam init
 
-# Build local
+# Local build
 sam build
 
-# Testar localmente
+# Test locally
 sam local invoke FunctionName
-sam local start-api  # API GW local na porta 3000
+sam local start-api  # local API GW on port 3000
 
-# Deploy (guiado)
+# Deploy (guided)
 sam deploy --guided
 
-# Deploy com parâmetros salvos
+# Deploy with saved parameters
 sam deploy
 
-# Ver logs
-sam logs -n FunctionName --stack-name minha-stack --tail
+# View logs
+sam logs -n FunctionName --stack-name my-stack --tail
 
-# Deletar stack
-sam delete --stack-name minha-stack
+# Delete stack
+sam delete --stack-name my-stack
 ```
 
 ---
 
-## Debug — Checklist por Problema
+## Debug — Checklist by Problem
 
-### Lambda não consegue acessar RDS
+### Lambda cannot access RDS
 ```
-1. Lambda e RDS na mesma VPC? (Lambda precisa de VpcConfig)
-2. Security Group da Lambda permite saída para porta 5432/3306?
-3. Security Group do RDS permite entrada do SG da Lambda?
-4. Lambda tem subnets privadas (não públicas)?
-5. Subnets privadas têm NAT Gateway para internet (se precisar)?
-6. IAM Role da Lambda tem permissão básica (AWSLambdaVPCAccessExecutionRole)?
-7. Timeout da Lambda é suficiente (conexão DB pode demorar)?
-```
-
-### S3 retornando 403 Forbidden
-```
-1. Bucket Policy está bloqueando? (verificar aws s3api get-bucket-policy)
-2. Block Public Access ativo e ACL pública tentando ser usada?
-3. IAM Policy do usuário/role tem s3:GetObject?
-4. Objeto existe? (aws s3 ls s3://bucket/chave)
-5. Bucket em outra região que o cliente espera?
-6. KMS key: usuário tem permissão de decrypt na chave?
-7. VPC Endpoint policy bloqueando? (se acesso via VPC Gateway Endpoint)
+1. Are Lambda and RDS in the same VPC? (Lambda needs VpcConfig)
+2. Does the Lambda Security Group allow outbound to port 5432/3306?
+3. Does the RDS Security Group allow inbound from the Lambda SG?
+4. Is the Lambda in private subnets (not public)?
+5. Do the private subnets have a NAT Gateway for internet (if needed)?
+6. Does the Lambda IAM Role have the basic permission (AWSLambdaVPCAccessExecutionRole)?
+7. Is the Lambda timeout sufficient (DB connection can take a while)?
 ```
 
-### ECS Task não inicia (STOPPED)
+### S3 returning 403 Forbidden
 ```
-1. Ver stoppedReason: aws ecs describe-tasks --cluster X --tasks Y
-2. Motivos comuns:
-   - CannotPullContainerError: ECR privado sem IAM ou VPC endpoint
-   - OutOfMemory: memória insuficiente definida na task definition
-   - ResourceInitializationError: exec role faltando
-3. CloudWatch Logs: /ecs/<task-family> — ver erros da aplicação
-4. Task Role tem permissões necessárias (ex: s3:GetObject)?
-5. Security Group do ECS permite saída para RDS/serviços externos?
+1. Is the Bucket Policy blocking it? (check aws s3api get-bucket-policy)
+2. Is Block Public Access active while a public ACL is being used?
+3. Does the user/role IAM Policy have s3:GetObject?
+4. Does the object exist? (aws s3 ls s3://bucket/key)
+5. Is the bucket in a different region than the client expects?
+6. KMS key: does the user have decrypt permission on the key?
+7. Is a VPC Endpoint policy blocking it? (if accessing via a VPC Gateway Endpoint)
+```
+
+### ECS Task does not start (STOPPED)
+```
+1. Check stoppedReason: aws ecs describe-tasks --cluster X --tasks Y
+2. Common causes:
+   - CannotPullContainerError: private ECR without IAM or VPC endpoint
+   - OutOfMemory: insufficient memory defined in the task definition
+   - ResourceInitializationError: missing execution role
+3. CloudWatch Logs: /ecs/<task-family> — check application errors
+4. Does the Task Role have the required permissions (e.g., s3:GetObject)?
+5. Does the ECS Security Group allow outbound to RDS/external services?
 ```
 
 ---
 
-## Ordem de Limpeza no Terraform (`terraform destroy`)
+## Cleanup Order in Terraform (`terraform destroy`)
 
-Dependências que podem causar erro se apagadas na ordem errada:
+Dependencies that can cause errors if deleted in the wrong order:
 ```
-1. ECS Services (antes do Cluster)
-2. ALB / Target Groups (antes das subnets/SGs)
-3. RDS / ElastiCache (antes da subnet group e SGs)
-4. Lambda (pode ter ENIs em VPC)
-5. NAT Gateway (antes do EIP pode ser liberado)
-6. Subnets (antes da VPC)
-7. VPC (por último — tudo dentro dela deve ser removido antes)
+1. ECS Services (before the Cluster)
+2. ALB / Target Groups (before subnets/SGs)
+3. RDS / ElastiCache (before the subnet group and SGs)
+4. Lambda (may have ENIs in the VPC)
+5. NAT Gateway (before the EIP can be released)
+6. Subnets (before the VPC)
+7. VPC (last — everything inside it must be removed first)
 ```
 
-> Geralmente `terraform destroy` resolve em ordem por dependências. Problemas ocorrem com recursos criados fora do Terraform.
+> `terraform destroy` usually resolves the order through dependencies. Problems occur with resources created outside Terraform.
 
 ---
 
-## IAM — Simulate Policy (debug de permissões)
+## IAM — Simulate Policy (permission debugging)
 
 ```bash
-# Simular se ação é permitida
+# Simulate whether an action is allowed
 aws iam simulate-principal-policy \
-  --policy-source-arn arn:aws:iam::ACCOUNT:role/minha-role \
+  --policy-source-arn arn:aws:iam::ACCOUNT:role/my-role \
   --action-names s3:PutObject \
-  --resource-arns arn:aws:s3:::meu-bucket/*
+  --resource-arns arn:aws:s3:::my-bucket/*
   
-# Resultado esperado: "EvalDecision": "allowed"
+# Expected result: "EvalDecision": "allowed"
 ```
 
 ---
 
-## Estimativa de Custo — Lab Típico
+## Cost Estimate — Typical Lab
 
-| Recurso | Custo Estimado (lab 2h) |
+| Resource | Estimated Cost (2h lab) |
 |---------|------------------------|
 | EC2 t3.micro | ~$0.01 |
 | NAT Gateway | ~$0.09/h + $0.045/GB |
@@ -275,21 +275,21 @@ aws iam simulate-principal-policy \
 | S3 (< 5GB) | Free Tier |
 | ECS Fargate (0.25vCPU/0.5GB) | ~$0.01/h |
 
-> **Dica:** Sempre destruir recursos ao final. NAT Gateway é cobrado por hora mesmo sem tráfego.
+> **Tip:** Always destroy resources when you finish. NAT Gateway is billed hourly even without traffic.
 
 ---
 
-## Dicas de Prova
+## Exam Tips
 
-| Pista na Questão | Resposta Esperada |
+| Clue in the Question | Expected Answer |
 |-----------------|------------------|
-| "testar Lambda localmente antes de deploy" | SAM local invoke / sam local start-api |
-| "infraestrutura como código, reproductível" | Terraform ou CloudFormation |
-| "Lambda precisa de RDS em VPC privada" | Lambda VpcConfig + SG do RDS liberado |
-| "visualizar mudanças antes de aplicar" | terraform plan |
-| "Lambda não acessa internet em VPC" | Falta NAT Gateway na subnet privada |
-| "armazenar segredos para Lambda acessar" | Secrets Manager (não variáveis de ambiente) |
-| "deploy serverless com YAML simplificado" | SAM (template.yaml) |
-| "estado de infra compartilhado entre equipes" | Terraform state em S3 + DynamoDB lock |
-| "debug erro 403 S3" | Checar bucket policy + Block Public Access + IAM |
-| "ECS task para logo após iniciar" | Ver stoppedReason + CloudWatch Logs /ecs/ |
+| "test Lambda locally before deploying" | SAM local invoke / sam local start-api |
+| "infrastructure as code, reproducible" | Terraform or CloudFormation |
+| "Lambda needs RDS in a private VPC" | Lambda VpcConfig + RDS SG opened |
+| "preview changes before applying" | terraform plan |
+| "Lambda cannot reach the internet in a VPC" | Missing NAT Gateway in the private subnet |
+| "store secrets for Lambda to access" | Secrets Manager (not environment variables) |
+| "serverless deployment with simplified YAML" | SAM (template.yaml) |
+| "infrastructure state shared across teams" | Terraform state in S3 + DynamoDB lock |
+| "debug S3 403 error" | Check bucket policy + Block Public Access + IAM |
+| "ECS task stops right after starting" | Check stoppedReason + CloudWatch Logs /ecs/ |

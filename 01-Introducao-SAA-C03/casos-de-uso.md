@@ -1,93 +1,93 @@
-# Casos de Uso — Introdução SAA-C03
+# Use Cases — Introduction to SAA-C03
 
-## Caso 1 — Plataforma SaaS iniciando revisão arquitetural
+## Case 1 — SaaS Platform Starting an Architectural Review
 
-### Cenário
-Uma SaaS B2B já roda na AWS, mas o time percebeu que sabe operar serviços sem conseguir justificar decisões de arquitetura. A liderança quer preparar dois arquitetos para o SAA-C03 e, ao mesmo tempo, revisar o desenho atual da plataforma.
+### Scenario
+A B2B SaaS company already runs on AWS, but the team realized it knows how to operate services without being able to justify architectural decisions. Leadership wants to prepare two architects for the SAA-C03 and, at the same time, review the platform's current design.
 
-### Arquitetura de raciocínio
+### Reasoning Architecture
 
 ```text
-Negócio -> Requisitos -> Restrições -> Escolha de serviço -> Trade-off -> Operação
-   |           |             |               |                  |          |
-   +-----------+-------------+---------------+------------------+----------+
+Business -> Requirements -> Constraints -> Service choice -> Trade-off -> Operations
+   |            |              |               |                |            |
+   +------------+--------------+---------------+----------------+------------+
 ```
 
-### Decisões técnicas justificadas
-- O estudo deve começar por serviços centrais como IAM, VPC, EC2, S3, RDS e Route 53, porque eles aparecem em grande parte dos cenários.
-- O grupo precisa revisar não só serviços, mas padrões: HA, DR, desacoplamento e custo total.
-- A melhor forma de internalizar isso é combinar teoria, questões e casos reais.
+### Justified Technical Decisions
+- Study should start with core services such as IAM, VPC, EC2, S3, RDS, and Route 53, because they appear in a large share of scenarios.
+- The group needs to review not only services, but also patterns: HA, DR, decoupling, and total cost.
+- The best way to internalize this is to combine theory, questions, and real-world cases.
 
-### Trade-offs considerados
-- Estudar por serviço isolado é rápido, mas gera pouco contexto.
-- Estudar por cenário é mais lento, porém aproxima o candidato do formato real da prova.
+### Trade-offs Considered
+- Studying isolated services is fast, but provides little context.
+- Studying by scenario is slower, but brings the candidate closer to the real exam format.
 
-## Caso 2 — E-commerce com dúvida entre robustez e simplicidade
+## Case 2 — E-commerce Torn Between Robustness and Simplicity
 
-### Cenário
-Uma loja online quer crescer antes da Black Friday. O time técnico propõe várias soluções altamente sofisticadas, mas a diretoria quer saber qual abordagem é adequada sem inflar custo e operação. O objetivo do estudo é aprender a distinguir o necessário do excessivo.
+### Scenario
+An online store wants to grow before Black Friday. The technical team proposes several highly sophisticated solutions, but management wants to know which approach is adequate without inflating cost and operations. The goal of the study is to learn to distinguish what is necessary from what is excessive.
 
-### Arquitetura de raciocínio
+### Reasoning Architecture
 
 ```text
-Usuários -> ALB -> ASG EC2 -> Aurora Multi-AZ
-              |         |
-              |         +-> CloudWatch
-              |
-              +-> CloudFront -> S3 estático
+Users -> ALB -> ASG EC2 -> Aurora Multi-AZ
+            |         |
+            |         +-> CloudWatch
+            |
+            +-> CloudFront -> Static S3
 ```
 
-### Decisões técnicas justificadas
-- ALB e ASG endereçam elasticidade com menor esforço do que gestão manual de múltiplas instâncias.
-- Aurora Multi-AZ atende continuidade regional sem exigir multi-region logo de início.
-- CloudFront reduz latência e descarrega conteúdo estático.
+### Justified Technical Decisions
+- ALB and ASG address elasticity with less effort than manually managing multiple instances.
+- Aurora Multi-AZ provides regional continuity without requiring multi-region from the start.
+- CloudFront reduces latency and offloads static content.
 
-### Trade-offs considerados
-- Multi-region ativo-ativo seria mais resiliente, mas pode ser exagero se o requisito real for apenas HA regional.
-- Instâncias dedicadas podem oferecer isolamento, mas aumentam custo sem necessidade explícita.
+### Trade-offs Considered
+- Active-active multi-region would be more resilient, but may be overkill if the real requirement is only regional HA.
+- Dedicated instances can offer isolation, but increase cost without an explicit need.
 
-## Caso 3 — Startup de dados com orçamento apertado
+## Case 3 — Data Startup on a Tight Budget
 
-### Cenário
-Uma startup precisa processar eventos de aplicação com custo controlado. O exame SAA-C03 usaria esse contexto para avaliar se o candidato entende quando priorizar serviços gerenciados e cobrança sob demanda.
+### Scenario
+A startup needs to process application events at a controlled cost. The SAA-C03 exam would use this context to assess whether the candidate understands when to prioritize managed services and on-demand pricing.
 
-### Arquitetura de raciocínio
+### Reasoning Architecture
 
 ```text
-Aplicação -> EventBridge -> Lambda -> DynamoDB
-                          |
-                          +-> CloudWatch Logs
+Application -> EventBridge -> Lambda -> DynamoDB
+                                |
+                                +-> CloudWatch Logs
 ```
 
-### Decisões técnicas justificadas
-- Lambda reduz ociosidade e patching para workloads variáveis.
-- EventBridge facilita integração orientada a eventos com baixo acoplamento.
-- DynamoDB encaixa bem quando o acesso é previsível por chave e a escala é horizontal.
+### Justified Technical Decisions
+- Lambda reduces idle time and patching for variable workloads.
+- EventBridge facilitates event-driven integration with low coupling.
+- DynamoDB fits well when access is predictable by key and scale is horizontal.
 
-### Trade-offs considerados
-- EC2 pode oferecer mais controle, mas exige administração constante.
-- Banco relacional pode ser melhor em cenários transacionais complexos, mas aqui o padrão de acesso favorece NoSQL.
+### Trade-offs Considered
+- EC2 can offer more control, but requires constant administration.
+- A relational database may be better in complex transactional scenarios, but here the access pattern favors NoSQL.
 
-## Caso 4 — Empresa regulada com foco em governança
+## Case 4 — Regulated Company Focused on Governance
 
-### Cenário
-Uma organização financeira precisa de rastreabilidade, menor privilégio e chaves de criptografia controladas. Ela quer que a preparação para o exame reforce boas práticas reais de arquitetura segura.
+### Scenario
+A financial organization needs traceability, least privilege, and controlled encryption keys. It wants exam preparation to reinforce real-world secure architecture best practices.
 
-### Arquitetura de raciocínio
+### Reasoning Architecture
 
 ```text
-Usuários -> IAM Identity Center -> Contas AWS
+Users -> IAM Identity Center -> AWS Accounts
                        |
                        +-> IAM Roles / SCPs
                        +-> KMS
                        +-> CloudTrail
 ```
 
-### Decisões técnicas justificadas
-- IAM Identity Center simplifica acesso centralizado.
-- SCPs ajudam a limitar o que contas podem fazer no nível organizacional.
-- KMS e CloudTrail aparecem como pilares de criptografia e auditoria.
+### Justified Technical Decisions
+- IAM Identity Center simplifies centralized access.
+- SCPs help limit what accounts can do at the organizational level.
+- KMS and CloudTrail appear as pillars of encryption and auditing.
 
-### Trade-offs considerados
-- Mais governança centralizada reduz risco, mas exige desenho de permissões cuidadoso.
-- Políticas excessivamente amplas aceleram o curto prazo e prejudicam compliance.
+### Trade-offs Considered
+- More centralized governance reduces risk, but requires careful permission design.
+- Overly broad policies speed things up in the short term and harm compliance.

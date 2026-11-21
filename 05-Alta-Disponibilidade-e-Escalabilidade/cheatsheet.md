@@ -1,26 +1,26 @@
-# Cheatsheet — Alta Disponibilidade e Escalabilidade
+# Cheatsheet — High Availability and Scalability
 
-## ELB — Comparativo de Tipos
+## ELB — Type Comparison
 
-| Característica | ALB | NLB | GWLB | CLB |
+| Characteristic | ALB | NLB | GWLB | CLB |
 |---|---|---|---|---|
-| Camada OSI | 7 (HTTP) | 4 (TCP/UDP) | 3 (IP) | 4/7 (misto) |
-| Protocolos | HTTP, HTTPS, HTTP/2, gRPC, WebSocket | TCP, UDP, TLS | IP (GENEVE) | HTTP, HTTPS, TCP |
-| IP estático | ❌ (DNS dinâmico) | ✅ (Elastic IP por AZ) | N/A | ❌ |
-| IP de origem preservado | ❌ (X-Forwarded-For) | ✅ (nativo) | ✅ | ❌ |
-| Targets suportados | EC2, IP, Lambda, ALB | EC2, IP | EC2 (appliances) | EC2 |
-| Latência | Moderada | Ultra-baixa (<1ms) | Moderada | Moderada |
-| Roteamento avançado | Path, Host, Header, Query, Method | Nenhum | Nenhum | Básico |
+| OSI layer | 7 (HTTP) | 4 (TCP/UDP) | 3 (IP) | 4/7 (mixed) |
+| Protocols | HTTP, HTTPS, HTTP/2, gRPC, WebSocket | TCP, UDP, TLS | IP (GENEVE) | HTTP, HTTPS, TCP |
+| Static IP | ❌ (dynamic DNS) | ✅ (Elastic IP per AZ) | N/A | ❌ |
+| Source IP preserved | ❌ (X-Forwarded-For) | ✅ (native) | ✅ | ❌ |
+| Supported targets | EC2, IP, Lambda, ALB | EC2, IP | EC2 (appliances) | EC2 |
+| Latency | Moderate | Ultra-low (<1ms) | Moderate | Moderate |
+| Advanced routing | Path, Host, Header, Query, Method | None | None | Basic |
 | Weighted target groups | ✅ | ❌ | ❌ | ❌ |
 | PrivateLink backend | ❌ | ✅ | ❌ | ❌ |
 | SSL/TLS offload | ✅ | ✅ (TLS listener) | ❌ | ✅ |
-| Status | Atual | Atual | Atual | Legado |
+| Status | Current | Current | Current | Legacy |
 
 ---
 
-## ALB — Regras de Listener
+## ALB — Listener Rules
 
-| Tipo de Condição | Exemplo |
+| Condition Type | Example |
 |---|---|
 | Path-based | `/api/*` → TG-API; `/static/*` → TG-Frontend |
 | Host-based | `api.example.com` → TG-API; `app.example.com` → TG-App |
@@ -29,49 +29,49 @@
 | Query string | `?env=staging` → TG-Staging |
 | Source IP | `10.0.0.0/8` → TG-Internal |
 
-**Ações possíveis:** Forward (com peso), Redirect (301/302), Fixed Response (200/403/404), Authenticate (Cognito/OIDC)
+**Possible actions:** Forward (with weight), Redirect (301/302), Fixed Response (200/403/404), Authenticate (Cognito/OIDC)
 
 ---
 
 ## Cross-Zone Load Balancing
 
-| ELB | Padrão | Custo inter-AZ |
+| ELB | Default | Inter-AZ cost |
 |---|---|---|
-| ALB | ✅ Habilitado | Sem custo |
-| NLB | ❌ Desabilitado | Cobrado se habilitado |
-| GWLB | ❌ Desabilitado | Cobrado se habilitado |
-| CLB | ✅ Habilitado (via console) | Sem custo |
+| ALB | ✅ Enabled | No cost |
+| NLB | ❌ Disabled | Charged if enabled |
+| GWLB | ❌ Disabled | Charged if enabled |
+| CLB | ✅ Enabled (via console) | No cost |
 
-**Sem cross-zone:** cada nó ELB distribui tráfego apenas para instâncias na SUA AZ (concentração de carga em AZs com mais instâncias).  
-**Com cross-zone:** cada nó distribui uniformemente por todas as instâncias em todas as AZs.
+**Without cross-zone:** each ELB node distributes traffic only to instances in ITS AZ (load concentrates in AZs with more instances).  
+**With cross-zone:** each node distributes evenly across all instances in all AZs.
 
 ---
 
-## ASG — Políticas de Scaling
+## ASG — Scaling Policies
 
-| Política | Tipo | Alarme necessário | Pro | Contra |
+| Policy | Type | Alarm required | Pro | Con |
 |---|---|---|---|---|
-| Target Tracking | Reativa | Criado automaticamente | Simples, resposta proporcional | Menos controle granular |
-| Step Scaling | Reativa | Manual (CloudWatch) | Controle por faixas de métrica | Mais configuração |
-| Simple Scaling | Reativa | Manual (CloudWatch) | Simples | Cooldown inibe reação |
-| Scheduled Scaling | Proativa | Não aplicável | Antecipa picos previsíveis | Não adapta a variações inesperadas |
-| Predictive Scaling | Proativa | ML automático | Pré-provisiona antes do pico | Requer 14 dias de histórico |
+| Target Tracking | Reactive | Created automatically | Simple, proportional response | Less granular control |
+| Step Scaling | Reactive | Manual (CloudWatch) | Control by metric ranges | More configuration |
+| Simple Scaling | Reactive | Manual (CloudWatch) | Simple | Cooldown inhibits reaction |
+| Scheduled Scaling | Proactive | Not applicable | Anticipates predictable peaks | Does not adapt to unexpected variations |
+| Predictive Scaling | Proactive | Automatic ML | Pre-provisions before the peak | Requires 14 days of history |
 
 ---
 
-## ASG — Conceitos de Tempo
+## ASG — Timing Concepts
 
-| Conceito | Default | Propósito |
+| Concept | Default | Purpose |
 |---|---|---|
-| Cooldown period | 300s | Após scale-out/in, aguarda estabilizar (Simple Scaling) |
-| Warmup period | 300s | Instância nova não conta nas métricas enquanto aquece |
-| Health check grace period | 300s | Ignora health checks logo após lançamento |
-| Lifecycle Hook timeout | 3600s | Máx tempo em Pending:Wait ou Terminating:Wait |
-| Connection Draining | 300s | Drena conexações ELB antes de desregistrar instância |
+| Cooldown period | 300s | After scale-out/in, waits to stabilize (Simple Scaling) |
+| Warmup period | 300s | New instance does not count in metrics while warming up |
+| Health check grace period | 300s | Ignores health checks right after launch |
+| Lifecycle Hook timeout | 3600s | Max time in Pending:Wait or Terminating:Wait |
+| Connection Draining | 300s | Drains ELB connections before deregistering the instance |
 
 ---
 
-## Lifecycle Hooks — Fluxo
+## Lifecycle Hooks — Flow
 
 ```
 Scale-Out:                              Scale-In:
@@ -88,55 +88,55 @@ InService                               Terminating:Proceed → Terminated
 
 ---
 
-## Termination Policy (Padrão)
+## Termination Policy (Default)
 
 ```
-1. AZ com mais instâncias (rebalancear)
-2. Instância com Launch Config/Template mais antigo
-3. Instância mais próxima da próxima hora de cobrança
-4. Aleatório (desempate)
+1. AZ with the most instances (rebalance)
+2. Instance with the oldest Launch Config/Template
+3. Instance closest to the next billing hour
+4. Random (tiebreaker)
 ```
 
-Outras políticas disponíveis: `OldestInstance`, `NewestInstance`, `OldestLaunchTemplate`, `ClosestToNextInstanceHour`, `AllocationStrategy` (respeita On-Demand vs Spot target).
+Other available policies: `OldestInstance`, `NewestInstance`, `OldestLaunchTemplate`, `ClosestToNextInstanceHour`, `AllocationStrategy` (respects On-Demand vs Spot target).
 
 ---
 
 ## Launch Template vs Launch Configuration
 
-| Característica | Launch Template | Launch Configuration |
+| Characteristic | Launch Template | Launch Configuration |
 |---|---|---|
-| Estado | ✅ Atual (recomendado) | ⚠️ Legado |
-| Versionamento | ✅ Sim ($Latest, $Default, versões numeradas) | ❌ Imutável |
-| Mixed Instance Policy | ✅ Sim | ❌ Não |
-| Múltiplos tipos de instância | ✅ Sim (overrides) | ❌ Não |
-| Spot + On-Demand mix | ✅ Sim | ❌ Não |
-| SSM Parameter Store | ✅ (AMI via parâmetro) | ❌ |
-| T2/T3 Unlimited | ✅ Sim | ❌ |
-| Exigência para ASG novo | A partir de 2023 AWS incentiva LT | Suportado mas legado |
+| Status | ✅ Current (recommended) | ⚠️ Legacy |
+| Versioning | ✅ Yes ($Latest, $Default, numbered versions) | ❌ Immutable |
+| Mixed Instance Policy | ✅ Yes | ❌ No |
+| Multiple instance types | ✅ Yes (overrides) | ❌ No |
+| Spot + On-Demand mix | ✅ Yes | ❌ No |
+| SSM Parameter Store | ✅ (AMI via parameter) | ❌ |
+| T2/T3 Unlimited | ✅ Yes | ❌ |
+| Requirement for new ASG | Since 2023 AWS encourages LT | Supported but legacy |
 
 ---
 
 ## Sticky Sessions
 
-| Tipo de cookie | Gerado por | Expiração | Config |
+| Cookie type | Generated by | Expiration | Config |
 |---|---|---|---|
-| `AWSALB` | ALB | 1s – 7 dias | Duration-based no TG |
-| `AWSALBAPP` | Aplicação | Conforme app | Application-based no TG |
+| `AWSALB` | ALB | 1s – 7 days | Duration-based on the TG |
+| `AWSALBAPP` | Application | Per app | Application-based on the TG |
 
-> Sticky Sessions podem causar desbalancamento. Usar apenas quando necessário (sessões com estado).
+> Sticky Sessions can cause imbalance. Use only when necessary (stateful sessions).
 
 ---
 
-## Dicas de Prova (HA/Escalabilidade)
+## Exam Tips (HA/Scalability)
 
-- **NLB + Elastic IP** → IP estático para whitelist de clientes corporativos
+- **NLB + Elastic IP** → static IP for corporate client allowlisting
 - **ALB weighted target groups** → canary release, blue/green, A/B test
-- **GWLB** → único LB para inserção transparente de appliances (GENEVE protocol)
-- **Target Tracking** é a política mais simples — cria e gerencia alarmes automaticamente
-- **Predictive Scaling** precisa de 14 dias de histórico — não funciona em ASG novo
-- **Lifecycle Hook** é a solução para "executar algo antes de entrar em serviço" ou "antes de terminar"
-- **ELB health check no ASG** é obrigatório em produção — EC2 health check não detecta falha de aplicação
-- **Cross-zone no NLB** é cobrado — considerar custo de data transfer inter-AZ
-- **Connection Draining**: se sessões são curtas, reduza para 30s; se longas (uploads), aumente para 900s+
-- **PrivateLink** sempre requer **NLB** como backend — não ALB  
-- ALB pode ter targets **Lambda** — excelente para backends serverless por path
+- **GWLB** → only LB for transparent appliance insertion (GENEVE protocol)
+- **Target Tracking** is the simplest policy — creates and manages alarms automatically
+- **Predictive Scaling** needs 14 days of history — does not work on a new ASG
+- **Lifecycle Hook** is the solution for "run something before entering service" or "before terminating"
+- **ELB health check on the ASG** is mandatory in production — EC2 health check does not detect application failure
+- **Cross-zone on NLB** is charged — consider inter-AZ data transfer cost
+- **Connection Draining**: if sessions are short, reduce to 30s; if long (uploads), increase to 900s+
+- **PrivateLink** always requires an **NLB** as the backend — not an ALB  
+- ALB can have **Lambda** targets — excellent for serverless backends by path

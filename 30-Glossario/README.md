@@ -1,209 +1,209 @@
-# Módulo 20 — Glossário AWS SAA-C03
+# Module 20 — AWS SAA-C03 Glossary
 
-## Sobre Este Módulo
+## About This Module
 
-Dicionário de termos e conceitos essenciais para o exame AWS Solutions Architect Associate (SAA-C03). Organizado por domínio para facilitar a revisão rápida.
+Dictionary of essential terms and concepts for the AWS Solutions Architect Associate (SAA-C03) exam. Organized by letter to make quick review easier.
 
 ---
 
 ## A
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **ACL (Access Control List)** | Lista de regras de acesso. Em S3: configuração legada de permissão por bucket/objeto. Em VPC: NACL — firewall stateless no nível de subnet |
-| **ACM (AWS Certificate Manager)** | Serviço para provisionar, gerenciar e fazer deploy de certificados SSL/TLS gratuitos para uso com CloudFront, ALB, API Gateway |
-| **ALB (Application Load Balancer)** | Load balancer de Layer 7 (HTTP/HTTPS). Suporta path-based e host-based routing, WebSocket, gRPC |
-| **AMI (Amazon Machine Image)** | Template de instância EC2 contendo OS, aplicações e configurações. Específico por região (pode ser copiado entre regiões) |
-| **ARN (Amazon Resource Name)** | Identificador único de recursos AWS. Formato: `arn:aws:service:region:account-id:resource` |
-| **ASG (Auto Scaling Group)** | Grupo de instâncias EC2 que escala automaticamente baseado em políticas de scaling ou demanda |
-| **Athena** | Serviço de query SQL serverless sobre dados no S3. Paga por TB escaneado |
-| **Aurora** | Banco de dados relacional compatível MySQL/PostgreSQL criado pela AWS. 5x performance que MySQL, 3x PostgreSQL |
-| **Availability Zone (AZ)** | Datacenter isolado dentro de uma região AWS. Múltiplas AZs por região garantem alta disponibilidade |
-| **AWS Organizations** | Gerenciamento centralizado de múltiplas contas AWS com policies (SCPs) e faturamento consolidado |
+| **ACL (Access Control List)** | List of access rules. In S3: legacy per-bucket/object permission configuration. In VPC: NACL — stateless firewall at the subnet level |
+| **ACM (AWS Certificate Manager)** | Service to provision, manage, and deploy free SSL/TLS certificates for use with CloudFront, ALB, API Gateway |
+| **ALB (Application Load Balancer)** | Layer 7 (HTTP/HTTPS) load balancer. Supports path-based and host-based routing, WebSocket, gRPC |
+| **AMI (Amazon Machine Image)** | EC2 instance template containing the OS, applications, and settings. Region-specific (can be copied across regions) |
+| **ARN (Amazon Resource Name)** | Unique identifier for AWS resources. Format: `arn:aws:service:region:account-id:resource` |
+| **ASG (Auto Scaling Group)** | Group of EC2 instances that scales automatically based on scaling policies or demand |
+| **Athena** | Serverless SQL query service over data in S3. Pay per TB scanned |
+| **Aurora** | MySQL/PostgreSQL-compatible relational database built by AWS. 5x the performance of MySQL, 3x of PostgreSQL |
+| **Availability Zone (AZ)** | Isolated data center within an AWS Region. Multiple AZs per Region ensure high availability |
+| **AWS Organizations** | Centralized management of multiple AWS accounts with policies (SCPs) and consolidated billing |
 
 ---
 
 ## B
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **Bastion Host** | Instância EC2 em subnet pública usada como ponto de acesso SSH para instâncias em subnets privadas. Substituto mais seguro: SSM Session Manager |
-| **Bedrock** | Serviço de IA Generativa da AWS. Acessa Foundation Models (Anthropic Claude, Amazon Titan, etc.) via API sem gerenciar infraestrutura |
-| **Blue/Green Deployment** | Estratégia de deploy com dois ambientes idênticos; tráfego é migrado gradualmente ou totalmente do "blue" (atual) para o "green" (novo) |
-| **Bucket Policy** | Política JSON baseada em recurso aplicada diretamente no S3 bucket. Controla acesso de qualquer entidade (cross-account) |
-| **Burst** | Capacidade temporária além do limite provisionado. EC2 (instâncias T): créditos CPU burst. Lambda: 3.000 concurrent executions iniciais por região |
+| **Bastion Host** | EC2 instance in a public subnet used as an SSH access point to instances in private subnets. More secure alternative: SSM Session Manager |
+| **Bedrock** | AWS Generative AI service. Accesses Foundation Models (Anthropic Claude, Amazon Titan, etc.) via API without managing infrastructure |
+| **Blue/Green Deployment** | Deployment strategy with two identical environments; traffic is gradually or fully shifted from "blue" (current) to "green" (new) |
+| **Bucket Policy** | Resource-based JSON policy applied directly to the S3 bucket. Controls access for any principal (cross-account) |
+| **Burst** | Temporary capacity beyond the provisioned limit. EC2 (T instances): CPU burst credits. Lambda: 3,000 initial concurrent executions per Region |
 
 ---
 
 ## C
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **CIDR (Classless Inter-Domain Routing)** | Notação para ranges de IP. Ex: `10.0.0.0/16` = 65.536 IPs. VPC CIDR define o address space da rede virtual |
-| **CloudFormation** | IaC (Infrastructure as Code) da AWS. Templates YAML/JSON que definem e provisionam recursos AWS como código |
-| **CloudFront** | CDN (Content Delivery Network) global da AWS com 400+ edge locations. Melhora latência e reduz carga na origem |
-| **CloudTrail** | Serviço de auditoria que registra todas as API calls feitas na conta AWS. Essencial para compliance e investigação de incidentes |
-| **CloudWatch** | Serviço de monitoramento e observabilidade. Coleta métricas, logs, cria alarmes e dashboards |
-| **CMK (Customer Managed Key)** | Chave KMS criada e gerenciada pelo cliente. Permite controle total sobre políticas de uso e rotação |
-| **Cognito** | Serviço de autenticação e autorização para aplicações web/mobile. User Pools (auth) + Identity Pools (federação AWS credentials) |
-| **Cold Start** | Delay na primeira invocação de uma função Lambda quando um novo execution environment precisa ser inicializado |
-| **Compliance** | Conformidade com regulações e padrões (PCI-DSS, HIPAA, SOC2, ISO 27001). AWS é responsável pela infraestrutura; cliente pela aplicação |
-| **CRR (Cross-Region Replication)** | Replicação automática de objetos S3 para um bucket em outra região. Requer versioning habilitado |
+| **CIDR (Classless Inter-Domain Routing)** | Notation for IP ranges. E.g.: `10.0.0.0/16` = 65,536 IPs. The VPC CIDR defines the address space of the virtual network |
+| **CloudFormation** | AWS IaC (Infrastructure as Code). YAML/JSON templates that define and provision AWS resources as code |
+| **CloudFront** | AWS global CDN (Content Delivery Network) with 400+ edge locations. Improves latency and reduces load on the origin |
+| **CloudTrail** | Auditing service that records all API calls made in the AWS account. Essential for compliance and incident investigation |
+| **CloudWatch** | Monitoring and observability service. Collects metrics and logs, creates alarms and dashboards |
+| **CMK (Customer Managed Key)** | KMS key created and managed by the customer. Allows full control over usage policies and rotation |
+| **Cognito** | Authentication and authorization service for web/mobile applications. User Pools (auth) + Identity Pools (AWS credentials federation) |
+| **Cold Start** | Delay on the first invocation of a Lambda function when a new execution environment needs to be initialized |
+| **Compliance** | Conformity with regulations and standards (PCI-DSS, HIPAA, SOC2, ISO 27001). AWS is responsible for the infrastructure; the customer for the application |
+| **CRR (Cross-Region Replication)** | Automatic replication of S3 objects to a bucket in another Region. Requires versioning enabled |
 
 ---
 
 ## D
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **DAX (DynamoDB Accelerator)** | Cache in-memory para DynamoDB com latência de microssegundos. Totalmente gerenciado e compatível com DynamoDB API |
-| **DLQ (Dead Letter Queue)** | Fila (SQS) ou tópico (SNS) que recebe mensagens que não puderam ser processadas após o número máximo de tentativas |
-| **DMS (Database Migration Service)** | Serviço de migração de bancos de dados. Suporta migrações homogêneas e heterogêneas com opção de CDC (Change Data Capture) |
-| **DynamoDB** | Banco NoSQL chave-valor totalmente gerenciado. Escalabilidade infinita, latência de milissegundos, multi-region com Global Tables |
-| **DX (Direct Connect)** | Conexão de rede dedicada e privada entre on-prem e AWS. Largura de banda de 1, 10 ou 100 Gbps com latência consistente |
+| **DAX (DynamoDB Accelerator)** | In-memory cache for DynamoDB with microsecond latency. Fully managed and compatible with the DynamoDB API |
+| **DLQ (Dead Letter Queue)** | Queue (SQS) or topic (SNS) that receives messages that could not be processed after the maximum number of attempts |
+| **DMS (Database Migration Service)** | Database migration service. Supports homogeneous and heterogeneous migrations with a CDC (Change Data Capture) option |
+| **DynamoDB** | Fully managed NoSQL key-value database. Virtually unlimited scalability, millisecond latency, multi-Region with Global Tables |
+| **DX (Direct Connect)** | Dedicated private network connection between on-premises and AWS. 1, 10, or 100 Gbps bandwidth with consistent latency |
 
 ---
 
 ## E
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **EBS (Elastic Block Store)** | Volumes de disco de alta performance para EC2. Tipos: gp2/gp3 (SSD geral), io1/io2 (SSD alta performance), st1 (HDD throughput), sc1 (HDD cold) |
-| **EC2 (Elastic Compute Cloud)** | Serviço de computação virtual (VMs) da AWS. Centenas de tipos de instâncias para diferentes cargas de trabalho |
-| **ECR (Elastic Container Registry)** | Registry privado de imagens Docker gerenciado. Integrado com ECS, EKS e Lambda Container Image |
-| **ECS (Elastic Container Service)** | Orquestrador de containers gerenciado pela AWS. Executa tasks em EC2 ou Fargate |
-| **EFS (Elastic File System)** | Sistema de arquivos NFS gerenciado e elástico para Linux. Multi-AZ e multi-instance simultaneamente |
-| **EKS (Elastic Kubernetes Service)** | Kubernetes gerenciado pela AWS. Reduz complexidade operacional do control plane Kubernetes |
-| **ElastiCache** | Serviço de cache in-memory gerenciado. Dois engines: Redis (persistência, Pub/Sub, sorted sets) e Memcached (simples, multi-thread) |
-| **Endpoint (VPC)** | Conexão privada entre VPC e serviços AWS sem sair para internet. Gateway (S3, DynamoDB — gratuito) ou Interface (PrivateLink — pago) |
-| **ESM (Event Source Mapping)** | Configuração que permite Lambda receber eventos de Kinesis, DynamoDB Streams, SQS, MSK automaticamente |
-| **EventBridge** | Barramento de eventos serverless. Roteia eventos entre serviços AWS, SaaS e aplicações customizadas via regras |
+| **EBS (Elastic Block Store)** | High-performance disk volumes for EC2. Types: gp2/gp3 (general-purpose SSD), io1/io2 (high-performance SSD), st1 (throughput HDD), sc1 (cold HDD) |
+| **EC2 (Elastic Compute Cloud)** | AWS virtual compute service (VMs). Hundreds of instance types for different workloads |
+| **ECR (Elastic Container Registry)** | Managed private Docker image registry. Integrated with ECS, EKS, and Lambda Container Image |
+| **ECS (Elastic Container Service)** | AWS-managed container orchestrator. Runs tasks on EC2 or Fargate |
+| **EFS (Elastic File System)** | Managed, elastic NFS file system for Linux. Multi-AZ and multi-instance simultaneously |
+| **EKS (Elastic Kubernetes Service)** | AWS-managed Kubernetes. Reduces the operational complexity of the Kubernetes control plane |
+| **ElastiCache** | Managed in-memory cache service. Two engines: Redis (persistence, Pub/Sub, sorted sets) and Memcached (simple, multi-threaded) |
+| **Endpoint (VPC)** | Private connection between a VPC and AWS services without going out to the internet. Gateway (S3, DynamoDB — free) or Interface (PrivateLink — paid) |
+| **ESM (Event Source Mapping)** | Configuration that allows Lambda to automatically receive events from Kinesis, DynamoDB Streams, SQS, MSK |
+| **EventBridge** | Serverless event bus. Routes events between AWS services, SaaS, and custom applications via rules |
 
 ---
 
 ## F–G
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **Fargate** | Computação serverless para containers (ECS/EKS). Sem servidores para gerenciar; paga por vCPU/memória usados pela task |
-| **FIFO Queue** | SQS FIFO: garante ordem de entrega e exatamente uma entrega (exactly-once). Limitado a 300 TPS (3.000 com batching) |
-| **FSx** | Sistemas de arquivos gerenciados de alta performance: Lustre (HPC), Windows (SMB), NetApp ONTAP, OpenZFS |
-| **Global Accelerator** | Serviço de rede que usa a rede privada AWS (anycast) para rotear tráfego TCP/UDP com menor latência global. 2 IPs anycast estáticos |
-| **Glue** | Serviço ETL serverless e catálogo de dados. Crawlers descobrem schemas; Jobs processam dados com Spark gerenciado |
-| **GuardDuty** | Serviço de detecção de ameaças usando ML. Analisa CloudTrail, VPC Flow Logs, DNS Logs para detectar comportamentos maliciosos |
+| **Fargate** | Serverless compute for containers (ECS/EKS). No servers to manage; pay for the vCPU/memory used by the task |
+| **FIFO Queue** | SQS FIFO: guarantees delivery order and exactly-once delivery. Limited to 300 TPS (3,000 with batching) |
+| **FSx** | Managed high-performance file systems: Lustre (HPC), Windows (SMB), NetApp ONTAP, OpenZFS |
+| **Global Accelerator** | Networking service that uses the AWS private network (anycast) to route TCP/UDP traffic with the lowest global latency. 2 static anycast IPs |
+| **Glue** | Serverless ETL service and data catalog. Crawlers discover schemas; Jobs process data with managed Spark |
+| **GuardDuty** | Threat detection service using ML. Analyzes CloudTrail, VPC Flow Logs, DNS Logs to detect malicious behavior |
 
 ---
 
 ## H–I
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **HA (High Availability)** | Capacidade do sistema de continuar operando mesmo com falhas de componentes. Geralmente exige resources em múltiplas AZs |
-| **IAM (Identity and Access Management)** | Controle de acesso a recursos AWS. Usuários, grupos, roles e políticas definem quem pode fazer o quê |
-| **IOPS (I/O Operations Per Second)** | Medida de performance de storage. EBS gp3 baseline 3.000 IOPS; io2 Block Express até 256.000 IOPS |
-| **IRSA (IAM Roles for Service Accounts)** | Mecanismo EKS que associa IAM roles a Kubernetes service accounts. Pods obtêm credenciais AWS sem segredos hardcoded |
-| **Inspector** | Avaliação automatizada de vulnerabilidades para EC2, Lambda Functions e imagens ECR. Usa CVE database |
+| **HA (High Availability)** | The system's ability to keep operating even when components fail. Usually requires resources in multiple AZs |
+| **IAM (Identity and Access Management)** | Access control for AWS resources. Users, groups, roles, and policies define who can do what |
+| **IOPS (I/O Operations Per Second)** | Storage performance measure. EBS gp3 baseline 3,000 IOPS; io2 Block Express up to 256,000 IOPS |
+| **IRSA (IAM Roles for Service Accounts)** | EKS mechanism that associates IAM roles with Kubernetes service accounts. Pods obtain AWS credentials without hardcoded secrets |
+| **Inspector** | Automated vulnerability assessment for EC2, Lambda functions, and ECR images. Uses the CVE database |
 
 ---
 
 ## J–K
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **Jump Box** | Ver Bastion Host |
-| **Kinesis Data Streams** | Serviço de streaming em tempo real. Producers → Shards → Consumers. Retenção até 365 dias; replay possível |
-| **Kinesis Firehose** | Entrega near-real-time de dados para S3, Redshift, OpenSearch, Splunk. Totalmente gerenciado sem código de consumer |
-| **KMS (Key Management Service)** | Serviço gerenciado de chaves de criptografia. Integrado com todos os serviços AWS que suportam criptografia |
+| **Jump Box** | See Bastion Host |
+| **Kinesis Data Streams** | Real-time streaming service. Producers → Shards → Consumers. Retention up to 365 days; replay possible |
+| **Kinesis Firehose** | Near-real-time data delivery to S3, Redshift, OpenSearch, Splunk. Fully managed with no consumer code |
+| **KMS (Key Management Service)** | Managed encryption key service. Integrated with all AWS services that support encryption |
 
 ---
 
 ## L–M
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **Lambda** | Computação serverless. Executa código em resposta a eventos sem provisionar servidores. Paga por invocação + duração (GB-segundos) |
-| **Lake Formation** | Serviço de governança de data lake sobre S3. Gerencia permissões refinadas (coluna/linha) para Glue + Athena |
-| **Macie** | Serviço de segurança de dados que usa ML para descobrir e proteger dados sensíveis no S3 (PII, chaves, credenciais) |
-| **MGN (Application Migration Service)** | Serviço de lift-and-shift automatizado. Replica servidores continuamente para AWS e executa cutover com mínimo downtime |
-| **MSK (Managed Streaming for Kafka)** | Apache Kafka gerenciado na AWS. Compatível com clientes Kafka existentes sem alterar código |
-| **Multi-AZ** | Alta disponibilidade com recursos em múltiplas Availability Zones. Para RDS: failover automático síncrono para standby |
+| **Lambda** | Serverless compute. Runs code in response to events without provisioning servers. Pay per invocation + duration (GB-seconds) |
+| **Lake Formation** | Data lake governance service on top of S3. Manages fine-grained (column/row) permissions for Glue + Athena |
+| **Macie** | Data security service that uses ML to discover and protect sensitive data in S3 (PII, keys, credentials) |
+| **MGN (Application Migration Service)** | Automated lift-and-shift service. Continuously replicates servers to AWS and performs cutover with minimal downtime |
+| **MSK (Managed Streaming for Kafka)** | Managed Apache Kafka on AWS. Compatible with existing Kafka clients without code changes |
+| **Multi-AZ** | High availability with resources in multiple Availability Zones. For RDS: automatic synchronous failover to a standby |
 
 ---
 
 ## N–O
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **NAT Gateway** | Componente de rede que permite instâncias em subnets privadas iniciarem conexões à internet sem serem acessíveis da internet |
-| **NACL (Network Access Control List)** | Firewall stateless no nível de subnet. Avalia regras numeradas em ordem; separadas regras inbound e outbound |
-| **NLB (Network Load Balancer)** | Load balancer Layer 4 (TCP/UDP/TLS). Extremamente alta performance (milhões de RPS), IP estático via EIP, latência ultra-baixa |
-| **OAC (Origin Access Control)** | Método atual (substitui OAI) para que CloudFront acesse S3 de forma privada. O S3 bucket nega acesso direto pela internet |
-| **OpenSearch** | Fork gerenciado do Elasticsearch. Search, log analytics e visualização com Kibana/OpenSearch Dashboards |
+| **NAT Gateway** | Networking component that lets instances in private subnets initiate connections to the internet without being reachable from the internet |
+| **NACL (Network Access Control List)** | Stateless firewall at the subnet level. Evaluates numbered rules in order; separate inbound and outbound rules |
+| **NLB (Network Load Balancer)** | Layer 4 (TCP/UDP/TLS) load balancer. Extremely high performance (millions of RPS), static IP via EIP, ultra-low latency |
+| **OAC (Origin Access Control)** | Current method (replaces OAI) for CloudFront to access S3 privately. The S3 bucket denies direct access from the internet |
+| **OpenSearch** | Managed fork of Elasticsearch. Search, log analytics, and visualization with Kibana/OpenSearch Dashboards |
 
 ---
 
 ## P–Q
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **Parameter Store** | Armazenamento hierárquico de configuração e segredos no Systems Manager. Gratuito para standard (até 4 KB/parâmetro) |
-| **Placement Group** | Agrupamento de instâncias EC2 por proximidade ou distribuição. Cluster (baixa latência), Spread (máxima disponibilidade), Partition (HBase/HDFS) |
-| **PrivateLink** | AWS PrivateLink: expõe serviços privados via Interface Endpoint (ENI) sem tráfego passando pela internet |
-| **QuickSight** | BI serverless da AWS. SPICE engine para cache in-memory; dashboards embarcáveis; ML Insights automático |
+| **Parameter Store** | Hierarchical configuration and secrets storage in Systems Manager. Free for standard (up to 4 KB/parameter) |
+| **Placement Group** | Grouping of EC2 instances by proximity or distribution. Cluster (low latency), Spread (maximum availability), Partition (HBase/HDFS) |
+| **PrivateLink** | AWS PrivateLink: exposes private services via Interface Endpoint (ENI) with no traffic going over the internet |
+| **QuickSight** | AWS serverless BI. SPICE engine for in-memory caching; embeddable dashboards; automatic ML Insights |
 
 ---
 
 ## R
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **RDS (Relational Database Service)** | Bancos relacionais gerenciados: MySQL, PostgreSQL, Oracle, SQL Server, MariaDB, e Aurora |
-| **Read Replica** | Cópia assíncrona de banco de dados para escalar leituras. RDS: até 5 réplicas; Aurora: até 15 réplicas |
-| **Rekognition** | Visão computacional como serviço. Análise de imagens e vídeos: objetos, rostos, texto, moderação de conteúdo |
-| **Reserved Instance (RI)** | Compromisso de 1 ou 3 anos com desconto de até 72% vs On-Demand. Standard RI: fixo instância; Convertible RI: pode mudar tipo |
-| **Route 53** | DNS gerenciado da AWS com 100% SLA. Suporta 8 políticas de roteamento + health checks |
-| **RPO (Recovery Point Objective)** | Quantidade máxima de dados que pode ser perdida em evento de desastre (determina frequência de backup) |
-| **RTO (Recovery Time Objective)** | Tempo máximo aceitável para restaurar sistema após falha (determina estratégia de DR) |
+| **RDS (Relational Database Service)** | Managed relational databases: MySQL, PostgreSQL, Oracle, SQL Server, MariaDB, and Aurora |
+| **Read Replica** | Asynchronous copy of a database to scale reads. RDS: up to 5 replicas; Aurora: up to 15 replicas |
+| **Rekognition** | Computer vision as a service. Image and video analysis: objects, faces, text, content moderation |
+| **Reserved Instance (RI)** | 1- or 3-year commitment with up to 72% discount vs On-Demand. Standard RI: fixed instance; Convertible RI: can change type |
+| **Route 53** | AWS managed DNS with 100% SLA. Supports 8 routing policies + health checks |
+| **RPO (Recovery Point Objective)** | Maximum amount of data that can be lost in a disaster event (determines backup frequency) |
+| **RTO (Recovery Time Objective)** | Maximum acceptable time to restore the system after a failure (determines DR strategy) |
 
 ---
 
 ## S
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **S3 (Simple Storage Service)** | Armazenamento de objetos durável (11 9s), na prática ilimitado. Buckets por região; objetos até 5 TB |
-| **SAM (Serverless Application Model)** | Framework de IaC simplificado para aplicações serverless Lambda/API GW/DynamoDB. Extension do CloudFormation |
-| **Savings Plans** | Desconto de até 66% (Compute) ou 72% (EC2) em troca de compromisso de $$/hora por 1 ou 3 anos. Mais flexível que Reserved Instances |
-| **SCT (Schema Conversion Tool)** | Ferramenta desktop que converte schema de banco de dados entre engines diferentes na migração heterogênea (junto com DMS) |
-| **Security Group (SG)** | Firewall stateful no nível de instância/ENI. Regras apenas de Allow (sem Deny explícito). Referência a outros SGs por ID |
-| **Shield** | Proteção contra DDoS. Standard (gratuito, automático para todos); Advanced (pago, proteção extra + DRT + WAF gratuito) |
-| **Spot Instance** | EC2 com desconto de até 90% usando capacidade ociosa. Pode ser interrompida com aviso de 2 minutos |
-| **SQS (Simple Queue Service)** | Fila de mensagens gerenciada. Standard (alta vazão, at-least-once) ou FIFO (ordem garantida, exactly-once) |
-| **SSM (Systems Manager)** | Suite de ferramentas operacionais: Session Manager, Parameter Store, Patch Manager, Run Command, Automation |
-| **SRR (Same-Region Replication)** | Replicação de objetos S3 entre buckets na mesma região (ex: consolidar logs, compliance) |
-| **Step Functions** | Orquestrador de workflows serverless. Coordena lambdas, ECS tasks, e outros serviços em máquinas de estado visuais |
+| **S3 (Simple Storage Service)** | Durable object storage (11 9s), effectively unlimited. Buckets per Region; objects up to 5 TB |
+| **SAM (Serverless Application Model)** | Simplified IaC framework for serverless Lambda/API GW/DynamoDB applications. Extension of CloudFormation |
+| **Savings Plans** | Discount of up to 66% (Compute) or 72% (EC2) in exchange for a $/hour commitment for 1 or 3 years. More flexible than Reserved Instances |
+| **SCT (Schema Conversion Tool)** | Desktop tool that converts a database schema between different engines in heterogeneous migration (together with DMS) |
+| **Security Group (SG)** | Stateful firewall at the instance/ENI level. Allow rules only (no explicit Deny). Can reference other SGs by ID |
+| **Shield** | DDoS protection. Standard (free, automatic for everyone); Advanced (paid, extra protection + DRT + free WAF) |
+| **Spot Instance** | EC2 with up to 90% discount using spare capacity. Can be interrupted with a 2-minute warning |
+| **SQS (Simple Queue Service)** | Managed message queue. Standard (high throughput, at-least-once) or FIFO (guaranteed order, exactly-once) |
+| **SSM (Systems Manager)** | Suite of operational tools: Session Manager, Parameter Store, Patch Manager, Run Command, Automation |
+| **SRR (Same-Region Replication)** | Replication of S3 objects between buckets in the same Region (e.g., consolidating logs, compliance) |
+| **Step Functions** | Serverless workflow orchestrator. Coordinates Lambdas, ECS tasks, and other services in visual state machines |
 
 ---
 
 ## T–Z
 
-| Termo | Definição |
+| Term | Definition |
 |---|---|
-| **TGW (Transit Gateway)** | Hub de rede centralizado que conecta VPCs e on-prem em topologia hub-and-spoke. Roteamento transitivo (diferente de VPC Peering) |
-| **Transcribe** | Speech-to-Text gerenciado. Suporta streaming, identificação de locutores, vocabulário customizado |
-| **Transfer Family** | Servidor SFTP/FTPS/FTP/AS2 gerenciado com backend em S3 ou EFS. Clientes não precisam alterar ferramentas existentes |
-| **Trusted Advisor** | Ferramenta que recomenda melhorias em custo, segurança, performance, fault tolerance e service limits |
-| **VPC (Virtual Private Cloud)** | Rede virtual isolada na AWS. Você controla CIDR, subnets, routing tables, security groups e NACLs |
-| **VPC Peering** | Conexão entre duas VPCs (mesma ou diferente conta/região) via rede AWS. Não-transitivo (A↔B, B↔C ≠ A↔C) |
-| **WAF (Web Application Firewall)** | Firewall de aplicação web Layer 7. Protege contra SQL injection, XSS, e outros ataques via web ACLs e regras gerenciadas |
-| **WORM (Write Once Read Many)** | Modelo de armazenamento onde dados não podem ser modificados após escritos. S3 Object Lock Compliance mode |
-| **X-Ray** | Serviço de tracing distribuído. Visualiza latência, erros e performance entre serviços de uma aplicação |
+| **TGW (Transit Gateway)** | Centralized network hub that connects VPCs and on-premises in a hub-and-spoke topology. Transitive routing (unlike VPC Peering) |
+| **Transcribe** | Managed Speech-to-Text. Supports streaming, speaker identification, custom vocabulary |
+| **Transfer Family** | Managed SFTP/FTPS/FTP/AS2 server with an S3 or EFS backend. Clients don't need to change their existing tools |
+| **Trusted Advisor** | Tool that recommends improvements in cost, security, performance, fault tolerance, and service limits |
+| **VPC (Virtual Private Cloud)** | Isolated virtual network on AWS. You control the CIDR, subnets, route tables, security groups, and NACLs |
+| **VPC Peering** | Connection between two VPCs (same or different account/Region) over the AWS network. Non-transitive (A↔B, B↔C ≠ A↔C) |
+| **WAF (Web Application Firewall)** | Layer 7 web application firewall. Protects against SQL injection, XSS, and other web attacks via web ACLs and managed rules |
+| **WORM (Write Once Read Many)** | Storage model where data cannot be modified after it is written. S3 Object Lock Compliance mode |
+| **X-Ray** | Distributed tracing service. Visualizes latency, errors, and performance across the services of an application |
 
 ---
 
-## Tabela de Acrônimos
+## Acronym Table
 
-| Sigla | Significado |
+| Acronym | Meaning |
 |---|---|
 | ACL | Access Control List |
 | ACM | AWS Certificate Manager |
@@ -243,7 +243,7 @@ Dicionário de termos e conceitos essenciais para o exame AWS Solutions Architec
 | NLB | Network Load Balancer |
 | NLP | Natural Language Processing |
 | OAC | Origin Access Control |
-| OAI | Origin Access Identity (legado) |
+| OAI | Origin Access Identity (legacy) |
 | PII | Personally Identifiable Information |
 | RI | Reserved Instance |
 | RPO | Recovery Point Objective |

@@ -1,17 +1,17 @@
-# Lab Prático — Casos de Uso Reais: SNS Fan-out + Step Functions + EventBridge (Módulo 17)
+# Hands-On Lab — Real-World Use Cases: SNS Fan-out + Step Functions + EventBridge (Module 17)
 
-> **Região:** us-east-1 | **Custo estimado:** ~$0.01 (Step Functions Express, SNS, SQS — volumes de lab)  
-> **Pré-requisitos:** AWS CLI configurado, Terraform >= 1.5
-
----
-
-## Objetivo
-
-Implementar padrões arquiteturais comuns no mercado: fan-out assíncrono com SNS+SQS, orquestração de processos com Step Functions Express Workflows, e event-driven com EventBridge.
+> **Region:** us-east-1 | **Estimated cost:** ~$0.01 (Step Functions Express, SNS, SQS — lab volumes)  
+> **Prerequisites:** AWS CLI configured, Terraform >= 1.5
 
 ---
 
-## Parte 1 — Terraform: Fan-out SNS + SQS + Lambda
+## Objective
+
+Implement common architectural patterns used in industry: asynchronous fan-out with SNS+SQS, process orchestration with Step Functions Express Workflows, and event-driven design with EventBridge.
+
+---
+
+## Part 1 — Terraform: SNS + SQS + Lambda Fan-out
 
 ```hcl
 # main.tf
@@ -35,7 +35,7 @@ locals {
   account_id = data.aws_caller_identity.current.account_id
 }
 
-# IAM Role para Lambdas
+# IAM Role for Lambdas
 resource "aws_iam_role" "lambda_exec" {
   name = "${local.prefix}-lambda-role"
 
@@ -67,12 +67,12 @@ resource "aws_iam_role_policy" "lambda_sqs" {
   })
 }
 
-# SNS Topic principal
+# Main SNS Topic
 resource "aws_sns_topic" "pedidos" {
   name = "${local.prefix}-pedidos"
 }
 
-# SQS fila para processamento de estoque
+# SQS queue for inventory processing
 resource "aws_sqs_queue" "estoque_dlq" {
   name                       = "${local.prefix}-estoque-dlq"
   message_retention_seconds  = 1209600
@@ -87,7 +87,7 @@ resource "aws_sqs_queue" "estoque" {
   })
 }
 
-# SQS fila para envio de e-mail
+# SQS queue for sending email
 resource "aws_sqs_queue" "email_dlq" {
   name = "${local.prefix}-email-dlq"
 }
@@ -101,7 +101,7 @@ resource "aws_sqs_queue" "email" {
   })
 }
 
-# Políticas de SQS para receber do SNS
+# SQS policies to receive from SNS
 data "aws_iam_policy_document" "sqs_estoque" {
   statement {
     principals {
@@ -144,7 +144,7 @@ resource "aws_sqs_queue_policy" "email" {
   policy    = data.aws_iam_policy_document.sqs_email.json
 }
 
-# Subscrições SNS → SQS
+# SNS → SQS subscriptions
 resource "aws_sns_topic_subscription" "para_estoque" {
   topic_arn = aws_sns_topic.pedidos.arn
   protocol  = "sqs"
@@ -160,7 +160,7 @@ resource "aws_sns_topic_subscription" "para_email" {
   endpoint  = aws_sqs_queue.email.arn
 }
 
-# Lambda processadora de estoque
+# Inventory processing Lambda
 data "archive_file" "lambda_estoque" {
   type        = "zip"
   output_path = "/tmp/lambda_estoque.zip"
@@ -172,8 +172,8 @@ def handler(event, context):
     for record in event['Records']:
         body = json.loads(record['body'])
         msg = json.loads(body.get('Message', '{}'))
-        print(f"[ESTOQUE] Baixando estoque para produto: {msg.get('produto_id', 'DESCONHECIDO')}")
-        print(f"[ESTOQUE] Quantidade: {msg.get('quantidade', 0)}")
+        print(f"[ESTOQUE] Decrementing inventory for product: {msg.get('produto_id', 'UNKNOWN')}")
+        print(f"[ESTOQUE] Quantity: {msg.get('quantidade', 0)}")
     return {'statusCode': 200}
 PYTHON
     filename = "handler.py"
@@ -196,7 +196,7 @@ resource "aws_lambda_event_source_mapping" "estoque" {
   batch_size       = 5
 }
 
-# Lambda processadora de email
+# Email processing Lambda
 data "archive_file" "lambda_email" {
   type        = "zip"
   output_path = "/tmp/lambda_email.zip"
@@ -208,8 +208,8 @@ def handler(event, context):
     for record in event['Records']:
         body = json.loads(record['body'])
         msg = json.loads(body.get('Message', '{}'))
-        print(f"[EMAIL] Enviando confirmação para: {msg.get('email_cliente', 'sem-email')}")
-        print(f"[EMAIL] Pedido ID: {msg.get('pedido_id', 'SEM-ID')}")
+        print(f"[EMAIL] Sending confirmation to: {msg.get('email_cliente', 'no-email')}")
+        print(f"[EMAIL] Order ID: {msg.get('pedido_id', 'NO-ID')}")
     return {'statusCode': 200}
 PYTHON
     filename = "handler.py"
@@ -239,17 +239,17 @@ output "fila_email_url" { value = aws_sqs_queue.email.id }
 
 ---
 
-## Parte 2 — Publicar Mensagens e Observar Fan-out
+## Part 2 — Publish Messages and Observe the Fan-out
 
 ```bash
 terraform init && terraform apply -auto-approve
 
 SNS_ARN=$(terraform output -raw sns_topic_arn)
 
-# Publicar mensagem — vai para AMBAS as filas
+# Publish a message — goes to BOTH queues
 aws sns publish \
   --topic-arn "$SNS_ARN" \
-  --subject "Novo Pedido" \
+  --subject "New Order" \
   --message '{
     "pedido_id": "PED-001",
     "produto_id": "PROD-42",
@@ -264,7 +264,7 @@ aws sns publish \
     }
   }'
 
-# Publicar sem atributo — vai apenas para fila email (sem filter)
+# Publish without the attribute — goes only to the email queue (no filter)
 aws sns publish \
   --topic-arn "$SNS_ARN" \
   --message '{
@@ -274,8 +274,8 @@ aws sns publish \
     "email_cliente": "maria@exemplo.com"
   }'
 
-# Verificar logs das Lambdas
-sleep 15  # aguardar processamento
+# Check the Lambda logs
+sleep 15  # wait for processing
 
 LOG_GROUP_ESTOQUE="/aws/lambda/lab-fanout-estoque"
 LOG_GROUP_EMAIL="/aws/lambda/lab-fanout-email"
@@ -295,10 +295,10 @@ aws logs filter-log-events \
 
 ---
 
-## Parte 3 — Step Functions Express Workflow
+## Part 3 — Step Functions Express Workflow
 
 ```bash
-# IAM Role para Step Functions
+# IAM Role for Step Functions
 SF_ROLE_ARN=$(aws iam create-role \
   --role-name "lab-sf-express-role" \
   --assume-role-policy-document '{
@@ -315,13 +315,13 @@ aws iam attach-role-policy \
   --role-name "lab-sf-express-role" \
   --policy-arn "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
 
-# Criar State Machine (Express — baixa latência, mais barato)
+# Create State Machine (Express — low latency, cheaper)
 SF_ARN=$(aws stepfunctions create-state-machine \
   --name "lab-workflow-pedido" \
   --type EXPRESS \
   --role-arn "$SF_ROLE_ARN" \
   --definition '{
-    "Comment": "Workflow de processamento de pedido",
+    "Comment": "Order processing workflow",
     "StartAt": "ValidarPedido",
     "States": {
       "ValidarPedido": {
@@ -374,12 +374,12 @@ SF_ARN=$(aws stepfunctions create-state-machine \
       "EstoqueInsuficiente": {
         "Type": "Fail",
         "Error": "EstoqueInsuficiente",
-        "Cause": "Produto sem estoque disponível"
+        "Cause": "Product out of stock"
       },
       "PedidoRejeitado": {
         "Type": "Fail",
         "Error": "ValidacaoFalhou",
-        "Cause": "Pedido não passou na validação"
+        "Cause": "Order failed validation"
       }
     }
   }' \
@@ -387,7 +387,7 @@ SF_ARN=$(aws stepfunctions create-state-machine \
 
 echo "State Machine: $SF_ARN"
 
-# Executar workflow
+# Run the workflow
 EXEC_ARN=$(aws stepfunctions start-execution \
   --state-machine-arn "$SF_ARN" \
   --input '{
@@ -398,7 +398,7 @@ EXEC_ARN=$(aws stepfunctions start-execution \
   }' \
   --query 'executionArn' --output text)
 
-# Aguardar e checar resultado
+# Wait and check the result
 sleep 10
 aws stepfunctions describe-execution \
   --execution-arn "$EXEC_ARN" \
@@ -408,17 +408,17 @@ aws stepfunctions describe-execution \
 
 ---
 
-## Limpeza
+## Cleanup
 
 ```bash
-# Deletar Step Functions
+# Delete Step Functions
 aws stepfunctions delete-state-machine --state-machine-arn "$SF_ARN"
 aws iam detach-role-policy \
   --role-name "lab-sf-express-role" \
   --policy-arn "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
 aws iam delete-role --role-name "lab-sf-express-role"
 
-# Destruir Terraform (SNS, SQS, Lambdas)
+# Destroy Terraform (SNS, SQS, Lambdas)
 terraform destroy -auto-approve
 
 rm -f /tmp/lambda_estoque.zip /tmp/lambda_email.zip
@@ -426,11 +426,11 @@ rm -f /tmp/lambda_estoque.zip /tmp/lambda_email.zip
 
 ---
 
-## O Que Você Aprendeu
+## What You Learned
 
-- **SNS Fan-out:** uma mensagem → múltiplos consumidores; filter policies filtram por atributo
-- **SQS como buffer:** desacopla SNS da Lambda, garante entrega mesmo se Lambda falhar
-- **DLQ:** após `maxReceiveCount` tentativas, mensagem vai para a DLQ — alertar via CloudWatch
-- **Step Functions Express:** ideal para alta frequência, < 5min; Standard: long-running, exatamente uma vez
-- **Retry + Catch:** Step Functions gerencia resiliência sem código de retry na Lambda
-- **Choice State:** equivalente a `if/else` no workflow — ramifica baseado em dados da execução
+- **SNS Fan-out:** one message → multiple consumers; filter policies filter by attribute
+- **SQS as a buffer:** decouples SNS from Lambda, guarantees delivery even if Lambda fails
+- **DLQ:** after `maxReceiveCount` attempts, the message goes to the DLQ — alert via CloudWatch
+- **Step Functions Express:** ideal for high frequency, < 5 min; Standard: long-running, exactly-once
+- **Retry + Catch:** Step Functions manages resilience without retry code in the Lambda
+- **Choice State:** equivalent to `if/else` in the workflow — branches based on execution data

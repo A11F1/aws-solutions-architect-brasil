@@ -1,40 +1,40 @@
-# Questões de Prova — Módulo 10: Containers (ECS, EKS, Fargate)
+# Exam Questions — Module 10: Containers (ECS, EKS, Fargate)
 
-<!-- Domínio SAA-C03: Design High-Performing Architectures / Design Resilient Architectures -->
+<!-- SAA-C03 Domain: Design High-Performing Architectures / Design Resilient Architectures -->
 
 ---
 
-**1.** Uma equipe quer rodar containers na AWS sem gerenciar servidores EC2. Qual combinação permite isso com ECS?
+**1.** A team wants to run containers on AWS without managing EC2 servers. Which combination allows this with ECS?
 
-- A) ECS com EC2 Launch Type
-- B) ECS com Fargate Launch Type
-- C) ECS com External Launch Type
-- D) ECS com Auto Scaling Groups manualmente configurados
+- A) ECS with EC2 Launch Type
+- B) ECS with Fargate Launch Type
+- C) ECS with External Launch Type
+- D) ECS with manually configured Auto Scaling Groups
 
 <details>
-<summary>Resposta</summary>
-**B — ECS com Fargate**
-Fargate é serverless: você define a task (CPU, RAM, imagem), e a AWS gerencia todo o host subjacente. Sem EC2 para provisionar, patchear ou dimensionar. EC2 Launch Type exige que você registre instâncias EC2 no cluster (você gerencia o fleet). External é para servidores on-prem (ECS Anywhere).
+<summary>Answer</summary>
+**B — ECS with Fargate**
+Fargate is serverless: you define the task (CPU, RAM, image), and AWS manages the entire underlying host. No EC2 to provision, patch, or size. The EC2 Launch Type requires you to register EC2 instances in the cluster (you manage the fleet). External is for on-prem servers (ECS Anywhere).
 </details>
 
 ---
 
-**2.** Qual é a diferença entre Task Role e Task Execution Role no ECS?
+**2.** What is the difference between Task Role and Task Execution Role in ECS?
 
-- A) Task Role é para o ECS agent; Execution Role é para o container
-- B) Task Role é para a aplicação dentro do container; Execution Role é para o ECS gerenciar a task (pull imagem ECR, push logs)
-- C) Ambas são equivalentes — distinção apenas de nomenclatura
-- D) Task Role se aplica ao EC2 Launch Type; Execution Role ao Fargate
+- A) Task Role is for the ECS agent; Execution Role is for the container
+- B) Task Role is for the application inside the container; Execution Role is for ECS to manage the task (pull ECR image, push logs)
+- C) Both are equivalent — the distinction is only naming
+- D) Task Role applies to the EC2 Launch Type; Execution Role to Fargate
 
 <details>
-<summary>Resposta</summary>
-**B — Correto**
-**Task Role**: políticas IAM para o que a **aplicação** pode fazer (ex: ler S3, escrever DynamoDB). Obtido via Task Metadata Endpoint (IMDS da task). **Task Execution Role**: para o ECS e Fargate agent: pull imagem do ECR, enviar logs para CloudWatch, ler Secrets Manager/SSM Parameter Store. Ambas são necessárias quando a aplicação acessa AWS e usa ECR.
+<summary>Answer</summary>
+**B — Correct**
+**Task Role**: IAM policies for what the **application** can do (e.g., read S3, write DynamoDB). Obtained via the Task Metadata Endpoint (the task's IMDS). **Task Execution Role**: for the ECS and Fargate agent: pull the image from ECR, send logs to CloudWatch, read Secrets Manager/SSM Parameter Store. Both are needed when the application accesses AWS and uses ECR.
 </details>
 
 ---
 
-**3.** Um container em ECS com launch type Fargate precisa que cada task tenha seu próprio Security Group para controle granular de rede. Qual modo de rede habilitar?
+**3.** A container in ECS with the Fargate launch type needs each task to have its own Security Group for granular network control. Which network mode should be enabled?
 
 - A) bridge mode
 - B) host mode
@@ -42,29 +42,29 @@ Fargate é serverless: você define a task (CPU, RAM, imagem), e a AWS gerencia 
 - D) none mode
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — awsvpc mode**
-Com `awsvpc`, cada task recebe **uma ENI (Elastic Network Interface) dedicada** com IP privado da VPC. Isso permite associar Security Groups individuais por task. É o **único modo suportado pelo Fargate**. `bridge` usa portas dinâmicas do host EC2. `host` usa a rede do host diretamente.
+With `awsvpc`, each task receives **a dedicated ENI (Elastic Network Interface)** with a private VPC IP. This lets you associate individual Security Groups per task. It is the **only mode supported by Fargate**. `bridge` uses dynamic ports of the EC2 host. `host` uses the host network directly.
 </details>
 
 ---
 
-**4.** Uma empresa usa ECS EC2 launch type e quer distribuir tráfego entre múltiplos containers na mesma instância EC2, com portas diferentes atribuídas dinamicamente. Qual configuração no ALB?
+**4.** A company uses the ECS EC2 launch type and wants to distribute traffic among multiple containers on the same EC2 instance, with different dynamically assigned ports. Which configuration on the ALB?
 
-- A) Application Load Balancer com target type "instance" e dynamic port mapping
-- B) Network Load Balancer com IP targets fixos
-- C) Application Load Balancer com target type "ip" no awsvpc mode
-- D) Classic Load Balancer com sticky sessions
+- A) Application Load Balancer with target type "instance" and dynamic port mapping
+- B) Network Load Balancer with fixed IP targets
+- C) Application Load Balancer with target type "ip" in awsvpc mode
+- D) Classic Load Balancer with sticky sessions
 
 <details>
-<summary>Resposta</summary>
-**A — ALB com dynamic port mapping (bridge mode)**
-No ECS EC2 com bridge mode, a nenhuma porta fixa é definida (ou usa hostPort=0) — o ECS atribui portas dinâmicas do host. O ALB com target type "instance" usa o ECS service para registrar automaticamente os pares (instância, porta dinâmica). Com awsvpc, usa-se target type "ip" (cada task tem seu IP único).
+<summary>Answer</summary>
+**A — ALB with dynamic port mapping (bridge mode)**
+In ECS EC2 with bridge mode, no fixed port is defined (or hostPort=0 is used) — ECS assigns dynamic host ports. The ALB with target type "instance" uses the ECS service to automatically register the (instance, dynamic port) pairs. With awsvpc, target type "ip" is used (each task has its own unique IP).
 </details>
 
 ---
 
-**5.** Qual componente do ECS define os containers (imagem Docker, CPU, RAM, variáveis de ambiente, volumes, IAM) de uma task?
+**5.** Which ECS component defines the containers (Docker image, CPU, RAM, environment variables, volumes, IAM) of a task?
 
 - A) ECS Service
 - B) ECS Cluster
@@ -72,157 +72,157 @@ No ECS EC2 com bridge mode, a nenhuma porta fixa é definida (ou usa hostPort=0)
 - D) Capacity Provider
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — Task Definition**
-Task Definition é o blueprint JSON que define: imagem(ns) Docker, CPU/RAM alocados, mapeamento de portas, volumes montados, variáveis de ambiente, Task Role, Task Execution Role, log driver, etc. É versionado. ECS Service usa a Task Definition para lançar e manter N tasks em execução.
+The Task Definition is the JSON blueprint that defines: Docker image(s), allocated CPU/RAM, port mapping, mounted volumes, environment variables, Task Role, Task Execution Role, log driver, etc. It is versioned. The ECS Service uses the Task Definition to launch and keep N tasks running.
 </details>
 
 ---
 
-**6.** Uma empresa usa Amazon EKS e quer rodar pods sem gerenciar worker nodes (serverless). Qual configuração usar?
+**6.** A company uses Amazon EKS and wants to run pods without managing worker nodes (serverless). Which configuration should it use?
 
-- A) EKS Managed Node Groups com Auto Scaling
-- B) EKS Self-managed Nodes com Spot instances
-- C) EKS com Fargate Profiles
-- D) EKS com AWS Batch integration
+- A) EKS Managed Node Groups with Auto Scaling
+- B) EKS Self-managed Nodes with Spot instances
+- C) EKS with Fargate Profiles
+- D) EKS with AWS Batch integration
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — EKS Fargate Profiles**
-Fargate Profiles no EKS definem quais pods (por namespace/labels) devem rodar no Fargate. AWS provê e gerencia o compute; você não vê nem gerencia EC2 nodes. Managed Node Groups gerenciam EC2 nodes automaticamente mas você ainda escolhe tipos, AMIs, etc. Fargate = zero node management.
+Fargate Profiles on EKS define which pods (by namespace/labels) should run on Fargate. AWS provisions and manages the compute; you do not see or manage EC2 nodes. Managed Node Groups manage EC2 nodes automatically but you still choose types, AMIs, etc. Fargate = zero node management.
 </details>
 
 ---
 
-**7.** Qual é o custo aproximado do control plane de um cluster EKS por hora?
+**7.** What is the approximate hourly cost of the control plane of an EKS cluster?
 
-- A) Gratuito — apenas os worker nodes são cobrados
-- B) $0,10/hora por cluster EKS (~$72/mês)
-- C) $0,50/hora por cluster
-- D) Cobrado por número de pods em execução
+- A) Free — only the worker nodes are charged
+- B) $0.10/hour per EKS cluster (~$72/month)
+- C) $0.50/hour per cluster
+- D) Charged by the number of running pods
 
 <details>
-<summary>Resposta</summary>
-**B — $0,10/hora por cluster (~$72/mês)**
-EKS cobra $0,10 por hora pelo control plane gerenciado (API server, etcd, etc.) — isso é fixo independente do número de nodes/pods. ECS não tem custo de cluster; apenas compute (EC2 ou Fargate). Isso é um diferencial importante ao escolher ECS vs EKS para workloads pequenos.
+<summary>Answer</summary>
+**B — $0.10/hour per cluster (~$72/month)**
+EKS charges $0.10 per hour for the managed control plane (API server, etcd, etc.) — this is fixed regardless of the number of nodes/pods. ECS has no cluster cost; only compute (EC2 or Fargate). This is an important differentiator when choosing ECS vs EKS for small workloads.
 </details>
 
 ---
 
-**8.** Uma imagem Docker foi enviada ao ECR. Como garantir que apenas as 10 imagens mais recentes por repositório sejam retidas (apagar imagens antigas automaticamente)?
+**8.** A Docker image was pushed to ECR. How do you ensure that only the 10 most recent images per repository are retained (automatically deleting old images)?
 
-- A) S3 Lifecycle Policy integrada ao ECR
-- B) ECR Lifecycle Policy com regra de contagem de imagens
-- C) Lambda com CloudWatch Events limpando imagens semanalmente
-- D) ECR Image Scanning com auto-delete de imagens antigas
+- A) S3 Lifecycle Policy integrated with ECR
+- B) ECR Lifecycle Policy with an image count rule
+- C) Lambda with CloudWatch Events cleaning images weekly
+- D) ECR Image Scanning with auto-delete of old images
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — ECR Lifecycle Policy**
-ECR Lifecycle Policies permitem criar regras como: manter apenas as N imagens mais recentes por tag prefix, apagar imagens não-tagueadas após X dias, etc. Aplicadas automaticamente pelo ECR sem computação adicional. Image Scanning detecta vulnerabilidades (CVEs) — não gerencia retenção.
+ECR Lifecycle Policies let you create rules such as: keep only the N most recent images per tag prefix, delete untagged images after X days, etc. Applied automatically by ECR with no additional compute. Image Scanning detects vulnerabilities (CVEs) — it does not manage retention.
 </details>
 
 ---
 
-**9.** O que é IRSA (IAM Roles for Service Accounts) no EKS?
+**9.** What is IRSA (IAM Roles for Service Accounts) in EKS?
 
-- A) Permite que pods EKS usem roles IAM sem precisar de credenciais hardcoded
-- B) Serviço para federar identidades IAM em múltiplos clusters EKS
-- C) Mecanismo de autenticação de nodes EKS com o control plane
-- D) Permite acesso cross-account entre clusters EKS
+- A) It lets EKS pods use IAM roles without needing hardcoded credentials
+- B) A service to federate IAM identities across multiple EKS clusters
+- C) An authentication mechanism for EKS nodes with the control plane
+- D) It allows cross-account access between EKS clusters
 
 <details>
-<summary>Resposta</summary>
-**A — IAM Roles para pods individuais**
-IRSA permite associar um IAM Role a um Kubernetes Service Account. Pods que usam esse Service Account recebem credenciais temporárias da AWS automaticamente (via OIDC). Isso é o equivalente ao Task Role no ECS — sem colocar credenciais em variáveis de ambiente ou usar o role do node inteiro para o pod.
+<summary>Answer</summary>
+**A — IAM Roles for individual pods**
+IRSA lets you associate an IAM Role with a Kubernetes Service Account. Pods that use that Service Account automatically receive temporary AWS credentials (via OIDC). This is the equivalent of the Task Role in ECS — without putting credentials in environment variables or using the entire node's role for the pod.
 </details>
 
 ---
 
-**10.** Uma empresa quer usar ECS ou EKS. A equipe tem pouca experiência mas precisa integrar com Kubernetes Helm Charts de terceiros. Qual escolher?
+**10.** A company wants to use ECS or EKS. The team has little experience but needs to integrate with third-party Kubernetes Helm Charts. Which should it choose?
 
-- A) ECS — mais simples e sem custo de cluster
-- B) EKS — suporte nativo a Kubernetes e ecossistema (Helm, Operators, etc.)
-- C) App Runner — elimina necessidade de orquestração
-- D) EC2 com Docker Compose
+- A) ECS — simpler and no cluster cost
+- B) EKS — native Kubernetes support and ecosystem (Helm, Operators, etc.)
+- C) App Runner — eliminates the need for orchestration
+- D) EC2 with Docker Compose
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — EKS**
-Se o requisito explícito é compatibilidade com Kubernetes (Helm Charts, Operators, kubectl, RBAC nativo), EKS é a escolha. ECS não é Kubernetes e não suporta Helm. Se a prioridade fosse simplicidade sem Kubernetes, ECS (especialmente + Fargate) seria melhor. A presença de Helm Charts como requisito determina EKS.
+If the explicit requirement is Kubernetes compatibility (Helm Charts, Operators, kubectl, native RBAC), EKS is the choice. ECS is not Kubernetes and does not support Helm. If the priority were simplicity without Kubernetes, ECS (especially + Fargate) would be better. The presence of Helm Charts as a requirement points to EKS.
 </details>
 
 ---
 
-**11.** Como funciona a escalabilidade automática de tasks no ECS com base em métricas da fila SQS?
+**11.** How does automatic task scaling work in ECS based on SQS queue metrics?
 
-- A) ECS Service Auto Scaling com Target Tracking Policy baseada em ApproximateNumberOfMessagesVisible
-- B) Lambda function que invoca ECS RunTask conforme a fila cresce
-- C) SQS Auto Scaling Group trigger para ECS Cluster
+- A) ECS Service Auto Scaling with a Target Tracking Policy based on ApproximateNumberOfMessagesVisible
+- B) A Lambda function that invokes ECS RunTask as the queue grows
+- C) SQS Auto Scaling Group trigger for the ECS Cluster
 - D) CloudWatch Alarm → SNS → ECS TaskSet update
 
 <details>
-<summary>Resposta</summary>
-**A — ECS Service Auto Scaling com Target Tracking**
-ECS Service Auto Scaling suporta Target Tracking, Step Scaling e Scheduled Scaling. Para SQS: crie uma CloudWatch Custom Metric com `ApproximateNumberOfMessagesVisible / número_de_tasks`, configure Target Tracking para manter essa proporção num alvo (ex: 10 mensagens por task). ECS escala tasks automaticamente com base na carga da fila.
+<summary>Answer</summary>
+**A — ECS Service Auto Scaling with Target Tracking**
+ECS Service Auto Scaling supports Target Tracking, Step Scaling, and Scheduled Scaling. For SQS: create a CloudWatch Custom Metric with `ApproximateNumberOfMessagesVisible / number_of_tasks`, and configure Target Tracking to keep that ratio at a target (e.g., 10 messages per task). ECS scales tasks automatically based on the queue load.
 </details>
 
 ---
 
-**12.** Qual serviço AWS é mais adequado para deploy rápido de uma aplicação web containerizada com zero configuração de infraestrutura (sem ECS, ALB, etc.)?
+**12.** Which AWS service is best suited for quickly deploying a containerized web application with zero infrastructure configuration (no ECS, ALB, etc.)?
 
 - A) ECS + Fargate + ALB (manual)
 - B) AWS Copilot CLI
 - C) AWS App Runner
-- D) Elastic Beanstalk com Docker
+- D) Elastic Beanstalk with Docker
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — AWS App Runner**
-App Runner é PaaS para containers web: você fornece a imagem ECR (ou código fonte) e App Runner cria e gerencia toda a infra (load balancer, auto-scaling, HTTPS, custom domain). Zero configuração de ECS/ALB. Elastic Beanstalk com Docker é mais flexível mas mais complexo. Copilot automatiza ECS/Fargate mas ainda expõe os componentes.
+App Runner is a PaaS for web containers: you provide the ECR image (or source code) and App Runner creates and manages all the infrastructure (load balancer, auto-scaling, HTTPS, custom domain). Zero ECS/ALB configuration. Elastic Beanstalk with Docker is more flexible but more complex. Copilot automates ECS/Fargate but still exposes the components.
 </details>
 
 ---
 
-**13.** Qual o mecanismo seguro recomendado para que um container ECS acesse credenciais de banco de dados armazenadas no Secrets Manager?
+**13.** What is the recommended secure mechanism for an ECS container to access database credentials stored in Secrets Manager?
 
-- A) Injetar a credencial como variável de ambiente hardcoded na Task Definition
-- B) Montar um volume EFS com o arquivo de credenciais
-- C) Referenciar o Secrets Manager ARN na Task Definition — ECS injeta automaticamente como env var ou arquivo
-- D) Lambda sidecar container que busca a credencial e passa via shared volume
+- A) Inject the credential as a hardcoded environment variable in the Task Definition
+- B) Mount an EFS volume with the credentials file
+- C) Reference the Secrets Manager ARN in the Task Definition — ECS automatically injects it as an env var or file
+- D) A Lambda sidecar container that fetches the credential and passes it via a shared volume
 
 <details>
-<summary>Resposta</summary>
-**C — Referenciamento de Secrets Manager na Task Definition**
-ECS suporta injeção de segredos diretamente da Task Definition: no campo `secrets`, referencie o ARN do Secrets Manager (ou SSM Parameter Store). O ECS Execution Role puxa o valor no momento do launch da task e injeta como variável de ambiente. Nenhuma credencial fica hardcoded. C é o padrão AWS recomendado.
+<summary>Answer</summary>
+**C — Referencing Secrets Manager in the Task Definition**
+ECS supports injecting secrets directly from the Task Definition: in the `secrets` field, reference the ARN of Secrets Manager (or SSM Parameter Store). The ECS Execution Role pulls the value at task launch and injects it as an environment variable. No credential is hardcoded. C is the recommended AWS standard.
 </details>
 
 ---
 
-**14.** O que diferencía ECS Capacity Provider de simplesmente usar Auto Scaling Groups manualmente no ECS EC2 Launch Type?
+**14.** What differentiates an ECS Capacity Provider from simply using Auto Scaling Groups manually on the ECS EC2 Launch Type?
 
-- A) Capacity Provider gerencia automaticamente o scaling de instâncias EC2 baseado em tasks pendentes, sem intervenção manual
-- B) Capacity Provider é exclusivo para Fargate, não funciona com EC2
-- C) Não há diferença — Capacity Provider é apenas um alias para ASG
-- D) Capacity Provider elimina a necessidade de Task Definitions
+- A) The Capacity Provider automatically manages EC2 instance scaling based on pending tasks, without manual intervention
+- B) The Capacity Provider is exclusive to Fargate and does not work with EC2
+- C) There is no difference — a Capacity Provider is just an alias for an ASG
+- D) The Capacity Provider eliminates the need for Task Definitions
 
 <details>
-<summary>Resposta</summary>
-**A — Gestão automática de scaling do cluster**
-Capacity Provider com Managed Scaling: escala automaticamente o Auto Scaling Group do cluster EC2 com base em tasks pendentes (bin packing otimizado). Sem CP, você gerencia manualmente ou configura scaling policies simples. Com CP, o ECS "sabe" quantas instâncias são necessárias para acomodar todas as tasks e escala proativamente antes de tasks ficarem pendentes.
+<summary>Answer</summary>
+**A — Automatic cluster scaling management**
+Capacity Provider with Managed Scaling: automatically scales the cluster's EC2 Auto Scaling Group based on pending tasks (optimized bin packing). Without a CP, you manage it manually or configure simple scaling policies. With a CP, ECS "knows" how many instances are needed to accommodate all tasks and scales proactively before tasks become pending.
 </details>
 
 ---
 
-**15.** Uma empresa quer verificar vulnerabilidades CVE nas imagens Docker no ECR antes que sejam deployadas. Qual configuração?
+**15.** A company wants to check for CVE vulnerabilities in Docker images in ECR before they are deployed. Which configuration?
 
-- A) SonarQube integrado ao ECR
-- B) ECR Image Scanning (Basic via Clair ou Enhanced via Amazon Inspector)
-- C) GuardDuty com ECR integration
-- D) CodeBuild step que executa Trivy manualmente
+- A) SonarQube integrated with ECR
+- B) ECR Image Scanning (Basic via Clair or Enhanced via Amazon Inspector)
+- C) GuardDuty with ECR integration
+- D) A CodeBuild step that runs Trivy manually
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — ECR Image Scanning**
-ECR oferece dois tipos de scanning: **Basic** (usa Clair open-source, verifica CVEs do OS) habilitado on-push ou manual. **Enhanced Scanning** (via Amazon Inspector) verifica CVEs no OS e em linguagens de programação (Python packages, Node.js modules, etc.) com resultados no Console Inspector e EventBridge events para automação. Amazon Inspector → ECR = scanning contínuo das imagens.
+ECR offers two types of scanning: **Basic** (uses open-source Clair, checks OS CVEs) enabled on-push or manually. **Enhanced Scanning** (via Amazon Inspector) checks CVEs in the OS and in programming languages (Python packages, Node.js modules, etc.) with results in the Inspector Console and EventBridge events for automation. Amazon Inspector → ECR = continuous image scanning.
 </details>

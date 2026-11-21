@@ -1,129 +1,129 @@
-# Flashcards — Módulo 11: Serverless, Lambda e API Gateway
+# Flashcards — Module 11: Serverless, Lambda and API Gateway
 
-> **Formato:** P = Pergunta | R = Resposta  
+> **Format:** Q = Question | A = Answer  
 > **Total:** 25 flashcards
 
 ---
 
-**P:** Quais são os 3 tipos de invocação do Lambda?  
-**R:** **Síncrona** (espera resposta — API GW, ALB, SDK); **Assíncrona** (não espera — S3 Events, SNS, EventBridge); **Event Source Mapping** (Lambda faz polling — SQS, Kinesis, DynamoDB Streams)
+**Q:** What are the 3 Lambda invocation types?  
+**A:** **Synchronous** (waits for a response — API GW, ALB, SDK); **Asynchronous** (doesn't wait — S3 Events, SNS, EventBridge); **Event Source Mapping** (Lambda polls — SQS, Kinesis, DynamoDB Streams)
 
 ---
 
-**P:** O que é Lambda concurrency e qual é o limite default por região?  
-**R:** Número de instâncias Lambda executando simultaneamente. Default: **1.000 concurrent executions por região** (pode aumentar via suporte). Cada invocação síncrona consome 1 unidade de concurrency enquanto executa.
+**Q:** What is Lambda concurrency and what is the default limit per Region?  
+**A:** The number of Lambda instances running simultaneously. Default: **1,000 concurrent executions per Region** (can be increased via support). Each synchronous invocation consumes 1 unit of concurrency while it runs.
 
 ---
 
-**P:** O que é Provisioned Concurrency no Lambda?  
-**R:** Pré-aquece instâncias Lambda, eliminando cold starts. Instâncias ficam "quentes" e prontas para responder imediatamente. Tem custo adicional (pago por hora de concurrency provisionada). Útil para aplicações latency-sensitive.
+**Q:** What is Provisioned Concurrency in Lambda?  
+**A:** Pre-warms Lambda instances, eliminating cold starts. Instances stay "warm" and ready to respond immediately. It has an additional cost (paid per hour of provisioned concurrency). Useful for latency-sensitive applications.
 
 ---
 
-**P:** O que acontece com mensagens SQS quando o Lambda retorna erro em Event Source Mapping?  
-**R:** Lambda faz retry automático. Após esgotar as tentativas (configurable maxReceiveCount na DLQ do SQS), a mensagem vai para a **Dead Letter Queue (DLQ)**. O Lambda não lida diretamente com DLQ de SQS — a DLQ é configurada no próprio SQS.
+**Q:** What happens to SQS messages when Lambda returns an error in an Event Source Mapping?  
+**A:** Lambda retries automatically. After exhausting the attempts (configurable maxReceiveCount on the SQS DLQ), the message goes to the **Dead Letter Queue (DLQ)**. Lambda does not handle the SQS DLQ directly — the DLQ is configured on SQS itself.
 
 ---
 
-**P:** O que é um Lambda Layer?  
-**R:** Arquivo ZIP contendo dependências (bibliotecas, runtime personalizado) compartilhado entre múltiplas funções. Até 5 layers por função. Tamanho máximo total (código + layers): 250 MB descomprimido. Evita repetição de dependências em cada deployment package.
+**Q:** What is a Lambda Layer?  
+**A:** A ZIP file containing dependencies (libraries, custom runtime) shared across multiple functions. Up to 5 layers per function. Maximum total size (code + layers): 250 MB unzipped. Avoids repeating dependencies in every deployment package.
 
 ---
 
-**P:** Qual é a diferença entre Lambda Proxy Integration e Custom Integration no API Gateway?  
-**R:** **Proxy Integration:** API GW passa o request HTTP inteiro para Lambda (headers, body, query params) como objeto `event`. Lambda retorna o response completo (statusCode, headers, body). **Custom Integration:** API GW transforma o request/response via mapping templates (VTL). Proxy é mais simples; custom oferece mais controle.
+**Q:** What is the difference between Lambda Proxy Integration and Custom Integration in API Gateway?  
+**A:** **Proxy Integration:** API GW passes the entire HTTP request to Lambda (headers, body, query params) as the `event` object. Lambda returns the complete response (statusCode, headers, body). **Custom Integration:** API GW transforms the request/response via mapping templates (VTL). Proxy is simpler; custom offers more control.
 
 ---
 
-**P:** O que é Lambda SnapStart e para qual runtime é aplicável?  
-**R:** Feature para reduzir cold start em Java 11+. Ao publicar uma nova versão, a AWS inicializa a função e tira um snapshot do estado. Novas invocações restauram o snapshot em vez de inicializar do zero — reduz cold start de segundos para milissegundos.
+**Q:** What is Lambda SnapStart and which runtime does it apply to?  
+**A:** A feature to reduce cold start on Java 11+. When publishing a new version, AWS initializes the function and takes a snapshot of the state. New invocations restore the snapshot instead of initializing from scratch — reducing cold start from seconds to milliseconds.
 
 ---
 
-**P:** Como o Lambda acessa recursos em uma VPC privada?  
-**R:** Configurando o Lambda com **VPC Configuration** (VPC ID, subnets, security group). A AWS cria uma ENI (Elastic Network Interface) na subnet especificada. Lambda ganha IP privado na VPC e pode acessar RDS, ElastiCache etc. Requer: NAT Gateway para o Lambda ter acesso à internet.
+**Q:** How does Lambda access resources in a private VPC?  
+**A:** By configuring Lambda with **VPC Configuration** (VPC ID, subnets, security group). AWS creates an ENI (Elastic Network Interface) in the specified subnet. Lambda gets a private IP in the VPC and can access RDS, ElastiCache, etc. Requires: a NAT Gateway for Lambda to have internet access.
 
 ---
 
-**P:** Quais são os 3 tipos de API no API Gateway?  
-**R:** **REST API** (funcionalidade completa, staging, caching, throttling por stage); **HTTP API** (mais simples, mais barato, menor latência, suporta JWT/OAuth nativo); **WebSocket API** (conexões bidirecionais persistentes, para chat, notificações em tempo real).
+**Q:** What are the 3 API types in API Gateway?  
+**A:** **REST API** (full functionality, staging, caching, throttling per stage); **HTTP API** (simpler, cheaper, lower latency, supports native JWT/OAuth); **WebSocket API** (persistent bidirectional connections, for chat and real-time notifications).
 
 ---
 
-**P:** O que é throttling no API Gateway e como funciona?  
-**R:** Limitar requests para proteger o backend. Limites: **10.000 requests/segundo** por conta (default) + **5.000 burst** concorrente. Por stage/método pode ser configurado separadamente. Quando excede: HTTP 429 (Too Many Requests). Pode aumentar conta via suporte.
+**Q:** What is throttling in API Gateway and how does it work?  
+**A:** Limiting requests to protect the backend. Limits: **10,000 requests/second** per account (default) + **5,000 concurrent burst**. It can be configured separately per stage/method. When exceeded: HTTP 429 (Too Many Requests). The account limit can be increased via support.
 
 ---
 
-**P:** Que tipo de autorizador Lambda verifica no API Gateway?  
-**R:** **Token-based:** recebe token (JWT, OAuth) no header Authorization e retorna IAM policy (Allow/Deny). **Request-based:** recebe headers, query params e pode usar qualquer lógica de autenticação. Resultado é cacheado por TTL (até 3600s) para performance.
+**Q:** What does a Lambda authorizer check in API Gateway?  
+**A:** **Token-based:** receives a token (JWT, OAuth) in the Authorization header and returns an IAM policy (Allow/Deny). **Request-based:** receives headers and query params and can use any authentication logic. The result is cached by TTL (up to 3600s) for performance.
 
 ---
 
-**P:** O que é um Lambda Alias e como difere de uma Version?  
-**R:** **Version:** snapshot imutável de código + configuração com ARN único (ex: `function:1`). **Alias:** ponteiro nomeado (ex: `PROD`) que aponta para uma ou duas versions. Aliases suportam **canary deployment** (aliasName:weight para dividir tráfego — ex: 90% v1, 10% v2).
+**Q:** What is a Lambda Alias and how does it differ from a Version?  
+**A:** **Version:** an immutable snapshot of code + configuration with a unique ARN (e.g., `function:1`). **Alias:** a named pointer (e.g., `PROD`) that points to one or two versions. Aliases support **canary deployment** (aliasName:weight to split traffic — e.g., 90% v1, 10% v2).
 
 ---
 
-**P:** Qual é o tempo máximo de execução do Lambda?  
-**R:** **15 minutos** (900 segundos). Para processos mais longos: usar Step Functions (orquestração de workflows), ECS/Fargate ou EC2.
+**Q:** What is the maximum Lambda execution time?  
+**A:** **15 minutes** (900 seconds). For longer processes: use Step Functions (workflow orchestration), ECS/Fargate, or EC2.
 
 ---
 
-**P:** Como o API Gateway suporta CORS?  
-**R:** Configurando o CORS no API Gateway para responder às pre-flight OPTIONS requests com headers `Access-Control-Allow-Origin`, `Access-Control-Allow-Headers`, `Access-Control-Allow-Methods`. Para Proxy Integration, a Lambda também deve retornar os headers CORS nas respostas.
+**Q:** How does API Gateway support CORS?  
+**A:** By configuring CORS in API Gateway to respond to pre-flight OPTIONS requests with the headers `Access-Control-Allow-Origin`, `Access-Control-Allow-Headers`, `Access-Control-Allow-Methods`. For Proxy Integration, the Lambda must also return the CORS headers in its responses.
 
 ---
 
-**P:** O que é o AWS SAM (Serverless Application Model)?  
-**R:** Framework que simplifica deploy de aplicações serverless. Sintaxe simplificada de CloudFormation: `AWS::Serverless::Function`, `AWS::Serverless::Api`. Comandos: `sam build`, `sam deploy`, `sam local invoke` (teste local com Docker). Gera CloudFormation stack por baixo.
+**Q:** What is AWS SAM (Serverless Application Model)?  
+**A:** A framework that simplifies deploying serverless applications. Simplified CloudFormation syntax: `AWS::Serverless::Function`, `AWS::Serverless::Api`. Commands: `sam build`, `sam deploy`, `sam local invoke` (local testing with Docker). Generates a CloudFormation stack under the hood.
 
 ---
 
-**P:** O que é a Lambda Execution Role?  
-**R:** IAM Role assumida pela função Lambda durante a execução. Define quais APIs AWS a função pode chamar (ex: `dynamodb:PutItem`, `s3:GetObject`). A função assume a Role automaticamente — não precisa de credentials explícitas no código.
+**Q:** What is the Lambda Execution Role?  
+**A:** The IAM Role assumed by the Lambda function during execution. It defines which AWS APIs the function can call (e.g., `dynamodb:PutItem`, `s3:GetObject`). The function assumes the Role automatically — no explicit credentials are needed in the code.
 
 ---
 
-**P:** O que acontece durante um Lambda cold start?  
-**R:** Primeira invocação (ou após período sem uso): AWS precisa alocar infraestrutura, baixar código, inicializar runtime, executar código fora do handler. Adiciona latência (milissegundos a segundos, maior para Java). Soluções: Provisioned Concurrency, SnapStart (Java), manter código de inicialização fora do handler.
+**Q:** What happens during a Lambda cold start?  
+**A:** First invocation (or after a period of no use): AWS needs to allocate infrastructure, download the code, initialize the runtime, and run the code outside the handler. Adds latency (milliseconds to seconds, higher for Java). Solutions: Provisioned Concurrency, SnapStart (Java), keeping initialization code outside the handler.
 
 ---
 
-**P:** Quais são os integradores nativos do API Gateway além do Lambda?  
-**R:** HTTP Integration (redireciona para endpoint HTTP externo), AWS Service Integration (chama diretamente serviços AWS — ex: SQS, DynamoDB sem Lambda intermediário), Mock Integration (retorna resposta estática), VPC Link (integra com recursos em VPC privada via NLB).
+**Q:** What native integrations does API Gateway have besides Lambda?  
+**A:** HTTP Integration (forwards to an external HTTP endpoint), AWS Service Integration (calls AWS services directly — e.g., SQS, DynamoDB without an intermediary Lambda), Mock Integration (returns a static response), VPC Link (integrates with resources in a private VPC via NLB).
 
 ---
 
-**P:** O que é o API Gateway Deployment Stage e para que serve?  
-**R:** Snapshot deployado da API com URL única (ex: `https://api-id.execute-api.us-east-1.amazonaws.com/prod`). Permite múltiplos ambientes: dev, staging, prod. Cada stage tem configurações independentes: throttling, cache, variáveis de stage (passadas para Lambda/integração), logging.
+**Q:** What is an API Gateway Deployment Stage and what is it for?  
+**A:** A deployed snapshot of the API with a unique URL (e.g., `https://api-id.execute-api.us-east-1.amazonaws.com/prod`). Enables multiple environments: dev, staging, prod. Each stage has independent settings: throttling, cache, stage variables (passed to Lambda/integration), logging.
 
 ---
 
-**P:** Como o Lambda processa múltiplas mensagens do SQS simultaneamente?  
-**R:** Event Source Mapping processa mensagens em **batches** (até 10.000). Lambda recebe um batch de mensagens (batch size configurável). Um erro em qualquer mensagem do batch pode fazer todas serem retornadas para a fila. Solução: **Partial Batch Response** (reportar individualmente quais mensagens falharam).
+**Q:** How does Lambda process multiple SQS messages simultaneously?  
+**A:** Event Source Mapping processes messages in **batches** (up to 10,000). Lambda receives a batch of messages (configurable batch size). An error on any message in the batch can cause all of them to be returned to the queue. Solution: **Partial Batch Response** (individually report which messages failed).
 
 ---
 
-**P:** O que é o Lambda Destinations e quando usar em vez de DLQ?  
-**R:** Para invocações **assíncronas**: configura destinos de sucesso e falha (SQS, SNS, EventBridge, outra Lambda). Mais expressivo que DLQ (inclui contexto de invocação + input original + output/erro). DLQ apenas captura mensagens falhas sem resultado. Lambda Destinations é o padrão moderno.
+**Q:** What are Lambda Destinations and when should you use them instead of a DLQ?  
+**A:** For **asynchronous** invocations: configures success and failure destinations (SQS, SNS, EventBridge, another Lambda). More expressive than a DLQ (includes invocation context + original input + output/error). A DLQ only captures failed messages without the result. Lambda Destinations is the modern standard.
 
 ---
 
-**P:** Qual é o limite de tamanho do payload de invocação do Lambda?  
-**R:** **Síncrono:** 6 MB (request payload) + 6 MB (response payload). **Assíncrono:** 256 KB (event payload). Para payloads maiores: salvar dados no S3 e passar o S3 key como evento.
+**Q:** What is the size limit of the Lambda invocation payload?  
+**A:** **Synchronous:** 6 MB (request payload) + 6 MB (response payload). **Asynchronous:** 256 KB (event payload). For larger payloads: save the data to S3 and pass the S3 key as the event.
 
 ---
 
-**P:** O que é o API Gateway Usage Plan?  
-**R:** Define limite de uso por API key: throttling (requests/segundo, burst) e quota (requests/dia ou semana ou mês). Permite monetizar APIs (diferentes planos para diferentes tier de clientes), controlar uso por cliente e prevenir abuse.
+**Q:** What is an API Gateway Usage Plan?  
+**A:** Defines the usage limit per API key: throttling (requests/second, burst) and quota (requests per day, week, or month). Lets you monetize APIs (different plans for different customer tiers), control usage per customer, and prevent abuse.
 
 ---
 
-**P:** O que é Lambda@Edge?  
-**R:** Executa código Lambda em CloudFront Points of Presence (edge locations) — próximo do usuário. Use cases: URL rewrite, A/B testing, autenticação no edge, customizar headers. Limitações vs Lambda regular: menor timeout (5s viewer, 30s origin), menor memória máx, sem VPC access, regiões limitadas.
+**Q:** What is Lambda@Edge?  
+**A:** Runs Lambda code at CloudFront Points of Presence (edge locations) — close to the user. Use cases: URL rewrite, A/B testing, authentication at the edge, customizing headers. Limitations vs regular Lambda: lower timeout (5s viewer, 30s origin), lower max memory, no VPC access, limited Regions.
 
 ---
 
-**P:** Como o Lambda Function URL difere do API Gateway?  
-**R:** Function URL: HTTPS endpoint dedicado diretamente para a função (sem API Gateway). Mais simples, menor latência, sem custo de API Gateway. Limitações: sem throttling avançado, sem cache, sem uso de múltiplos estágios, sem integração nativa com WAF (exceto via CloudFront). Use para webhooks simples ou funções com tráfego ocasional.
+**Q:** How does a Lambda Function URL differ from API Gateway?  
+**A:** Function URL: a dedicated HTTPS endpoint directly for the function (no API Gateway). Simpler, lower latency, no API Gateway cost. Limitations: no advanced throttling, no cache, no multiple stages, no native WAF integration (except via CloudFront). Use for simple webhooks or functions with occasional traffic.

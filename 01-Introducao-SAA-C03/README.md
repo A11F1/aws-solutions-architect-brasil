@@ -1,65 +1,65 @@
-# 01 Introdução SAA-C03
+# 01 Introduction to SAA-C03
 
-## 📋 Índice
-- [Objetivos do Módulo](#-objetivos-do-módulo)
-- [Conceitos Fundamentais](#-conceitos-fundamentais)
-- [Arquitetura e Componentes](#-arquitetura-e-componentes)
-- [Configurações Importantes para o Exame](#-configurações-importantes-para-o-exame)
-- [Comparativo de Serviços](#-comparativo-de-serviços)
-- [Dicas e Armadilhas do Exame](#-dicas-e-armadilhas-do-exame)
-- [Para o Exame](#-para-o-exame)
-- [Links Relacionados](#-links-relacionados)
+## 📋 Table of Contents
+- [Module Objectives](#-module-objectives)
+- [Core Concepts](#-core-concepts)
+- [Architecture and Components](#-architecture-and-components)
+- [Important Settings for the Exam](#-important-settings-for-the-exam)
+- [Service Comparison](#-service-comparison)
+- [Exam Tips and Pitfalls](#-exam-tips-and-pitfalls)
+- [For the Exam](#-for-the-exam)
+- [Related Links](#-related-links)
 
-## 🎯 Objetivos do Módulo
+## 🎯 Module Objectives
 
-Ao terminar este módulo, você deve conseguir:
+By the end of this module, you should be able to:
 
-- entender exatamente o que o exame SAA-C03 mede e como os quatro domínios aparecem nas questões
-- diferenciar o nível de profundidade exigido no SAA-C03 em relação ao CLF-C02
-- montar um plano de estudos de 8 semanas sem perder tempo com assuntos de baixo retorno
-- reconhecer os serviços com maior probabilidade de aparecer nas provas e em quais contextos eles são cobrados
-- pensar como arquiteto de soluções: identificar requisito, restrição, risco, trade-off e decisão mais adequada ao cenário
+- understand exactly what the SAA-C03 exam measures and how the four domains show up in the questions
+- tell apart the depth required in the SAA-C03 compared to the CLF-C02
+- build an 8-week study plan without wasting time on low-return topics
+- recognize the services most likely to appear on the exam and in which contexts they are tested
+- think like a solutions architect: identify the requirement, constraint, risk, trade-off, and the decision best suited to the scenario
 
-## 📚 Conceitos Fundamentais
+## 📚 Core Concepts
 
-O exame AWS Certified Solutions Architect – Associate, código SAA-C03, não é uma prova de definição decorada. Ele avalia a sua capacidade de tomar decisões arquiteturais em cenários realistas. Em vez de perguntar apenas o que um serviço faz, a AWS normalmente apresenta uma necessidade de negócio, uma restrição operacional e uma exigência técnica. A partir disso, você precisa apontar a alternativa que melhor equilibra disponibilidade, desempenho, segurança e custo. Essa mudança de foco é o que separa o SAA-C03 de exames mais introdutórios.
+The AWS Certified Solutions Architect – Associate exam, code SAA-C03, is not a test of memorized definitions. It evaluates your ability to make architectural decisions in realistic scenarios. Instead of merely asking what a service does, AWS normally presents a business need, an operational constraint, and a technical requirement. From that, you need to pick the option that best balances availability, performance, security, and cost. This shift in focus is what separates the SAA-C03 from more introductory exams.
 
-Os quatro domínios da prova ajudam a organizar esse raciocínio. O primeiro é Design Resilient Architectures, com 30% do exame. É aqui que entram multi-AZ, multi-region, desacoplamento, filas, replicação, backup, disaster recovery e tolerância a falhas. Em muitas questões, a resposta correta não é a tecnologia mais avançada, mas sim a que reduz ponto único de falha com menor complexidade operacional. Por isso, entender bem Route 53, Load Balancers, Auto Scaling, S3 Replication, RDS Multi-AZ, Aurora e padrões com SQS ou EventBridge é fundamental.
+The four exam domains help organize this reasoning. The first is Design Resilient Architectures, at 30% of the exam. This is where multi-AZ, multi-region, decoupling, queues, replication, backup, disaster recovery, and fault tolerance come in. In many questions, the correct answer is not the most advanced technology, but the one that removes a single point of failure with the least operational complexity. That is why understanding Route 53, Load Balancers, Auto Scaling, S3 Replication, RDS Multi-AZ, Aurora, and patterns with SQS or EventBridge is essential.
 
-O segundo domínio é Design High-Performing Architectures, com 28%. Esse bloco mede a sua habilidade de selecionar a opção de compute, banco, rede ou armazenamento mais adequada para throughput, latência, escalabilidade e padrão de acesso. É comum a prova comparar EC2 com Lambda, RDS com DynamoDB, CloudFront com Global Accelerator, gp3 com io2, ElastiCache Redis com Memcached, além de pedir ajustes de performance para S3, Kinesis e Athena. O ponto central aqui é entender perfil de workload. A AWS sempre recompensa respostas que alinham o tipo de serviço com a característica do tráfego ou da aplicação.
+The second domain is Design High-Performing Architectures, at 28%. This block measures your ability to select the most suitable compute, database, network, or storage option for throughput, latency, scalability, and access pattern. The exam commonly compares EC2 with Lambda, RDS with DynamoDB, CloudFront with Global Accelerator, gp3 with io2, ElastiCache Redis with Memcached, and also asks for performance tuning for S3, Kinesis, and Athena. The central point here is understanding the workload profile. AWS always rewards answers that align the type of service with the characteristics of the traffic or the application.
 
-O terceiro domínio é Design Secure Applications and Architectures, com 24%. Não basta conhecer IAM em nível superficial. Você precisa dominar diferença entre role, policy, resource-based policy, SCP, permission boundary, trust policy e KMS key policy. Também precisa saber quando usar Secrets Manager em vez de Parameter Store, quando preferir VPC Endpoint a tráfego público, como CloudTrail e Config se complementam e qual serviço reduz superfície de ataque sem aumentar demais a operação. Muitas questões de segurança são, na verdade, questões de desenho: como dar acesso mínimo necessário, como isolar tráfego, como criptografar dados em repouso e em trânsito e como auditar mudanças.
+The third domain is Design Secure Applications and Architectures, at 24%. Knowing IAM at a superficial level is not enough. You need to master the differences between role, policy, resource-based policy, SCP, permission boundary, trust policy, and KMS key policy. You also need to know when to use Secrets Manager instead of Parameter Store, when to prefer a VPC Endpoint over public traffic, how CloudTrail and Config complement each other, and which service reduces the attack surface without adding too much operational burden. Many security questions are actually design questions: how to grant the minimum required access, how to isolate traffic, how to encrypt data at rest and in transit, and how to audit changes.
 
-O quarto domínio é Design Cost-Optimized Architectures, com 18%. Embora tenha o menor peso, ele aparece cruzado com todos os outros. A AWS gosta de perguntar qual solução mantém o requisito com menor custo operacional, menor esforço de administração ou melhor aderência ao consumo real. Savings Plans, instâncias Spot, S3 Intelligent-Tiering, serverless, classes adequadas de armazenamento, desligamento automatizado e serviços gerenciados surgem o tempo todo. A armadilha comum é escolher a arquitetura mais poderosa, porém excessiva para a necessidade apresentada.
+The fourth domain is Design Cost-Optimized Architectures, at 18%. Although it has the lowest weight, it cuts across all the others. AWS likes to ask which solution meets the requirement with the lowest operational cost, the least administration effort, or the best fit to actual consumption. Savings Plans, Spot instances, S3 Intelligent-Tiering, serverless, appropriate storage classes, automated shutdown, and managed services come up all the time. The common trap is choosing the most powerful architecture, yet one that is excessive for the stated need.
 
-Comparando com o CLF-C02, a diferença mais importante não é a quantidade de serviços, mas a profundidade da decisão. No CLF-C02, bastava saber que o Amazon S3 é armazenamento de objetos. No SAA-C03, você precisa saber qual classe usar, como configurar lifecycle, quando habilitar versioning, quando usar CRR, quando aplicar pre-signed URL, quando preferir um VPC endpoint e como isso impacta segurança e custo. O mesmo vale para EC2, VPC, IAM, RDS, DynamoDB e CloudFront. O exame assume que você já conhece o catálogo em alto nível; agora ele quer que você desenhe soluções coerentes.
+Compared with the CLF-C02, the most important difference is not the number of services, but the depth of the decision. In the CLF-C02, it was enough to know that Amazon S3 is object storage. In the SAA-C03, you need to know which class to use, how to configure lifecycle, when to enable versioning, when to use CRR, when to apply a pre-signed URL, when to prefer a VPC endpoint, and how this impacts security and cost. The same applies to EC2, VPC, IAM, RDS, DynamoDB, and CloudFront. The exam assumes you already know the catalog at a high level; now it wants you to design coherent solutions.
 
-Uma forma prática de estudar é pensar em camadas. A primeira camada é de base: IAM, VPC, EC2, S3, RDS, Route 53 e CloudWatch. A segunda é de padrões: alta disponibilidade, escalabilidade, cache, desacoplamento, streaming e observabilidade. A terceira é de decisão: escolher entre serviços que resolvem problemas parecidos, avaliando gerenciamento, elasticidade, latência, compliance e custo. Quando a prova menciona “mínimo esforço operacional”, por exemplo, ela está apontando para serviços gerenciados. Quando menciona “baixa latência global para HTTP”, CloudFront tende a entrar em cena. Quando fala em “TCP/UDP global com IP fixo”, o Global Accelerator passa a fazer mais sentido que CloudFront.
+A practical way to study is to think in layers. The first layer is the foundation: IAM, VPC, EC2, S3, RDS, Route 53, and CloudWatch. The second is patterns: high availability, scalability, caching, decoupling, streaming, and observability. The third is decision-making: choosing between services that solve similar problems, evaluating management, elasticity, latency, compliance, and cost. When the exam mentions "minimal operational effort," for example, it is pointing to managed services. When it mentions "low global latency for HTTP," CloudFront tends to come into play. When it talks about "global TCP/UDP with a fixed IP," Global Accelerator makes more sense than CloudFront.
 
-O exame também exige raciocínio sobre trade-offs. Não existe resposta perfeita. Uma arquitetura multi-region é mais resiliente, mas mais cara e mais complexa. Um banco relacional resolve consistência transacional, mas pode não escalar horizontalmente como uma base NoSQL. Uma solução serverless reduz administração, porém pode exigir cuidado com cold starts, limites de timeout e integração com VPC. O arquiteto não pergunta apenas “funciona?”. Ele pergunta “funciona dentro do requisito, com risco aceitável, custo coerente e operação sustentável?”. Esse é o modelo mental que você deve treinar desde o primeiro módulo.
+The exam also requires reasoning about trade-offs. There is no perfect answer. A multi-region architecture is more resilient, but more expensive and more complex. A relational database provides transactional consistency, but may not scale horizontally like a NoSQL database. A serverless solution reduces administration, but may require attention to cold starts, timeout limits, and VPC integration. The architect does not just ask "does it work?". They ask "does it work within the requirement, with acceptable risk, reasonable cost, and sustainable operation?". This is the mental model you should train from the first module.
 
-Outro ponto importante é a leitura atenta do enunciado. Muitas alternativas da AWS são tecnicamente válidas, mas uma delas atende melhor ao detalhe escondido no cenário: requisito de compliance, equipe pequena, latência entre regiões, tráfego previsível, necessidade de auditoria ou orçamento restrito. Em geral, as palavras que definem a resposta correta são: “most cost-effective”, “least operational overhead”, “highly available”, “fault tolerant”, “securely”, “near real-time”, “serverless” e “with minimal changes”. Quem ignora esses qualificadores cai nas pegadinhas.
+Another important point is reading the question statement carefully. Many AWS options are technically valid, but one of them better meets the detail hidden in the scenario: a compliance requirement, a small team, latency between regions, predictable traffic, a need for auditing, or a tight budget. In general, the words that define the correct answer are: "most cost-effective", "least operational overhead", "highly available", "fault tolerant", "securely", "near real-time", "serverless", and "with minimal changes". Those who ignore these qualifiers fall into the traps.
 
-Para um cronograma realista de 8 semanas, a melhor estratégia é alternar profundidade e revisão. Estude um módulo técnico por vez, feche com questões e volte aos tópicos fracos no dia seguinte. No fim de cada semana, revise usando flashcards e cheatsheets. Na reta final, use os estudos de caso para conectar serviços e simular a forma como a prova mistura temas. O SAA-C03 raramente cobra um serviço de forma isolada; ele cobra interação entre serviços em um contexto de arquitetura.
+For a realistic 8-week schedule, the best strategy is to alternate depth and review. Study one technical module at a time, finish with questions, and go back to weak topics the next day. At the end of each week, review using flashcards and cheatsheets. In the final stretch, use the case studies to connect services and simulate how the exam mixes topics. The SAA-C03 rarely tests a service in isolation; it tests the interaction between services in an architecture context.
 
-Os serviços mais recorrentes merecem atenção desproporcional, porque aparecem em boa parte da prova: EC2, Auto Scaling, ELB, S3, VPC, IAM, RDS, Aurora, DynamoDB, Lambda, API Gateway, SQS, SNS, EventBridge, Route 53, CloudFront, CloudWatch, CloudTrail e KMS. Se você domina bem esse grupo, já cobre a maior parte das decisões cobradas. Serviços menos frequentes como Snow Family, Transfer Family, Neptune, QLDB, App Runner ou Bedrock entram mais como escolha contextual. O erro comum é gastar energia demais em serviços raros e de menos nos blocos centrais.
+The most recurring services deserve disproportionate attention, because they appear in a large part of the exam: EC2, Auto Scaling, ELB, S3, VPC, IAM, RDS, Aurora, DynamoDB, Lambda, API Gateway, SQS, SNS, EventBridge, Route 53, CloudFront, CloudWatch, CloudTrail, and KMS. If you master this group well, you already cover most of the decisions tested. Less frequent services such as Snow Family, Transfer Family, Neptune, QLDB, App Runner, or Bedrock come up more as contextual choices. The common mistake is spending too much energy on rare services and too little on the core blocks.
 
-Em resumo, o SAA-C03 mede maturidade arquitetural em nível associate. Você não precisa ser especialista em todos os serviços, mas precisa reconhecer rapidamente qual padrão a AWS está tentando avaliar e escolher a solução mais equilibrada. Este repositório foi estruturado exatamente para isso: consolidar fundamentos, treinar leitura de cenários e transformar catálogo de serviços em decisão de arquitetura.
+In summary, the SAA-C03 measures architectural maturity at the associate level. You do not need to be an expert in every service, but you need to quickly recognize which pattern AWS is trying to assess and choose the most balanced solution. This repository was structured exactly for that: consolidating fundamentals, training scenario reading, and turning the service catalog into architecture decisions.
 
-## 🏗️ Arquitetura e Componentes
+## 🏗️ Architecture and Components
 
-O diagrama abaixo representa a forma como o exame costuma conectar os principais blocos de decisão arquitetural:
+The diagram below represents how the exam usually connects the main architectural decision blocks:
 
 ```text
                  +-----------------------+
-                 |  Requisitos de Negócio|
-                 |  HA | Segurança | Custo|
+                 |  Business Requirements|
+                 |  HA | Security | Cost |
                  +-----------+-----------+
                              |
                              v
                  +-----------------------+
-                 |   Decisão Arquitetural |
-                 | Trade-offs e restrições|
+                 |  Architectural Decision|
+                 | Trade-offs/constraints |
                  +-----------+-----------+
                              |
       +----------------------+-----------------------+
@@ -74,62 +74,62 @@ O diagrama abaixo representa a forma como o exame costuma conectar os principais
                              |
                              v
                  +-----------------------+
-                 | Segurança e Operação  |
+                 | Security & Operations |
                  | IAM KMS CW CT Config  |
                  +-----------------------+
 ```
 
-## ⚙️ Configurações Importantes para o Exame
+## ⚙️ Important Settings for the Exam
 
-| Item | Valor / Peso | Por que importa |
+| Item | Value / Weight | Why it matters |
 |---|---:|---|
-| Questões | 65 | Define o ritmo de prova e priorização de tempo |
-| Tempo total | 130 minutos | Média próxima de 2 minutos por questão |
-| Domínio Resilient | 30% | Maior peso, aparece em HA, DR e desacoplamento |
-| Domínio High-Performing | 28% | Forte presença em EC2, armazenamento e bancos |
-| Domínio Secure | 24% | IAM, KMS, VPC e auditoria aparecem bastante |
-| Domínio Cost-Optimized | 18% | Menor peso formal, mas presente em quase todas as comparações |
-| Região padrão para labs | us-east-1 | Maior compatibilidade e menor atrito com exemplos |
-| Palavra-chave “least operational overhead” | Alta prioridade | Normalmente favorece serviços gerenciados |
-| Palavra-chave “multi-Region” | Alta prioridade | Costuma eliminar respostas apenas multi-AZ |
-| Palavra-chave “near real-time” | Alta prioridade | Pode indicar streaming, filas ou replicação contínua |
+| Questions | 65 | Sets the exam pace and time prioritization |
+| Total time | 130 minutes | Average close to 2 minutes per question |
+| Resilient domain | 30% | Highest weight, appears in HA, DR, and decoupling |
+| High-Performing domain | 28% | Strong presence in EC2, storage, and databases |
+| Secure domain | 24% | IAM, KMS, VPC, and auditing appear frequently |
+| Cost-Optimized domain | 18% | Lowest formal weight, but present in almost every comparison |
+| Default region for labs | us-east-1 | Greatest compatibility and least friction with examples |
+| Keyword "least operational overhead" | High priority | Usually favors managed services |
+| Keyword "multi-Region" | High priority | Tends to eliminate multi-AZ-only answers |
+| Keyword "near real-time" | High priority | May indicate streaming, queues, or continuous replication |
 
-## 🔄 Comparativo de Serviços
+## 🔄 Service Comparison
 
-| Situação de prova | Opção mais forte | Alternativa comum | Regra prática |
+| Exam situation | Strongest option | Common alternative | Rule of thumb |
 |---|---|---|---|
-| Aplicação HTTP global com cache | CloudFront | Global Accelerator | CloudFront é edge cache e CDN; GA acelera TCP/UDP ou HTTP sem cache |
-| API orientada a eventos | EventBridge | SNS | EventBridge é melhor para roteamento por regra e múltiplos produtores |
-| Banco relacional com HA gerenciada | RDS Multi-AZ | EC2 self-managed DB | Para exame, a AWS quase sempre prefere o serviço gerenciado |
-| Latência ultrabaixa com acesso key-value previsível | DynamoDB | RDS | Use DynamoDB quando escalabilidade horizontal é prioridade |
-| Compute com administração mínima e tráfego variável | Lambda | EC2 | Lambda tende a vencer se o cenário tolera limites serverless |
-| Criptografia de segredo com rotação nativa | Secrets Manager | Parameter Store | Secrets Manager é a resposta mais forte para segredos sensíveis rotacionáveis |
+| Global HTTP application with caching | CloudFront | Global Accelerator | CloudFront is an edge cache and CDN; GA accelerates TCP/UDP or HTTP without caching |
+| Event-driven API | EventBridge | SNS | EventBridge is better for rule-based routing and multiple producers |
+| Relational database with managed HA | RDS Multi-AZ | EC2 self-managed DB | For the exam, AWS almost always prefers the managed service |
+| Ultra-low latency with predictable key-value access | DynamoDB | RDS | Use DynamoDB when horizontal scalability is a priority |
+| Compute with minimal administration and variable traffic | Lambda | EC2 | Lambda tends to win if the scenario tolerates serverless limits |
+| Secret encryption with native rotation | Secrets Manager | Parameter Store | Secrets Manager is the strongest answer for sensitive, rotatable secrets |
 
-## 💡 Dicas e Armadilhas do Exame
+## 💡 Exam Tips and Pitfalls
 
-- Multi-AZ não significa multi-region. Se o requisito fala em desastre regional, pense além de uma única região.
-- “Mais seguro” nem sempre significa “mais complexo”. Em muitos cenários, a AWS privilegia serviço gerenciado com integração nativa a IAM e KMS.
-- “Menor custo” não é equivalente a “mais barato no curto prazo”. A prova considera custo total de operação, manutenção e risco.
-- Se a alternativa exige administração manual de servidores e existe opção gerenciada que atende ao requisito, a opção gerenciada costuma ganhar.
-- Leia com atenção o tipo de tráfego. HTTP, gRPC, TCP, UDP, batch, stream e fila não são a mesma coisa.
-- Guarde as diferenças entre alta disponibilidade, escalabilidade, fault tolerance e disaster recovery. A AWS usa esses termos com precisão.
-- Se o enunciado enfatiza poucas mudanças na aplicação existente, descarte respostas que exigem refatoração grande.
+- Multi-AZ does not mean multi-region. If the requirement mentions a regional disaster, think beyond a single region.
+- "More secure" does not always mean "more complex". In many scenarios, AWS favors a managed service with native IAM and KMS integration.
+- "Lowest cost" is not the same as "cheapest in the short term". The exam considers the total cost of operation, maintenance, and risk.
+- If an option requires manual server administration and a managed option that meets the requirement exists, the managed option usually wins.
+- Pay close attention to the type of traffic. HTTP, gRPC, TCP, UDP, batch, stream, and queue are not the same thing.
+- Keep the differences between high availability, scalability, fault tolerance, and disaster recovery clear. AWS uses these terms precisely.
+- If the question stresses few changes to the existing application, discard answers that require major refactoring.
 
-## 💡 Para o Exame
+## 💡 For the Exam
 
-- Priorize o estudo profundo de EC2, ELB, ASG, S3, IAM, VPC, RDS, DynamoDB, Lambda, SQS, Route 53, CloudFront, CloudWatch e KMS.
-- Treine sempre com a pergunta mental: qual requisito está dirigindo a decisão?
-- Em caso de dúvida entre duas alternativas plausíveis, escolha a que melhor equilibra segurança, disponibilidade e menor esforço operacional.
-- Faça simulados só depois de consolidar os blocos centrais; simulados sem base viram memorização superficial.
+- Prioritize deep study of EC2, ELB, ASG, S3, IAM, VPC, RDS, DynamoDB, Lambda, SQS, Route 53, CloudFront, CloudWatch, and KMS.
+- Always train with the mental question: which requirement is driving the decision?
+- When in doubt between two plausible options, choose the one that best balances security, availability, and the least operational effort.
+- Take practice exams only after consolidating the core blocks; practice exams without a foundation become superficial memorization.
 
-## 📎 Links Relacionados
+## 📎 Related Links
 
-- [Questões do módulo](./questoes.md)
-- [Flashcards do módulo](./flashcards.md)
-- [Cheatsheet do módulo](./cheatsheet.md)
-- [Casos de uso do módulo](./casos-de-uso.md)
-- [Lab prático do módulo](./lab.md)
-- [Links oficiais](./links.md)
-- [Módulo 02: IAM e Segurança](../02-IAM-e-Seguranca/)
-- [Módulo 16: Well-Architected Framework](../16-Well-Architected-Framework/)
-- [Módulo 19: Simulados e Questões](../19-Simulados-e-Questoes/)
+- [Module questions](./questoes.md)
+- [Module flashcards](./flashcards.md)
+- [Module cheatsheet](./cheatsheet.md)
+- [Module use cases](./casos-de-uso.md)
+- [Module hands-on lab](./lab.md)
+- [Official links](./links.md)
+- [Module 02: IAM and Security](../02-IAM-e-Seguranca/)
+- [Module 16: Well-Architected Framework](../26-Well-Architected-Framework/)
+- [Module 19: Practice Exams and Questions](../29-Simulados-e-Questoes/)

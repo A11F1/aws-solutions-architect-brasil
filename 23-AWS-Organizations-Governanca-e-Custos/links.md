@@ -1,4 +1,4 @@
-# Links Oficiais - AWS Organizations, Governanca e Custos
+# Official Links - AWS Organizations, Governance, and Costs
 
 - AWS Organizations: https://docs.aws.amazon.com/organizations/
 - AWS Control Tower: https://docs.aws.amazon.com/controltower/

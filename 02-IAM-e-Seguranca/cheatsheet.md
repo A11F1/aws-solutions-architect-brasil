@@ -1,120 +1,120 @@
-# Cheatsheet — IAM e Segurança
+# Cheatsheet — IAM and Security
 
-## Tipos de Política IAM
+## IAM Policy Types
 
-| Tipo | Quem gerencia | Reutilizável | Coexiste com identity | Vínculo |
+| Type | Who manages it | Reusable | Coexists with identity | Link |
 |---|---|---|---|---|
-| AWS Managed Policy | AWS | Sim | Sim | 1:N |
-| Customer Managed Policy | Você | Sim | Sim | 1:N |
-| Inline Policy | Você | Não | Sim | 1:1 (deletada com identity) |
-| Resource-Based Policy | Você | N/A | N/A | No recurso |
-| Permission Boundary | Você | Sim | Limita identity | Max permissions |
-| SCP | Org admin | Sim | Limita conta | Guardrail por OU/conta |
+| AWS Managed Policy | AWS | Yes | Yes | 1:N |
+| Customer Managed Policy | You | Yes | Yes | 1:N |
+| Inline Policy | You | No | Yes | 1:1 (deleted with identity) |
+| Resource-Based Policy | You | N/A | N/A | On the resource |
+| Permission Boundary | You | Yes | Limits identity | Max permissions |
+| SCP | Org admin | Yes | Limits account | Guardrail per OU/account |
 
 ---
 
-## Lógica de Avaliação de Permissões
+## Permission Evaluation Logic
 
 ```
-1. Explicit DENY em qualquer política?          → DENY (fim)
-2. SCP da Organization permite a ação?          → não? DENY
-3. Permission Boundary permite a ação?          → não? DENY
-4. Identity Policy permite?                     → sim? ALLOW (same account)
-   └── Resource Policy permite?                 → sim? ALLOW (cross-account sem role assumption)
-5. Nenhuma das opções permitiu?                 → DENY implícito
+1. Explicit DENY in any policy?                 → DENY (end)
+2. Does the Organization SCP allow the action?  → no? DENY
+3. Does the Permission Boundary allow it?       → no? DENY
+4. Does the Identity Policy allow it?           → yes? ALLOW (same account)
+   └── Does the Resource Policy allow it?       → yes? ALLOW (cross-account without role assumption)
+5. None of the options allowed it?              → implicit DENY
 ```
 
-> **Cross-account sem Resource Policy:** AMBAS identity policy E resource policy devem permitir.  
-> **Cross-account COM Resource Policy (ex: S3, KMS):** Resource policy pode permitir por si só (mas boundary e SCP ainda se aplicam).
+> **Cross-account without Resource Policy:** BOTH identity policy AND resource policy must allow.  
+> **Cross-account WITH Resource Policy (e.g., S3, KMS):** the resource policy can allow on its own (but boundary and SCP still apply).
 
 ---
 
-## Condições IAM Mais Cobradas
+## Most Commonly Tested IAM Conditions
 
-| Condição | Exemplo de uso |
+| Condition | Usage example |
 |---|---|
-| `aws:RequestedRegion` | Restringir ações a `us-east-1` e `sa-east-1` |
-| `aws:MultiFactorAuthPresent: true` | Exigir MFA para ações sensíveis |
-| `aws:PrincipalOrgID` | Limitar acesso ao S3 bucket a toda a Org |
-| `aws:SourceVpc` / `aws:SourceVpce` | Restringir acesso apenas vindo da VPC/endpoint |
-| `aws:CurrentTime` | Janela de tempo para acesso |
-| `s3:prefix` | Restringir ListBucket a determinado prefixo |
-| `iam:PassedToService` | Controlar a quais serviços uma role pode ser delegada |
+| `aws:RequestedRegion` | Restrict actions to `us-east-1` and `sa-east-1` |
+| `aws:MultiFactorAuthPresent: true` | Require MFA for sensitive actions |
+| `aws:PrincipalOrgID` | Limit S3 bucket access to the entire Org |
+| `aws:SourceVpc` / `aws:SourceVpce` | Restrict access to only coming from the VPC/endpoint |
+| `aws:CurrentTime` | Time window for access |
+| `s3:prefix` | Restrict ListBucket to a given prefix |
+| `iam:PassedToService` | Control which services a role can be delegated to |
 
 ---
 
-## KMS — Tipos de CMK
+## KMS — CMK Types
 
-| Tipo | Gerenciada por | Custos | Rotação | Editável | Visível |
+| Type | Managed by | Costs | Rotation | Editable | Visible |
 |---|---|---|---|---|---|
-| AWS-owned | AWS (interna) | Sem custo | Automática pela AWS | Não | Não |
-| AWS-managed | AWS (sua conta) | Sem custo por CMK | Anual automática | Não | Sim |
-| Customer-managed | Você | $1/mês + $0.03/10K API | Opcional anual | Sim | Sim |
+| AWS-owned | AWS (internal) | No cost | Automatic by AWS | No | No |
+| AWS-managed | AWS (your account) | No cost per CMK | Automatic annual | No | Yes |
+| Customer-managed | You | $1/month + $0.03/10K API | Optional annual | Yes | Yes |
 
-**Key Material Origin:** `AWS_KMS` (padrão) | `EXTERNAL` (import) | `AWS_CLOUDHSM`
+**Key Material Origin:** `AWS_KMS` (default) | `EXTERNAL` (import) | `AWS_CLOUDHSM`
 
 ---
 
-## KMS — Envelope Encryption (Sequência)
+## KMS — Envelope Encryption (Sequence)
 
 ```
-Encriptar:
+Encrypt:
   1. GenerateDataKey(CMK ARN)
-     → recebe: Plaintext data key + Encrypted data key
-  2. Usar Plaintext key para encriptar dados (AES-256-GCM)
-  3. Apaga Plaintext key da memória
-  4. Armazena: Encrypted data + Encrypted data key
+     → receives: Plaintext data key + Encrypted data key
+  2. Use the Plaintext key to encrypt data (AES-256-GCM)
+  3. Erase the Plaintext key from memory
+  4. Store: Encrypted data + Encrypted data key
 
-Decriptar:
+Decrypt:
   1. Decrypt(Encrypted data key, CMK ARN)
-     → recebe: Plaintext data key
-  2. Usa Plaintext key para decriptar dados
-  3. Apaga Plaintext key da memória
+     → receives: Plaintext data key
+  2. Use the Plaintext key to decrypt data
+  3. Erase the Plaintext key from memory
 ```
 
 ---
 
 ## Secrets Manager vs Parameter Store
 
-| Característica | Secrets Manager | Parameter Store |
+| Feature | Secrets Manager | Parameter Store |
 |---|---|---|
-| Rotação automática | ✅ Nativa (Lambda) | ❌ (trigger externo) |
-| Integração RDS/Redshift/DocDB | ✅ Nativa | ❌ |
-| Custo | $0,40/secret/mês + API | Standard: grátis; Advanced: $0,05/param/mês |
-| Tamanho máximo | 64 KB | 4 KB (standard), 8 KB (advanced) |
-| Versionamento | ✅ (staging labels) | ✅ |
-| Cross-account | ✅ (resource policy) | Com customer CMK |
-| Hierarchical paths | Limitado | ✅ (`/app/prod/db`) |
-| Melhor para | DB credentials com rotação | Configurações de app, parâmetros |
+| Automatic rotation | ✅ Native (Lambda) | ❌ (external trigger) |
+| RDS/Redshift/DocDB integration | ✅ Native | ❌ |
+| Cost | $0.40/secret/month + API | Standard: free; Advanced: $0.05/param/month |
+| Maximum size | 64 KB | 4 KB (standard), 8 KB (advanced) |
+| Versioning | ✅ (staging labels) | ✅ |
+| Cross-account | ✅ (resource policy) | With customer CMK |
+| Hierarchical paths | Limited | ✅ (`/app/prod/db`) |
+| Best for | DB credentials with rotation | App configuration, parameters |
 
 ---
 
-## ACM — Resumo
+## ACM — Summary
 
-| Característica | Public ACM | ACM Private CA |
+| Feature | Public ACM | ACM Private CA |
 |---|---|---|
-| Custo | Grátis | ~$400/mês por CA + $0,75/cert |
-| Exportável | ❌ Não | ✅ Sim |
-| Renovação | Automática | Automática |
-| Validação | DNS (preferido) ou Email | Sem validação externa |
-| Uso | ALB, CloudFront, API GW | Microserviços internos, mTLS |
-| Região CloudFront | ⚠️ Certificado deve estar em us-east-1 | — |
+| Cost | Free | ~$400/month per CA + $0.75/cert |
+| Exportable | ❌ No | ✅ Yes |
+| Renewal | Automatic | Automatic |
+| Validation | DNS (preferred) or Email | No external validation |
+| Use | ALB, CloudFront, API GW | Internal microservices, mTLS |
+| CloudFront region | ⚠️ Certificate must be in us-east-1 | — |
 
 ---
 
-## Padrões de Acesso Cross-Account
+## Cross-Account Access Patterns
 
-| Cenário | Mecanismo |
+| Scenario | Mechanism |
 |---|---|
-| Acesso a S3 de outra conta | Bucket policy + (role ou user com identity policy) |
-| Acesso a CMK KMS de outra conta | Key policy no CMK + identity policy no caller |
-| Assumir role em outra conta | Trust policy na role + iam:AssumeRole no caller |
-| Compartilhar RDS snapshot | Share snapshot com account ID destino |
-| Acesso via PrivateLink | VPC Endpoint + NLB + VPC Endpoint Service policy |
+| Access to S3 in another account | Bucket policy + (role or user with identity policy) |
+| Access to a KMS CMK in another account | Key policy on the CMK + identity policy on the caller |
+| Assume a role in another account | Trust policy on the role + iam:AssumeRole on the caller |
+| Share an RDS snapshot | Share the snapshot with the destination account ID |
+| Access via PrivateLink | VPC Endpoint + NLB + VPC Endpoint Service policy |
 
 ---
 
-## IAM Identity Center — Conceitos
+## IAM Identity Center — Concepts
 
 ```
 AWS Organizations
@@ -130,13 +130,13 @@ AWS Organizations
 
 ---
 
-## Dicas de Prova (IAM)
+## Exam Tips (IAM)
 
-- **Explicit DENY sempre vence**, independente de qualquer Allow
-- Permission Boundary ≠ SCP: boundary limita a *identidade*, SCP limita a *conta*
-- Management Account **nunca** é afetada por SCPs
-- Para cross-account S3/KMS sem role assumption → resource-based policy com o account ID destino
-- Para exigir MFA: `Bool: aws:MultiFactorAuthPresent: true` (não `StringEquals`)
-- CloudFront + ACM → certificado **deve** estar em `us-east-1`
-- KMS Multi-Region Key: mesmo material mas ARNs diferentes por região
-- Secrets Manager cobra por secret; Parameter Store Standard é gratuito
+- **Explicit DENY always wins**, regardless of any Allow
+- Permission Boundary ≠ SCP: boundary limits the *identity*, SCP limits the *account*
+- The Management Account is **never** affected by SCPs
+- For cross-account S3/KMS without role assumption → resource-based policy with the destination account ID
+- To require MFA: `Bool: aws:MultiFactorAuthPresent: true` (not `StringEquals`)
+- CloudFront + ACM → certificate **must** be in `us-east-1`
+- KMS Multi-Region Key: same material but different ARNs per region
+- Secrets Manager charges per secret; Parameter Store Standard is free

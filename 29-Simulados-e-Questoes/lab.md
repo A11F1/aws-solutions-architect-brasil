@@ -1,253 +1,253 @@
-# Lab Prático — Simulados e Revisão Final: Setup Ambiente de Estudos (Módulo 19)
+# Hands-On Lab — Practice Exams and Final Review: Study Environment Setup (Module 19)
 
-> **Região:** us-east-1 | **Custo estimado:** ~$0.01 (DynamoDB on-demand, Lambda minimal)  
-> **Pré-requisitos:** AWS CLI configurado, Python 3.8+, pip
-
----
-
-## Objetivo
-
-Construir um ambiente personalizado de revisão: baralho de flashcards no DynamoDB, script de quiz interativo, e CloudWatch dashboard para rastrear progresso nos estudos.
+> **Region:** us-east-1 | **Estimated cost:** ~$0.01 (DynamoDB on-demand, minimal Lambda)  
+> **Prerequisites:** AWS CLI configured, Python 3.8+, pip
 
 ---
 
-## Parte 1 — DynamoDB como Banco de Flashcards
+## Goal
+
+Build a personalized review environment: a flashcard deck in DynamoDB, an interactive quiz script, and a CloudWatch dashboard to track study progress.
+
+---
+
+## Part 1 — DynamoDB as a Flashcard Database
 
 ```bash
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-TABELA_FLASH="saa-flashcards"
-TABELA_PROGRESSO="saa-progresso"
+FLASH_TABLE="saa-flashcards"
+PROGRESS_TABLE="saa-progress"
 
-# Criar tabela de flashcards
+# Create the flashcards table
 aws dynamodb create-table \
-  --table-name "$TABELA_FLASH" \
+  --table-name "$FLASH_TABLE" \
   --attribute-definitions \
-    "AttributeName=modulo,AttributeType=S" \
+    "AttributeName=module,AttributeType=S" \
     "AttributeName=card_id,AttributeType=S" \
   --key-schema \
-    "AttributeName=modulo,KeyType=HASH" \
+    "AttributeName=module,KeyType=HASH" \
     "AttributeName=card_id,KeyType=RANGE" \
   --billing-mode PAY_PER_REQUEST \
   --global-secondary-indexes '[{
-    "IndexName": "dificuldade-index",
+    "IndexName": "difficulty-index",
     "KeySchema": [
-      {"AttributeName": "modulo", "KeyType": "HASH"},
+      {"AttributeName": "module", "KeyType": "HASH"},
       {"AttributeName": "card_id", "KeyType": "RANGE"}
     ],
     "Projection": {"ProjectionType": "ALL"}
   }]'
 
-# Criar tabela de progresso
+# Create the progress table
 aws dynamodb create-table \
-  --table-name "$TABELA_PROGRESSO" \
+  --table-name "$PROGRESS_TABLE" \
   --attribute-definitions \
-    "AttributeName=usuario,AttributeType=S" \
-    "AttributeName=data_sessao,AttributeType=S" \
+    "AttributeName=user,AttributeType=S" \
+    "AttributeName=session_date,AttributeType=S" \
   --key-schema \
-    "AttributeName=usuario,KeyType=HASH" \
-    "AttributeName=data_sessao,KeyType=RANGE" \
+    "AttributeName=user,KeyType=HASH" \
+    "AttributeName=session_date,KeyType=RANGE" \
   --billing-mode PAY_PER_REQUEST
 
-aws dynamodb wait table-exists --table-name "$TABELA_FLASH"
-aws dynamodb wait table-exists --table-name "$TABELA_PROGRESSO"
-echo "Tabelas criadas!"
+aws dynamodb wait table-exists --table-name "$FLASH_TABLE"
+aws dynamodb wait table-exists --table-name "$PROGRESS_TABLE"
+echo "Tables created!"
 
-# Populando flashcards de revisão final
+# Populating final-review flashcards
 python3 << 'PYTHON'
 import boto3
 import uuid
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-tabela = dynamodb.Table('saa-flashcards')
+table = dynamodb.Table('saa-flashcards')
 
 flashcards = [
-    # Módulo EC2
-    {"modulo": "ec2", "card_id": str(uuid.uuid4()),
-     "pergunta": "Qual tipo de instância é mais adequado para bancos de dados na memória?",
-     "resposta": "R (Memory Optimized) — ex: r6g, r5. Alta proporção RAM/vCPU para Redis, SAP HANA, in-memory databases.",
-     "dificuldade": "medio"},
-    {"modulo": "ec2", "card_id": str(uuid.uuid4()),
-     "pergunta": "O que é Spot Instance Fleet?",
-     "resposta": "Conjunto de Spot Instances de múltiplos tipos/AZs configurados para manter capacidade alvo. Usa substituição automática.",
-     "dificuldade": "dificil"},
+    # EC2 module
+    {"module": "ec2", "card_id": str(uuid.uuid4()),
+     "question": "Which instance type is best suited for in-memory databases?",
+     "answer": "R (Memory Optimized) — e.g., r6g, r5. High RAM/vCPU ratio for Redis, SAP HANA, in-memory databases.",
+     "difficulty": "medium"},
+    {"module": "ec2", "card_id": str(uuid.uuid4()),
+     "question": "What is a Spot Instance Fleet?",
+     "answer": "A set of Spot Instances of multiple types/AZs configured to maintain a target capacity. Uses automatic replacement.",
+     "difficulty": "hard"},
 
-    # Módulo S3
-    {"modulo": "s3", "card_id": str(uuid.uuid4()),
-     "pergunta": "Qual classe S3 tem taxa de recuperação e custo mínimo de armazenamento de 90 dias?",
-     "resposta": "S3 Glacier Flexible Retrieval — mín 90 dias de cobrança, retrieval em minutos a 12h.",
-     "dificuldade": "medio"},
-    {"modulo": "s3", "card_id": str(uuid.uuid4()),
-     "pergunta": "Como funciona o S3 Transfer Acceleration?",
-     "resposta": "Usa edge locations CloudFront para otimizar upload via TCP long-haul. Endpoint: bucket.s3-accelerate.amazonaws.com",
-     "dificuldade": "facil"},
+    # S3 module
+    {"module": "s3", "card_id": str(uuid.uuid4()),
+     "question": "Which S3 class has a retrieval fee and a minimum storage charge of 90 days?",
+     "answer": "S3 Glacier Flexible Retrieval — 90-day minimum billing, retrieval in minutes to 12h.",
+     "difficulty": "medium"},
+    {"module": "s3", "card_id": str(uuid.uuid4()),
+     "question": "How does S3 Transfer Acceleration work?",
+     "answer": "Uses CloudFront edge locations to optimize uploads over long-haul TCP. Endpoint: bucket.s3-accelerate.amazonaws.com",
+     "difficulty": "easy"},
 
-    # Módulo VPC
-    {"modulo": "vpc", "card_id": str(uuid.uuid4()),
-     "pergunta": "Diferença entre Security Group e NACL?",
-     "resposta": "SG: stateful, nível instância, só ALLOW. NACL: stateless, nível subnet, ALLOW e DENY, regras numeradas.",
-     "dificuldade": "facil"},
-    {"modulo": "vpc", "card_id": str(uuid.uuid4()),
-     "pergunta": "O que é um VPC Peering e qual sua limitação principal?",
-     "resposta": "Conexão direta entre VPCs sem transitividade. A→B e B→C NÃO permite A→C. Alternativa: Transit Gateway.",
-     "dificuldade": "medio"},
+    # VPC module
+    {"module": "vpc", "card_id": str(uuid.uuid4()),
+     "question": "What is the difference between a Security Group and a NACL?",
+     "answer": "SG: stateful, instance level, ALLOW only. NACL: stateless, subnet level, ALLOW and DENY, numbered rules.",
+     "difficulty": "easy"},
+    {"module": "vpc", "card_id": str(uuid.uuid4()),
+     "question": "What is VPC Peering and what is its main limitation?",
+     "answer": "Direct connection between VPCs without transitivity. A→B and B→C does NOT allow A→C. Alternative: Transit Gateway.",
+     "difficulty": "medium"},
 
-    # Módulo IAM
-    {"modulo": "iam", "card_id": str(uuid.uuid4()),
-     "pergunta": "O que é IAM Permission Boundary?",
-     "resposta": "Política que define o MÁXIMO de permissão que uma entidade pode ter. Não concede — apenas limita o teto.",
-     "dificuldade": "dificil"},
+    # IAM module
+    {"module": "iam", "card_id": str(uuid.uuid4()),
+     "question": "What is an IAM Permission Boundary?",
+     "answer": "A policy that defines the MAXIMUM permissions an entity can have. It does not grant — it only limits the ceiling.",
+     "difficulty": "hard"},
 
-    # Módulo RDS
-    {"modulo": "rds", "card_id": str(uuid.uuid4()),
-     "pergunta": "Multi-AZ RDS vs Read Replica: qual serve para DR e qual para performance?",
-     "resposta": "Multi-AZ = DR/HA (failover automático, sincrônico, mesmo região). Read Replica = leitura escalada (assíncrono, pode ser cross-region).",
-     "dificuldade": "facil"},
+    # RDS module
+    {"module": "rds", "card_id": str(uuid.uuid4()),
+     "question": "RDS Multi-AZ vs Read Replica: which one is for DR and which is for performance?",
+     "answer": "Multi-AZ = DR/HA (automatic failover, synchronous, same region). Read Replica = scaled reads (asynchronous, can be cross-region).",
+     "difficulty": "easy"},
 
-    # Módulo Serverless
-    {"modulo": "serverless", "card_id": str(uuid.uuid4()),
-     "pergunta": "Lambda tem timeout máximo de quanto?",
-     "resposta": "15 minutos (900 segundos). Para processos mais longos: SQS → Lambda, Step Functions, ECS/Fargate.",
-     "dificuldade": "facil"},
+    # Serverless module
+    {"module": "serverless", "card_id": str(uuid.uuid4()),
+     "question": "What is Lambda's maximum timeout?",
+     "answer": "15 minutes (900 seconds). For longer processes: SQS → Lambda, Step Functions, ECS/Fargate.",
+     "difficulty": "easy"},
 
-    # Segurança
-    {"modulo": "seguranca", "card_id": str(uuid.uuid4()),
-     "pergunta": "Qual serviço protege contra DDoS Layer 3/4 sem custo adicional?",
-     "resposta": "AWS Shield Standard — ativado automaticamente para todos os clientes. Shield Advanced: Layer 7 + suporte 24/7.",
-     "dificuldade": "facil"},
-    {"modulo": "seguranca", "card_id": str(uuid.uuid4()),
-     "pergunta": "Difference: GuardDuty vs Macie vs Inspector vs WAF?",
-     "resposta": "GuardDuty=ameaças conta/rede/S3. Macie=dados sensíveis S3 (PII). Inspector=vulnerabilidades EC2/Lambda/ECR. WAF=proteção HTTP Layer 7.",
-     "dificuldade": "dificil"},
+    # Security
+    {"module": "security", "card_id": str(uuid.uuid4()),
+     "question": "Which service protects against Layer 3/4 DDoS at no additional cost?",
+     "answer": "AWS Shield Standard — automatically enabled for all customers. Shield Advanced: Layer 7 + 24/7 support.",
+     "difficulty": "easy"},
+    {"module": "security", "card_id": str(uuid.uuid4()),
+     "question": "Difference: GuardDuty vs Macie vs Inspector vs WAF?",
+     "answer": "GuardDuty=account/network/S3 threats. Macie=sensitive data in S3 (PII). Inspector=EC2/Lambda/ECR vulnerabilities. WAF=HTTP Layer 7 protection.",
+     "difficulty": "hard"},
 ]
 
-with tabela.batch_writer() as batch:
+with table.batch_writer() as batch:
     for card in flashcards:
         batch.put_item(Item=card)
 
-print(f"{len(flashcards)} flashcards inseridos!")
+print(f"{len(flashcards)} flashcards inserted!")
 PYTHON
 ```
 
 ---
 
-## Parte 2 — Script de Quiz Interativo
+## Part 2 — Interactive Quiz Script
 
 ```python
-# quiz.py — Salvar e executar com: python3 quiz.py
+# quiz.py — Save and run with: python3 quiz.py
 import boto3
 import random
 import json
 from datetime import datetime
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-tabela_flash = dynamodb.Table('saa-flashcards')
-tabela_prog  = dynamodb.Table('saa-progresso')
+flash_table = dynamodb.Table('saa-flashcards')
+prog_table  = dynamodb.Table('saa-progress')
 
-def buscar_cards(modulo=None, dificuldade=None):
-    if modulo:
-        resp = tabela_flash.query(
-            KeyConditionExpression=boto3.dynamodb.conditions.Key('modulo').eq(modulo)
+def fetch_cards(module=None, difficulty=None):
+    if module:
+        resp = flash_table.query(
+            KeyConditionExpression=boto3.dynamodb.conditions.Key('module').eq(module)
         )
     else:
-        resp = tabela_flash.scan()
+        resp = flash_table.scan()
 
     cards = resp['Items']
-    if dificuldade:
-        cards = [c for c in cards if c.get('dificuldade') == dificuldade]
+    if difficulty:
+        cards = [c for c in cards if c.get('difficulty') == difficulty]
     return cards
 
-def executar_quiz():
-    print("\n=== Quiz SAA-C03 ===")
-    print("Módulos: ec2, s3, vpc, iam, rds, serverless, seguranca (ou ENTER para todos)")
-    modulo = input("Módulo: ").strip() or None
+def run_quiz():
+    print("\n=== SAA-C03 Quiz ===")
+    print("Modules: ec2, s3, vpc, iam, rds, serverless, security (or ENTER for all)")
+    module = input("Module: ").strip() or None
 
-    cards = buscar_cards(modulo=modulo)
+    cards = fetch_cards(module=module)
     if not cards:
-        print("Nenhum card encontrado!")
+        print("No cards found!")
         return
 
     random.shuffle(cards)
-    cards = cards[:10]  # máximo 10 por sessão
+    cards = cards[:10]  # maximum 10 per session
 
-    acertos = 0
+    correct = 0
     total = len(cards)
-    erros = []
+    wrong = []
 
     for i, card in enumerate(cards, 1):
-        print(f"\n[{i}/{total}] Módulo: {card['modulo'].upper()}")
-        print(f"P: {card['pergunta']}")
-        input("Pressione ENTER para ver a resposta...")
-        print(f"R: {card['resposta']}")
-        acertou = input("Você acertou? (s/n): ").strip().lower() == 's'
+        print(f"\n[{i}/{total}] Module: {card['module'].upper()}")
+        print(f"Q: {card['question']}")
+        input("Press ENTER to see the answer...")
+        print(f"A: {card['answer']}")
+        got_it = input("Did you get it right? (y/n): ").strip().lower() == 'y'
 
-        if acertou:
-            acertos += 1
+        if got_it:
+            correct += 1
         else:
-            erros.append(card)
+            wrong.append(card)
 
-    porcentagem = (acertos / total) * 100
-    print(f"\n=== Resultado ===")
-    print(f"Acertos: {acertos}/{total} ({porcentagem:.0f}%)")
+    percentage = (correct / total) * 100
+    print(f"\n=== Result ===")
+    print(f"Correct: {correct}/{total} ({percentage:.0f}%)")
 
-    if erros:
-        print(f"\nCards para revisar:")
-        for c in erros:
-            print(f"  [{c['modulo']}] {c['pergunta'][:60]}...")
+    if wrong:
+        print(f"\nCards to review:")
+        for c in wrong:
+            print(f"  [{c['module']}] {c['question'][:60]}...")
 
-    # Salvar progresso
-    tabela_prog.put_item(Item={
-        'usuario': 'estudante',
-        'data_sessao': datetime.utcnow().isoformat(),
-        'modulo': modulo or 'todos',
-        'acertos': acertos,
+    # Save progress
+    prog_table.put_item(Item={
+        'user': 'student',
+        'session_date': datetime.utcnow().isoformat(),
+        'module': module or 'all',
+        'correct': correct,
         'total': total,
-        'porcentagem': str(round(porcentagem, 1))
+        'percentage': str(round(percentage, 1))
     })
-    print("\nProgresso salvo no DynamoDB!")
+    print("\nProgress saved to DynamoDB!")
 
 if __name__ == '__main__':
-    executar_quiz()
+    run_quiz()
 ```
 
 ```bash
-# Executar o quiz
+# Run the quiz
 python3 quiz.py
 ```
 
 ---
 
-## Parte 3 — CloudWatch Dashboard de Estudos
+## Part 3 — Study CloudWatch Dashboard
 
 ```bash
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-# Publicar métricas customizadas de progresso
+# Publish custom progress metrics
 aws cloudwatch put-metric-data \
-  --namespace "SAA/Estudos" \
+  --namespace "SAA/Study" \
   --metric-data '[
-    {"MetricName": "FlashcardsRevisados", "Value": 10, "Unit": "Count",
-     "Dimensions": [{"Name": "Modulo", "Value": "ec2"}]},
-    {"MetricName": "PorcentagemAcerto", "Value": 80, "Unit": "Percent",
-     "Dimensions": [{"Name": "Modulo", "Value": "ec2"}]},
-    {"MetricName": "DiasEstudados", "Value": 1, "Unit": "Count",
-     "Dimensions": [{"Name": "Semana", "Value": "semana-1"}]}
+    {"MetricName": "FlashcardsReviewed", "Value": 10, "Unit": "Count",
+     "Dimensions": [{"Name": "Module", "Value": "ec2"}]},
+    {"MetricName": "AccuracyPercentage", "Value": 80, "Unit": "Percent",
+     "Dimensions": [{"Name": "Module", "Value": "ec2"}]},
+    {"MetricName": "DaysStudied", "Value": 1, "Unit": "Count",
+     "Dimensions": [{"Name": "Week", "Value": "week-1"}]}
   ]'
 
-# Criar dashboard visual
+# Create a visual dashboard
 aws cloudwatch put-dashboard \
-  --dashboard-name "SAA-C03-Progresso" \
+  --dashboard-name "SAA-C03-Progress" \
   --dashboard-body '{
     "widgets": [
       {
         "type": "metric",
         "x": 0, "y": 0, "width": 12, "height": 6,
         "properties": {
-          "title": "Flashcards Revisados por Módulo",
-          "namespace": "SAA/Estudos",
+          "title": "Flashcards Reviewed by Module",
+          "namespace": "SAA/Study",
           "metrics": [
-            ["SAA/Estudos", "FlashcardsRevisados", "Modulo", "ec2"],
-            ["SAA/Estudos", "FlashcardsRevisados", "Modulo", "s3"],
-            ["SAA/Estudos", "FlashcardsRevisados", "Modulo", "vpc"]
+            ["SAA/Study", "FlashcardsReviewed", "Module", "ec2"],
+            ["SAA/Study", "FlashcardsReviewed", "Module", "s3"],
+            ["SAA/Study", "FlashcardsReviewed", "Module", "vpc"]
           ],
           "period": 86400,
           "stat": "Sum",
@@ -258,12 +258,12 @@ aws cloudwatch put-dashboard \
         "type": "metric",
         "x": 12, "y": 0, "width": 12, "height": 6,
         "properties": {
-          "title": "Taxa de Acerto por Módulo (%)",
-          "namespace": "SAA/Estudos",
+          "title": "Accuracy Rate by Module (%)",
+          "namespace": "SAA/Study",
           "metrics": [
-            ["SAA/Estudos", "PorcentagemAcerto", "Modulo", "ec2"],
-            ["SAA/Estudos", "PorcentagemAcerto", "Modulo", "s3"],
-            ["SAA/Estudos", "PorcentagemAcerto", "Modulo", "vpc"]
+            ["SAA/Study", "AccuracyPercentage", "Module", "ec2"],
+            ["SAA/Study", "AccuracyPercentage", "Module", "s3"],
+            ["SAA/Study", "AccuracyPercentage", "Module", "vpc"]
           ],
           "period": 86400,
           "stat": "Average",
@@ -275,38 +275,38 @@ aws cloudwatch put-dashboard \
         "type": "text",
         "x": 0, "y": 6, "width": 24, "height": 3,
         "properties": {
-          "markdown": "## Metas SAA-C03\\n- 80%+ em todos os simulados\\n- Completar 6 semanas de estudo\\n- Revisar todos os flashcards 3x"
+          "markdown": "## SAA-C03 Goals\\n- 80%+ on all practice exams\\n- Complete 6 weeks of study\\n- Review all flashcards 3x"
         }
       }
     ]
   }'
 
-echo "Dashboard criado: SAA-C03-Progresso"
-echo "Acesse: https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:name=SAA-C03-Progresso"
+echo "Dashboard created: SAA-C03-Progress"
+echo "Access: https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:name=SAA-C03-Progress"
 ```
 
 ---
 
-## Limpeza
+## Cleanup
 
 ```bash
-# Excluir tabelas DynamoDB
-aws dynamodb delete-table --table-name "$TABELA_FLASH"
-aws dynamodb delete-table --table-name "$TABELA_PROGRESSO"
+# Delete DynamoDB tables
+aws dynamodb delete-table --table-name "$FLASH_TABLE"
+aws dynamodb delete-table --table-name "$PROGRESS_TABLE"
 
-# Excluir dashboard
-aws cloudwatch delete-dashboards --dashboard-names "SAA-C03-Progresso"
+# Delete the dashboard
+aws cloudwatch delete-dashboards --dashboard-names "SAA-C03-Progress"
 
-# Remover arquivos locais
+# Remove local files
 rm -f quiz.py
 ```
 
 ---
 
-## O Que Você Aprendeu
+## What You Learned
 
-- DynamoDB como backend key-value para apps simples — setup em < 1 min com CLI
-- Métricas customizadas CloudWatch (`put-metric-data`) para rastrear qualquer coisa
-- CloudWatch Dashboards via CLI com JSON body — codificável, versionável em Git
-- Padrão de estudo active recall: exposição → ocultação → tentativa → feedback
-- No exame: **70%+ em simulados Tutorials Dojo = alta probabilidade de aprovação no SAA-C03**
+- DynamoDB as a key-value backend for simple apps — set up in < 1 min with the CLI
+- CloudWatch custom metrics (`put-metric-data`) to track anything
+- CloudWatch Dashboards via CLI with a JSON body — codifiable, versionable in Git
+- Active recall study pattern: exposure → concealment → attempt → feedback
+- On the exam: **70%+ on Tutorials Dojo practice exams = high probability of passing SAA-C03**

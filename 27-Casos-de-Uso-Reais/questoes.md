@@ -1,229 +1,229 @@
-# Questões — Módulo 17: Casos de Uso Reais
+# Questions — Module 17: Real-World Use Cases
 
-> **Domínio SAA-C03**: Todos os domínios (multi-serviço)  
-> **Dificuldade**: Alta
+> **SAA-C03 Domain**: All domains (multi-service)  
+> **Difficulty**: High
 
 ---
 
-**1.** Uma empresa de streaming de vídeo precisa de uma arquitetura que suporte 1 milhão de usuários simultâneos, sirvam vídeos com baixa latência globalmente, e escale automaticamente. Quais serviços AWS compõem a arquitetura ideal?
+**1.** A video streaming company needs an architecture that supports 1 million concurrent users, serves videos with low latency globally, and scales automatically. Which AWS services make up the ideal architecture?
 
 - A) EC2 + ELB + RDS
-- B) CloudFront + S3 (conteúdo estático) + ALB + Auto Scaling Group + Aurora (metadados)
+- B) CloudFront + S3 (static content) + ALB + Auto Scaling Group + Aurora (metadata)
 - C) API Gateway + Lambda + DynamoDB
 - D) Global Accelerator + EC2 + RDS Multi-AZ
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — CloudFront faz cache dos vídeos em edge locations globalmente (baixa latência, reduz origem). S3 armazena os arquivos de vídeo (escala ilimitada, custo baixo). ALB + ASG escala a camada de aplicação (metadados, autenticação, playlists). Aurora para dados transacionais com Read Replicas para alto throughput de leitura.
+**B** — CloudFront caches the videos at edge locations globally (low latency, reduces load on the origin). S3 stores the video files (unlimited scale, low cost). ALB + ASG scales the application tier (metadata, authentication, playlists). Aurora for transactional data with Read Replicas for high read throughput.
 
 </details>
 
 ---
 
-**2.** Uma plataforma de e-commerce precisa processar pagamentos garantindo que cada transação seja processada exatamente uma vez, mesmo em caso de retry. Qual arquitetura garante isso?
+**2.** An e-commerce platform needs to process payments ensuring each transaction is processed exactly once, even in case of a retry. Which architecture guarantees this?
 
-- A) API Gateway → Lambda → SQS Standard → Lambda processador
-- B) API Gateway → Lambda → SQS FIFO → Lambda processador com idempotency key
+- A) API Gateway → Lambda → SQS Standard → processor Lambda
+- B) API Gateway → Lambda → SQS FIFO → processor Lambda with an idempotency key
 - C) API Gateway → Lambda → DynamoDB → SNS
-- D) API Gateway → Lambda direta (retry explícito no cliente)
+- D) API Gateway → direct Lambda (explicit retry on the client)
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — SQS FIFO com MessageDeduplicationId = exactly-once delivery. No processador, use a transaction ID como Idempotency Key no DynamoDB (conditional put: só grava se não existir) para garantir exactly-once processing mesmo se a mensagem for re-entregue. Dupla proteção: SQS FIFO (dedup) + DynamoDB conditional write.
-
-</details>
-
----
-
-**3.** Uma startup de fintech precisa de uma arquitetura que detecte fraudes em transações em tempo real (latência < 100ms), processe 10.000 transações por segundo e mantenha auditoria completa. Qual arquitetura implementa isso?
-
-- A) S3 + Athena para análise batch de fraudes (revisar após o dia)
-- B) API GW → Lambda → SageMaker endpoint (modelos ML em tempo real) → DynamoDB (resultado) + Kinesis → S3 + Athena (auditoria)
-- C) RDS Aurora com stored procedures de detecção de fraude
-- D) EC2 com aplicação de fraud detection rodando 24/7
-
-<details><summary>Resposta</summary>
-
-**B** — Para tempo real com ML: SageMaker real-time endpoint retorna prediction em <100ms. A transação também vai para Kinesis Firehose → S3 para auditoria em Athena. DynamoDB armazena os resultados de prevenção. Lambda orquestra tudo, escalando automaticamente para 10.000 TPS.
+**B** — SQS FIFO with MessageDeduplicationId = exactly-once delivery. In the processor, use the transaction ID as an Idempotency Key in DynamoDB (conditional put: only writes if it does not exist) to guarantee exactly-once processing even if the message is redelivered. Double protection: SQS FIFO (dedup) + DynamoDB conditional write.
 
 </details>
 
 ---
 
-**4.** Uma empresa de SaaS multi-tenant precisa isolar os dados de cada cliente (tenant) em S3, garantindo que um tenant nunca acesse dados de outro. Qual mecanismo implementa isso?
+**3.** A fintech startup needs an architecture that detects fraud in transactions in real time (latency < 100ms), processes 10,000 transactions per second, and maintains a complete audit trail. Which architecture implements this?
 
-- A) Um único bucket S3 com prefixos por tenant e bucket policy genérica
-- B) Um bucket S3 por tenant com bucket policy + Cognito Identity Pool com assume role por tenant
-- C) S3 compartilhado com ACLs por objeto para cada tenant
-- D) S3 Object Ownership com ACLs habilitadas por objeto
+- A) S3 + Athena for batch fraud analysis (review after the day ends)
+- B) API GW → Lambda → SageMaker endpoint (real-time ML models) → DynamoDB (result) + Kinesis → S3 + Athena (audit)
+- C) RDS Aurora with fraud detection stored procedures
+- D) EC2 with a fraud detection application running 24/7
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Isolamento forte: bucket por tenant + Cognito Identity Pool (federa usuários para roles IAM específicas de cada tenant). A bucket policy do tenant-bucket permite acesso apenas da role do tenant. Nenhum cross-tenant access é possível. Alternativa (A) com prefixos é mais fácil de implementar mas menos seguro (uma misconfiguration pode expor todos os tenants).
-
-</details>
-
----
-
-**5.** Uma empresa quer migrar de uma arquitetura monolítica para microserviços sem downtime, usando o padrão Strangler Fig. Como implementar isso na AWS?
-
-- A) Criar todos os microserviços primeiro e fazer cutover total num fim de semana
-- B) ALB com path-based routing: novas rotas vão para microserviços, rotas legadas vão para o monolito; migrar gradualmente
-- C) Route 53 com weighted routing dividindo tráfego entre monolito e microserviços
-- D) B é o padrão Strangler Fig correto; o tráfego é migrado incrementalmente por domínio
-
-<details><summary>Resposta</summary>
-
-**D** — Strangler Fig: ALB como facade. Novas funcionalidades e rotas migradas vão para microserviços (ECS/Lambda); funcionalidades legadas ainda vão para o monolito. Gradualmente, todas as rotas são migradas e o monolito é "estrangulado" (desativado). Route 53 weighted seria mais para blue/green do monolito inteiro, não migração incremental.
+**B** — For real time with ML: a SageMaker real-time endpoint returns a prediction in <100ms. The transaction also goes to Kinesis Firehose → S3 for auditing in Athena. DynamoDB stores the prevention results. Lambda orchestrates everything, scaling automatically to 10,000 TPS.
 
 </details>
 
 ---
 
-**6.** Uma empresa de IoT tem 100.000 dispositivos enviando telemetria a cada 10 segundos. Os dados precisam ser processados em tempo real para alertas e armazenados para analytics histórico. Qual arquitetura usar?
+**4.** A multi-tenant SaaS company needs to isolate each customer's (tenant's) data in S3, ensuring that one tenant never accesses another's data. Which mechanism implements this?
 
-- A) IoT Core → Lambda (por mensagem) → DynamoDB + S3
-- B) IoT Core → Kinesis Data Streams → Lambda (alertas em tempo real) + Kinesis Firehose → S3 (armazenamento) + Athena (analytics)
-- C) MQTT broker EC2 → SQS → Lambda
+- A) A single S3 bucket with per-tenant prefixes and a generic bucket policy
+- B) One S3 bucket per tenant with a bucket policy + Cognito Identity Pool with per-tenant assume role
+- C) Shared S3 with per-object ACLs for each tenant
+- D) S3 Object Ownership with ACLs enabled per object
+
+<details><summary>Answer</summary>
+
+**B** — Strong isolation: bucket per tenant + Cognito Identity Pool (federates users to IAM roles specific to each tenant). The tenant bucket's bucket policy allows access only from the tenant's role. No cross-tenant access is possible. Alternative (A) with prefixes is easier to implement but less secure (a single misconfiguration could expose all tenants).
+
+</details>
+
+---
+
+**5.** A company wants to migrate from a monolithic architecture to microservices with no downtime, using the Strangler Fig pattern. How do you implement this on AWS?
+
+- A) Create all the microservices first and do a full cutover over a weekend
+- B) ALB with path-based routing: new routes go to microservices, legacy routes go to the monolith; migrate gradually
+- C) Route 53 with weighted routing splitting traffic between the monolith and microservices
+- D) B is the correct Strangler Fig pattern; traffic is migrated incrementally per domain
+
+<details><summary>Answer</summary>
+
+**D** — Strangler Fig: ALB as the facade. New features and migrated routes go to microservices (ECS/Lambda); legacy features still go to the monolith. Gradually, all routes are migrated and the monolith is "strangled" (shut down). Route 53 weighted routing would be more suited to blue/green of the entire monolith, not incremental migration.
+
+</details>
+
+---
+
+**6.** An IoT company has 100,000 devices sending telemetry every 10 seconds. The data needs to be processed in real time for alerts and stored for historical analytics. Which architecture should be used?
+
+- A) IoT Core → Lambda (per message) → DynamoDB + S3
+- B) IoT Core → Kinesis Data Streams → Lambda (real-time alerts) + Kinesis Firehose → S3 (storage) + Athena (analytics)
+- C) EC2 MQTT broker → SQS → Lambda
 - D) API Gateway → Lambda → DynamoDB Streams → Analytics
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — IoT Core: MQTT/HTTPS gerenciado para 100k dispositivos. Kinesis Data Streams absorve 100k × 10s = 10k mensagens/segundo. Lambda processa stream para alertas em tempo real. Kinesis Firehose paralelamente entrega para S3 em Parquet. Athena faz analytics histórico. Solução serverless, gerenciada e escalável.
-
-</details>
-
----
-
-**7.** Uma empresa de marketplace precisa notificar 5 times diferentes (email, mobile push, auditoria, analytics, CRM) quando um pedido é criado. Qual é o padrão mais adequado?
-
-- A) REST API que chama os 5 sistemas em sequência
-- B) SNS topic (pedido criado) → 5 SQS queues (uma por sistema) → cada sistema consome sua fila (fan-out pattern)
-- C) EventBridge com 5 rules apontando para cada sistema
-- D) B e C são válidos; SNS fan-out é mais simples; EventBridge é melhor para regras condicionais complexas
-
-<details><summary>Resposta</summary>
-
-**D** — SNS Fan-out: SNS → múltiplas SQS (ou Lambda diretamente) em paralelo. Simples e direto. EventBridge: melhor quando diferentes eventos precisam de diferentes filtros/regras (ex: só notificar analytics pra pedidos > R$500). Para o caso simples descrito, SNS fan-out é suficiente.
+**B** — IoT Core: managed MQTT/HTTPS for 100k devices. Kinesis Data Streams absorbs 100k ÷ 10s = 10k messages/second. Lambda processes the stream for real-time alerts. Kinesis Firehose in parallel delivers to S3 in Parquet. Athena performs historical analytics. A serverless, managed, and scalable solution.
 
 </details>
 
 ---
 
-**8.** Uma empresa precisa de um sistema de busca de produtos que suporte full-text search, filtros por categoria/preço, e autocompletion. A base tem 10 milhões de produtos. Qual serviço AWS usar?
+**7.** A marketplace company needs to notify 5 different teams (email, mobile push, audit, analytics, CRM) when an order is created. What is the most suitable pattern?
 
-- A) DynamoDB com GSI para filtros por categoria
-- B) Amazon OpenSearch Service com índices de produtos
-- C) Amazon Aurora com Full-Text Search
+- A) A REST API that calls the 5 systems in sequence
+- B) SNS topic (order created) → 5 SQS queues (one per system) → each system consumes its own queue (fan-out pattern)
+- C) EventBridge with 5 rules pointing to each system
+- D) B and C are both valid; SNS fan-out is simpler; EventBridge is better for complex conditional rules
+
+<details><summary>Answer</summary>
+
+**D** — SNS Fan-out: SNS → multiple SQS (or Lambda directly) in parallel. Simple and direct. EventBridge: better when different events need different filters/rules (e.g., only notify analytics for orders > $500). For the simple case described, SNS fan-out is sufficient.
+
+</details>
+
+---
+
+**8.** A company needs a product search system that supports full-text search, category/price filters, and autocompletion. The catalog has 10 million products. Which AWS service should be used?
+
+- A) DynamoDB with a GSI for category filters
+- B) Amazon OpenSearch Service with product indexes
+- C) Amazon Aurora with Full-Text Search
 - D) Amazon Kendra
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — OpenSearch: motor de busca full-text, filtros compostos, autocompletion (completion suggester), fuzzy matching, relevance scoring. 10 milhões de documentos é viável num cluster OpenSearch de tamanho adequado. DynamoDB não tem full-text search. Kendra é para enterprise search de documentos, não catálogo de produtos.
+**B** — OpenSearch: a full-text search engine with compound filters, autocompletion (completion suggester), fuzzy matching, and relevance scoring. 10 million documents is feasible in a properly sized OpenSearch cluster. DynamoDB has no full-text search. Kendra is for enterprise document search, not a product catalog.
 
 </details>
 
 ---
 
-**9.** Uma empresa quer construir um data lake serverless onde engenheiros de dados possam fazer ETL em Python, analistas possam fazer queries SQL e cientistas de dados possam treinar modelos ML, todos sobre os mesmos dados em S3. Qual arquitetura?
+**9.** A company wants to build a serverless data lake where data engineers can do ETL in Python, analysts can run SQL queries, and data scientists can train ML models, all on the same data in S3. Which architecture?
 
-- A) EMR permanente para todas as workloads
+- A) A permanent EMR cluster for all workloads
 - B) S3 + Glue Data Catalog + Glue Studio (ETL) + Athena (SQL) + SageMaker (ML)
-- C) Redshift como central de todos os dados
-- D) Aurora + QuickSight para todos os casos
+- C) Redshift as the center for all data
+- D) Aurora + QuickSight for all cases
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — S3 como storage universal (dados brutos e processados). Glue Data Catalog: metastore compartilhado. Glue Studio: ETL Python/Spark serverless. Athena: SQL sobre S3 (serverless). SageMaker: ML sobre dados S3. Cada persona usa a ferramenta ideal, todos acessam os mesmos dados no S3 via Glue Catalog.
-
-</details>
-
----
-
-**10.** Uma aplicação web precisa autenticar usuários com Google, Facebook e email/senha, e depois acessar DynamoDB e S3 diretamente do browser (client-side) sem passar pelo backend. Qual serviço implementa isso?
-
-- A) IAM Users para cada usuário da aplicação
-- B) Amazon Cognito: User Pools (auth) + Identity Pools (credenciais AWS temporárias para acesso client-side)
-- C) API Gateway com Lambda Authorizer para validar tokens OAuth
-- D) AWS SSO para usuários de aplicações web
-
-<details><summary>Resposta</summary>
-
-**B** — Cognito User Pool: signup/login com email/senha + federação com Google, Facebook (social). Identity Pool: troca o token Cognito (ou social) por credenciais AWS temporárias (STS assume role). O browser pode então acessar S3 e DynamoDB diretamente com as credenciais temporárias, sem expor credenciais permanentes.
+**B** — S3 as universal storage (raw and processed data). Glue Data Catalog: shared metastore. Glue Studio: serverless Python/Spark ETL. Athena: SQL over S3 (serverless). SageMaker: ML over S3 data. Each persona uses the ideal tool, and all access the same data in S3 via the Glue Catalog.
 
 </details>
 
 ---
 
-**11.** Uma empresa de mídia precisa processar vídeos enviados por usuários (transcodificação para múltiplos formatos e resoluções). O processamento é pesado (30-60 minutos por vídeo) e o volume é imprevisível. Qual arquitetura?
+**10.** A web application needs to authenticate users with Google, Facebook, and email/password, and then access DynamoDB and S3 directly from the browser (client-side) without going through the backend. Which service implements this?
 
-- A) Lambda para transcodificação (timeout máximo 15 min — insuficiente)
-- B) S3 evento → SQS → ECS Fargate tasks (escala baseada em queue depth) para transcodificação
-- C) EC2 On-Demand com Auto Scaling
-- D) AWS Elemental MediaConvert (serviço gerenciado específico para transcodificação)
+- A) IAM Users for each application user
+- B) Amazon Cognito: User Pools (auth) + Identity Pools (temporary AWS credentials for client-side access)
+- C) API Gateway with a Lambda Authorizer to validate OAuth tokens
+- D) AWS SSO for web application users
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**D** — AWS Elemental MediaConvert: serviço gerenciado específico para transcodificação de vídeo. Suporta múltiplos formatos de input/output, presets de resolução, DRM, legendas. S3 → MediaConvert → S3. Serverless, paga por minuto de output transcodificado. Alternativa: S3 → SQS → Fargate tasks com FFmpeg (B) — mais flexível mas mais complexo.
+**B** — Cognito User Pool: signup/login with email/password + federation with Google, Facebook (social). Identity Pool: exchanges the Cognito (or social) token for temporary AWS credentials (STS assume role). The browser can then access S3 and DynamoDB directly with the temporary credentials, without exposing permanent credentials.
 
 </details>
 
 ---
 
-**12.** Uma empresa precisa de um ambiente de desenvolvimento cloud onde os desenvolvedores escrevam, executem e depurem código diretamente do browser, sem configurar ambientes locais. Qual serviço AWS?
+**11.** A media company needs to process videos uploaded by users (transcoding to multiple formats and resolutions). The processing is heavy (30-60 minutes per video) and the volume is unpredictable. Which architecture?
 
-- A) AWS Cloud9 (IDE baseado em browser com EC2 em background)
+- A) Lambda for transcoding (maximum timeout 15 min — insufficient)
+- B) S3 event → SQS → ECS Fargate tasks (scaling based on queue depth) for transcoding
+- C) On-Demand EC2 with Auto Scaling
+- D) AWS Elemental MediaConvert (a managed service specific to transcoding)
+
+<details><summary>Answer</summary>
+
+**D** — AWS Elemental MediaConvert: a managed service specific to video transcoding. Supports multiple input/output formats, resolution presets, DRM, and captions. S3 → MediaConvert → S3. Serverless, pay per minute of transcoded output. Alternative: S3 → SQS → Fargate tasks with FFmpeg (B) — more flexible but more complex.
+
+</details>
+
+---
+
+**12.** A company needs a cloud development environment where developers write, run, and debug code directly from the browser, without setting up local environments. Which AWS service?
+
+- A) AWS Cloud9 (browser-based IDE with EC2 in the background)
 - B) AWS CloudShell
 - C) Amazon WorkSpaces
 - D) AWS CodeStar
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**A** — AWS Cloud9: IDE completo no browser com editor de código, terminal integrado, debugger e suporte a Lambda development. Roda em EC2 (ou SSM para instâncias existentes). Colaboração em tempo real. CloudShell (B) é só terminal sem IDE. WorkSpaces (C) é desktop virtual completo.
-
-</details>
-
----
-
-**13.** Uma plataforma de blog tem picos de tráfego previsíveis (lançamentos de artigos) que duram 2 horas. A maioria do conteúdo é estático. Qual é a arquitetura mais custo-efetiva?
-
-- A) Auto Scaling Group com escala baseada em CPU
-- B) CloudFront cacheando conteúdo estático (artigos, imagens) → origin ALB + pequeno ASG (apenas para conteúdo dinâmico)
-- C) Lambda para todo conteúdo (incluindo geração dinâmica de HTML)
-- D) EC2 com memoria alta para cache em memória local
-
-<details><summary>Resposta</summary>
-
-**B** — CloudFront absorve a maior parte do tráfego de conteúdo estático sem chegar no origin. Apenas requests não-cacheáveis (search, comments, user specific) chegam no backend. O ASG pode ser mínimo. Durante picos, CloudFront escala automaticamente (global infrastructure). Custo-efetivo pois elimina a maioria da carga do backend.
+**A** — AWS Cloud9: a full IDE in the browser with a code editor, integrated terminal, debugger, and support for Lambda development. Runs on EC2 (or SSM for existing instances). Real-time collaboration. CloudShell (B) is only a terminal with no IDE. WorkSpaces (C) is a full virtual desktop.
 
 </details>
 
 ---
 
-**14.** Uma empresa precisa garantir que é possível restaurar sua aplicação em uma nova região em menos de 1 hora após uma falha regional. Qual combinação de estratégias implementar?
+**13.** A blog platform has predictable traffic spikes (article launches) lasting 2 hours. Most of the content is static. What is the most cost-effective architecture?
 
-- A) Snapshots diários de EBS + AMIs copiadas para segunda região
+- A) Auto Scaling Group with CPU-based scaling
+- B) CloudFront caching static content (articles, images) → ALB origin + small ASG (only for dynamic content)
+- C) Lambda for all content (including dynamic HTML generation)
+- D) EC2 with high memory for local in-memory caching
+
+<details><summary>Answer</summary>
+
+**B** — CloudFront absorbs most of the static content traffic without reaching the origin. Only non-cacheable requests (search, comments, user-specific) reach the backend. The ASG can be minimal. During spikes, CloudFront scales automatically (global infrastructure). Cost-effective because it removes most of the load from the backend.
+
+</details>
+
+---
+
+**14.** A company needs to ensure it can restore its application in a new Region in under 1 hour after a regional failure. Which combination of strategies should be implemented?
+
+- A) Daily EBS snapshots + AMIs copied to a second Region
 - B) Multi-region AMIs + Aurora Global DB + S3 CRR + Route 53 health check failover + IaC (CloudFormation)
-- C) Apenas S3 CRR para backup dos dados
-- D) AWS Backup com cross-region backup para todos os recursos
+- C) Only S3 CRR for data backup
+- D) AWS Backup with cross-region backup for all resources
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Para RTO < 1 hora: AMIs pré-copiadas (EC2 pronto para lançar), Aurora Global DB (BD replicado com RPO < 1s), S3 CRR (dados replicados), Route 53 failover automático, e CloudFormation para provisionar rapidamente a infraestrutura. AWS Backup (D) é bom para backups mas não coordena o failover orquestrado.
+**B** — For RTO < 1 hour: pre-copied AMIs (EC2 ready to launch), Aurora Global DB (replicated DB with RPO < 1s), S3 CRR (replicated data), Route 53 automatic failover, and CloudFormation to quickly provision the infrastructure. AWS Backup (D) is good for backups but does not coordinate an orchestrated failover.
 
 </details>
 
 ---
 
-**15.** Uma empresa de saúde precisa armazenar prontuários médicos com controles rigorosos: apenas médicos autorizados acessam registros de seus pacientes, auditoria de todos os acessos, criptografia com chaves do cliente, e conformidade HIPAA. Qual arquitetura?
+**15.** A healthcare company needs to store medical records with strict controls: only authorized doctors access their patients' records, auditing of all access, encryption with customer-managed keys, and HIPAA compliance. Which architecture?
 
-- A) RDS MySQL com usuários por médico
-- B) S3 com AES256 + IAM policies por médico
-- C) DynamoDB (dados) + KMS CMK (criptografia) + IAM com resource-based conditions + CloudTrail Data Events (auditoria) + AWS Artifact (certificação HIPAA)
-- D) Aurora com SSL + Cognito User Pools
+- A) RDS MySQL with a user per doctor
+- B) S3 with AES256 + IAM policies per doctor
+- C) DynamoDB (data) + KMS CMK (encryption) + IAM with resource-based conditions + CloudTrail Data Events (auditing) + AWS Artifact (HIPAA certification)
+- D) Aurora with SSL + Cognito User Pools
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**C** — Conformidade HIPAA completa: DynamoDB com KMS CMK (chave gerenciada pelo cliente = controle total de criptografia); IAM com condições (`dynamodb:LeadingKeys` para restringir por patient_id do médico-paciente); CloudTrail Data Events: registra todas as leituras no DynamoDB; AWS Artifact: obtém documentos BAA (Business Associate Agreement) necessários para HIPAA.
+**C** — Complete HIPAA compliance: DynamoDB with a KMS CMK (customer-managed key = full control of encryption); IAM with conditions (`dynamodb:LeadingKeys` to restrict by the doctor-patient's patient_id); CloudTrail Data Events: records all reads in DynamoDB; AWS Artifact: obtains the BAA (Business Associate Agreement) documents required for HIPAA.
 
 </details>

@@ -1,129 +1,129 @@
-# Flashcards — Módulo 13: Machine Learning e IA
+# Flashcards — Module 13: Machine Learning and AI
 
-> **Formato:** P = Pergunta | R = Resposta  
+> **Format:** Q = Question | A = Answer  
 > **Total:** 25 flashcards
 
 ---
 
-**P:** Quais são as 3 camadas do framework AWS AI/ML?  
-**R:** **(1) AI Services (topo):** APIs prontas sem ML knowledge — Rekognition, Comprehend, Polly, Transcribe, Translate, Lex, Textract, Kendra, Bedrock. **(2) ML Services (meio):** SageMaker (build-train-deploy personalizado). **(3) Infrastructure (base):** EC2 GPU, Trainium, Inferentia para training/inference em escala.
+**Q:** What are the 3 layers of the AWS AI/ML framework?  
+**A:** **(1) AI Services (top):** ready-made APIs with no ML knowledge — Rekognition, Comprehend, Polly, Transcribe, Translate, Lex, Textract, Kendra, Bedrock. **(2) ML Services (middle):** SageMaker (custom build-train-deploy). **(3) Infrastructure (base):** EC2 GPU, Trainium, Inferentia for training/inference at scale.
 
 ---
 
-**P:** O que é Amazon Bedrock e o que diferencia do SageMaker?  
-**R:** **Bedrock:** acesso a Foundation Models (LLMs) de terceiros via API (Anthropic Claude, Amazon Titan, Meta Llama, Mistral, Cohere, Stability AI) sem treinar modelo. **SageMaker:** plataforma para treinar, tunar e deployar modelos ML próprios. Bedrock = usar modelos prontos; SageMaker = construir modelos customizados.
+**Q:** What is Amazon Bedrock and how does it differ from SageMaker?  
+**A:** **Bedrock:** access to third-party Foundation Models (LLMs) via API (Anthropic Claude, Amazon Titan, Meta Llama, Mistral, Cohere, Stability AI) without training a model. **SageMaker:** platform to train, tune, and deploy your own ML models. Bedrock = use ready-made models; SageMaker = build custom models.
 
 ---
 
-**P:** O que é RAG no contexto do Amazon Bedrock?  
-**R:** Retrieval Augmented Generation: técnica que conecta LLMs a uma base de conhecimento externa. Fluxo: usuário pergunta → sistema busca contexto relevante na base → envia contexto + pergunta para o LLM → LLM gera resposta fundamentada nos dados atuais. Bedrock Knowledge Bases implementa RAG com Amazon OpenSearch Serverless como vector store.
+**Q:** What is RAG in the context of Amazon Bedrock?  
+**A:** Retrieval Augmented Generation: a technique that connects LLMs to an external knowledge base. Flow: user asks → system retrieves relevant context from the knowledge base → sends context + question to the LLM → LLM generates an answer grounded in current data. Bedrock Knowledge Bases implements RAG with Amazon OpenSearch Serverless as the vector store.
 
 ---
 
-**P:** Para qual caso de uso usar Amazon Rekognition?  
-**R:** **Análise de imagens e vídeos:** detecção de objetos/cenas/texto, reconhecimento facial (comparação, pesquisa em coleção), detecção de conteúdo inapropriado (moderation), análise de PPE (EPI), detecção de celebridades, análise de vídeo em streaming ou batch. Não requer ML knowledge.
+**Q:** For which use case should you use Amazon Rekognition?  
+**A:** **Image and video analysis:** object/scene/text detection, facial recognition (comparison, search in a collection), inappropriate content detection (moderation), PPE analysis, celebrity detection, streaming or batch video analysis. Requires no ML knowledge.
 
 ---
 
-**P:** Qual é a diferença entre Amazon Transcribe e Amazon Polly?  
-**R:** **Transcribe:** Speech-to-Text (STT) — converte áudio em texto. Features: diarização (identificar quem fala), vocabulário customizado, redação de PII, identificação de idioma automática. **Polly:** Text-to-Speech (TTS) — converte texto em áudio. Features: vozes neurais (NTTS), SSML para controle de pronúncia, lexicons customizados.
+**Q:** What is the difference between Amazon Transcribe and Amazon Polly?  
+**A:** **Transcribe:** Speech-to-Text (STT) — converts audio to text. Features: diarization (identify who is speaking), custom vocabulary, PII redaction, automatic language identification. **Polly:** Text-to-Speech (TTS) — converts text to audio. Features: neural voices (NTTS), SSML for pronunciation control, custom lexicons.
 
 ---
 
-**P:** O que é Amazon Comprehend e quais são suas principais análises?  
-**R:** NLP service para análise de texto sem código ML. Análises: **Entities** (pessoas, organizações, locais), **Key Phrases** (expressões-chave), **Sentiment** (positivo/negativo/neutro/misto), **Language Detection**, **PII Detection/Redaction**, **Topic Modeling** (agrupar documentos por temas latentes). Comprehend Medical: versão especializada para textos clínicos.
+**Q:** What is Amazon Comprehend and what are its main analyses?  
+**A:** NLP service for text analysis without ML code. Analyses: **Entities** (people, organizations, places), **Key Phrases**, **Sentiment** (positive/negative/neutral/mixed), **Language Detection**, **PII Detection/Redaction**, **Topic Modeling** (group documents by latent topics). Comprehend Medical: specialized version for clinical texts.
 
 ---
 
-**P:** O que é o Amazon Lex v2 e para que serve?  
-**R:** Serviço gerenciado para criar **chatbots e assistentes virtuais** de voz e texto. Usa ASR (Automatic Speech Recognition) + NLU (Natural Language Understanding). Intents = ações; Slots = parâmetros a coletar. Base da Alexa. Use case: IVR (URA), bots de atendimento, assistentes de help desk. Nenhum ML knowledge necessário.
+**Q:** What is Amazon Lex v2 and what is it used for?  
+**A:** Managed service for building voice and text **chatbots and virtual assistants**. Uses ASR (Automatic Speech Recognition) + NLU (Natural Language Understanding). Intents = actions; Slots = parameters to collect. The foundation of Alexa. Use cases: IVR, customer service bots, help desk assistants. No ML knowledge required.
 
 ---
 
-**P:** Qual é a diferença entre Amazon Kendra e Amazon OpenSearch?  
-**R:** **Kendra:** search inteligente para documentos corporativos usando ML e NLP. Entende linguagem natural, busca semântica, responde perguntas diretamente. Input: PDFs, Word, SharePoint, Salesforce, S3. **OpenSearch:** search e analytics técnico (logs, métricas, e-commerce search, full-text search). Kendra = inteligente para humanos; OpenSearch = técnico/full-text.
+**Q:** What is the difference between Amazon Kendra and Amazon OpenSearch?  
+**A:** **Kendra:** intelligent search for corporate documents using ML and NLP. Understands natural language, semantic search, answers questions directly. Input: PDFs, Word, SharePoint, Salesforce, S3. **OpenSearch:** technical search and analytics (logs, metrics, e-commerce search, full-text search). Kendra = intelligent for humans; OpenSearch = technical/full-text.
 
 ---
 
-**P:** Para qual cenário usar Amazon SageMaker Ground Truth?  
-**R:** **Labeling de dados** para treino de modelos ML. Fluxo: humans (crowdworkers via Amazon Mechanical Turk ou força de trabalho privada) anotam/rotulam imagens, textos, vídeos. Ativo Learning: modelos parcialmente treinados rotulam automaticamente dados de alta confiança, reduzindo custo de labeling humano em até 70%.
+**Q:** For which scenario should you use Amazon SageMaker Ground Truth?  
+**A:** **Data labeling** for training ML models. Flow: humans (crowdworkers via Amazon Mechanical Turk or a private workforce) annotate/label images, texts, videos. Active Learning: partially trained models automatically label high-confidence data, reducing human labeling cost by up to 70%.
 
 ---
 
-**P:** O que é Amazon Textract e como difere de um OCR simples?  
-**R:** **Textract:** extrai texto + **estrutura** de documentos escaneados. Vai além de OCR: detecta Tables (extrai cabeçalhos e células), Forms (extrai campo:valor de formulários), Queries (responde perguntas específicas sobre o documento). Suporta PDFs multi-página, IDs (passaportes, carteiras de habilitação), documentos médicos.
+**Q:** What is Amazon Textract and how does it differ from simple OCR?  
+**A:** **Textract:** extracts text + **structure** from scanned documents. Goes beyond OCR: detects Tables (extracts headers and cells), Forms (extracts field:value from forms), Queries (answers specific questions about the document). Supports multi-page PDFs, IDs (passports, driver's licenses), medical documents.
 
 ---
 
-**P:** O que é Amazon Fraud Detector?  
-**R:** Serviço gerenciado de detecção de fraudes usando ML. Modelos pré-treinados em dados de fraude AWS + dados históricos do cliente. Detection events: new account registrations, online payments, guest checkout. Retorna um fraud score. Sem necessidade de expertise em ML.
+**Q:** What is Amazon Fraud Detector?  
+**A:** Managed fraud detection service using ML. Models pre-trained on AWS fraud data + the customer's historical data. Detection events: new account registrations, online payments, guest checkout. Returns a fraud score. No ML expertise required.
 
 ---
 
-**P:** Quais são as etapas do SageMaker ML pipeline?  
-**R:** **(1) Data prep:** SageMaker Data Wrangler / Processing Jobs. **(2) Training:** Training Jobs (instâncias EC2). **(3) Tuning:** Hyperparameter Optimization (HPO). **(4) Evaluation:** Experiments. **(5) Registry:** Model Registry. **(6) Deploy:** SageMaker Endpoints (online) / Batch Transform (offline). **(7) Monitor:** Model Monitor.
+**Q:** What are the stages of the SageMaker ML pipeline?  
+**A:** **(1) Data prep:** SageMaker Data Wrangler / Processing Jobs. **(2) Training:** Training Jobs (EC2 instances). **(3) Tuning:** Hyperparameter Optimization (HPO). **(4) Evaluation:** Experiments. **(5) Registry:** Model Registry. **(6) Deploy:** SageMaker Endpoints (online) / Batch Transform (offline). **(7) Monitor:** Model Monitor.
 
 ---
 
-**P:** O que é o Amazon SageMaker Feature Store?  
-**R:** Repositório centralizado de features (variáveis de input) para modelos ML. Permite: compartilhar features entre equipes e modelos, reutilizar features computadas, consistência entre training e inference (mesmo cálculo). **Online Store:** baixa latência para inference em real-time. **Offline Store:** histórico via S3 para training.
+**Q:** What is Amazon SageMaker Feature Store?  
+**A:** Centralized repository of features (input variables) for ML models. Allows: sharing features across teams and models, reusing computed features, consistency between training and inference (same calculation). **Online Store:** low latency for real-time inference. **Offline Store:** history via S3 for training.
 
 ---
 
-**P:** O que é Amazon Forecast e qual problema resolve?  
-**R:** Serviço gerenciado de **previsão de séries temporais** usando DeepAR+ (algoritmo proprietário Amazon). Input: dados históricos de séries temporais (vendas, demanda, tráfego) + metadados (promoções, feriados). Output: previsões futuras com intervalos de confiança. Casos: planejamento de demanda, supply chain, capacity planning.
+**Q:** What is Amazon Forecast and what problem does it solve?  
+**A:** Managed **time series forecasting** service using DeepAR+ (a proprietary Amazon algorithm). Input: historical time series data (sales, demand, traffic) + metadata (promotions, holidays). Output: future forecasts with confidence intervals. Use cases: demand planning, supply chain, capacity planning.
 
 ---
 
-**P:** O que é Amazon Personalize e para qual tipo de recomendação serve?  
-**R:** Serviço gerenciado de **recomendações personalizadas** (mesmo que usa em Amazon.com/Prime Video). Input: dados de interação usuário-item (clicks, purchases, plays), metadados de itens/usuários. Output: recomendações em tempo real by userId. Use cases: "outros usuários também compraram", "continuar assistindo", "produtos recomendados".
+**Q:** What is Amazon Personalize and what type of recommendation is it used for?  
+**A:** Managed **personalized recommendations** service (the same one used on Amazon.com/Prime Video). Input: user-item interaction data (clicks, purchases, plays), item/user metadata. Output: real-time recommendations by userId. Use cases: "other users also bought", "continue watching", "recommended products".
 
 ---
 
-**P:** O que é Amazon Lookout for Metrics?  
-**R:** Detecção automática de **anomalias em série temporal** usando ML. Input: métricas de negócio (revenue, DAUs, conversion rate) de S3, RDS, Redshift, Salesforce, etc. Detecta desvios significativos automaticamente. Envia alertas via SNS. Sem ML knowledge necessário. Diferente de CloudWatch Anomaly Detection (métricas técnicas de infraestrutura).
+**Q:** What is Amazon Lookout for Metrics?  
+**A:** Automatic **time series anomaly detection** using ML. Input: business metrics (revenue, DAUs, conversion rate) from S3, RDS, Redshift, Salesforce, etc. Automatically detects significant deviations. Sends alerts via SNS. No ML knowledge required. Different from CloudWatch Anomaly Detection (technical infrastructure metrics).
 
 ---
 
-**P:** O que é o Amazon SageMaker Jumpstart?  
-**R:** Hub de modelos pré-treinados e soluções ML prontas para deploy em um clique. Contém: Foundation Models (Llama, Mistral, Falcon), modelos de visão (ResNet, EfficientNet), NLP (BERT, RoBERTa), soluções industriais (demand forecast, fraud). Acelera início de projetos ML sem partir do zero.
+**Q:** What is Amazon SageMaker JumpStart?  
+**A:** Hub of pre-trained models and ready-made ML solutions for one-click deployment. Contains: Foundation Models (Llama, Mistral, Falcon), vision models (ResNet, EfficientNet), NLP (BERT, RoBERTa), industry solutions (demand forecast, fraud). Speeds up the start of ML projects without starting from scratch.
 
 ---
 
-**P:** O que é Amazon Bedrock Guardrails?  
-**R:** Controles de segurança para aplicações com Foundation Models. Funcionalidades: filtros de conteúdo (violence, hate speech, sexual), topic denial (bloquear tópicos proibidos — ex: concorrência), PII redaction, word filters. Aplicados automaticamente no input do usuário E na resposta do modelo.
+**Q:** What is Amazon Bedrock Guardrails?  
+**A:** Safety controls for applications with Foundation Models. Features: content filters (violence, hate speech, sexual), topic denial (block prohibited topics — e.g., competitors), PII redaction, word filters. Applied automatically to the user input AND the model response.
 
 ---
 
-**P:** Para qual cenário usar Amazon Translate com Custom Terminology?  
-**R:** Quando há termos específicos da empresa/produto que não devem ser traduzidos automaticamente (nomes de produto, gírias corporativas, siglas). Custom Terminology: CSV com par origem→destino. Ex: "Amazon Aurora" → "Amazon Aurora" (não traduzir), "order" → "pedido" (tradução específica). Mantém consistência terminológica em traduções.
+**Q:** For which scenario should you use Amazon Translate with Custom Terminology?  
+**A:** When there are company/product-specific terms that must not be translated automatically (product names, corporate slang, acronyms). Custom Terminology: CSV with source→target pairs. E.g., "Amazon Aurora" → "Amazon Aurora" (do not translate), "order" → "pedido" (specific translation). Maintains terminological consistency across translations.
 
 ---
 
-**P:** O que é Amazon SageMaker Canvas?  
-**R:** Interface **no-code** para ML. Profissionais de negócio sem experiência em programação podem treinar modelos de ML (classificação, regressão, previsão de séries temporais, análise de imagens) via interface visual. Input: uploads de CSV, S3. Usa AutoML sob o capô. Compartilha modelos com cientistas de dados no SageMaker Studio.
+**Q:** What is Amazon SageMaker Canvas?  
+**A:** **No-code** interface for ML. Business professionals without programming experience can train ML models (classification, regression, time series forecasting, image analysis) through a visual interface. Input: CSV uploads, S3. Uses AutoML under the hood. Shares models with data scientists in SageMaker Studio.
 
 ---
 
-**P:** O que é Amazon Rekognition Content Moderation?  
-**R:** API que detecta conteúdo inapropriado ou adulto em imagens e vídeos. Retorna labels hierárquicos com confidence score (ex: "Explicit Nudity" > "Nudity", confidence: 99.5%). Casos: plataformas UGC (User Generated Content), redes sociais, marketplaces. Empresas definem threshold de confidence para moderação automática.
+**Q:** What is Amazon Rekognition Content Moderation?  
+**A:** API that detects inappropriate or adult content in images and videos. Returns hierarchical labels with a confidence score (e.g., "Explicit Nudity" > "Nudity", confidence: 99.5%). Use cases: UGC (User Generated Content) platforms, social networks, marketplaces. Companies define a confidence threshold for automatic moderation.
 
 ---
 
-**P:** O que é Amazon Transcribe Call Analytics?  
-**R:** Versão especializada do Transcribe para análise de ligações de call center. Além de transcrição: detecta o **sentimento** de cada turno de conversa (cliente vs. agente), identifica categorias personalizadas (reclamação, cancelamento), extrai entidades (números de conta, datas), mede tempo de silêncio e interrupções.
+**Q:** What is Amazon Transcribe Call Analytics?  
+**A:** Specialized version of Transcribe for call center call analysis. Beyond transcription: detects the **sentiment** of each conversation turn (customer vs. agent), identifies custom categories (complaint, cancellation), extracts entities (account numbers, dates), measures silence time and interruptions.
 
 ---
 
-**P:** Quando usar Amazon Comprehend Medical?  
-**R:** Extrai entidades médicas de texto clínico: **diagnósticos** (ICD-10 codes), **medicamentos** (dosagem, frequência, via de administração), **procedimentos médicos**, **anatomia**, **sinais vitais**. Detecta relacionamentos (medicamento → dosagem). HIPAA eligible. Casos: NLP de prontuários eletrônicos, codificação médica, pesquisa clínica.
+**Q:** When should you use Amazon Comprehend Medical?  
+**A:** Extracts medical entities from clinical text: **diagnoses** (ICD-10 codes), **medications** (dosage, frequency, route of administration), **medical procedures**, **anatomy**, **vital signs**. Detects relationships (medication → dosage). HIPAA eligible. Use cases: NLP on electronic health records, medical coding, clinical research.
 
 ---
 
-**P:** O que é Amazon Polly Neural Text-to-Speech (NTTS)?  
-**R:** Vozes sintéticas de altíssima qualidade usando deep learning — praticamente indistinguíveis de voz humana. Mais natural que vozes padrão (concatenation synthesis). Suporta **SSML** (Speech Synthesis Markup Language) para controlar pausas, ênfase, pronúncia. Casos: IVR, audiobooks, acessibilidade, e-learning.
+**Q:** What is Amazon Polly Neural Text-to-Speech (NTTS)?  
+**A:** Very high-quality synthetic voices using deep learning — practically indistinguishable from a human voice. More natural than standard voices (concatenation synthesis). Supports **SSML** (Speech Synthesis Markup Language) to control pauses, emphasis, pronunciation. Use cases: IVR, audiobooks, accessibility, e-learning.
 
 ---
 
-**P:** O que é o modelo de responsabilidade no Amazon Bedrock (Security)?  
-**R:** **AWS responsável por:** infraestrutura, modelo base, dados de training do FM. **Cliente responsável por:** dados enviados ao modelo (prompts/contexto), dados de fine-tuning, aplicação e respostas geradas. Os prompts e respostas **não são usados para treinar modelos** da AWS (dados privados do cliente). Bedrock é HIPAA/SOC/ISO elegível.
+**Q:** What is the responsibility model in Amazon Bedrock (Security)?  
+**A:** **AWS is responsible for:** infrastructure, the base model, the FM training data. **Customer is responsible for:** data sent to the model (prompts/context), fine-tuning data, the application and generated responses. Prompts and responses are **not used to train AWS models** (private customer data). Bedrock is HIPAA/SOC/ISO eligible.

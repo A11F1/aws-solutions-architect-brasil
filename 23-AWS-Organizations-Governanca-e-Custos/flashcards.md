@@ -1,31 +1,31 @@
-# Flashcards - AWS Organizations, Governanca e Custos
+# Flashcards - AWS Organizations, Governance, and Costs
 
-1. SCP concede permissao?
-- Nao, apenas restringe.
+1. Does an SCP grant permission?
+- No, it only restricts.
 
-2. Qual conta nao e afetada por SCP?
+2. Which account is not affected by SCPs?
 - Management account.
 
-3. Servico para landing zone multi-account?
+3. Service for a multi-account landing zone?
 - AWS Control Tower.
 
-4. Acesso humano central em varias contas?
+4. Central human access across multiple accounts?
 - IAM Identity Center.
 
-5. Relatorio detalhado de custo para consultas?
+5. Detailed cost report for queries?
 - CUR.
 
-6. Alerta preventivo de custo?
+6. Preventive cost alert?
 - AWS Budgets.
 
-7. Ferramenta de tendencia e recomendacao de custo?
+7. Tool for cost trends and recommendations?
 - Cost Explorer.
 
-8. Economia com compromisso de uso?
+8. Savings with a usage commitment?
 - Savings Plans/RI.
 
-9. Melhor uso de Spot?
-- Cargas tolerantes a interrupcao.
+9. Best use of Spot?
+- Interruption-tolerant workloads.
 
-10. Base de chargeback?
-- Tags de alocacao + CUR.
+10. Basis for chargeback?
+- Allocation tags + CUR.

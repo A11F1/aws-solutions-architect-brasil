@@ -1,10 +1,10 @@
-# Questões de Prova — Módulo 05: Amazon S3 e Armazenamento
+# Exam Questions — Module 05: Amazon S3 and Storage
 
-<!-- Domínio SAA-C03: Design Resilient Architectures / Cost-Optimized Architectures -->
+<!-- SAA-C03 Domain: Design Resilient Architectures / Cost-Optimized Architectures -->
 
 ---
 
-**1.** Uma empresa armazena logs de acesso com padrão imprevisível de acesso por período indeterminado. Precisam de menor custo possível sem gerenciar tiers manualmente. Qual classe S3 é mais adequada?
+**1.** A company stores access logs with an unpredictable access pattern for an indeterminate period. They need the lowest possible cost without managing tiers manually. Which S3 class is most suitable?
 
 - A) S3 Standard-IA
 - B) S3 Glacier Flexible Retrieval
@@ -12,29 +12,29 @@
 - D) S3 One Zone-IA
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — S3 Intelligent-Tiering**
-Automaticamente move objetos entre tiers (Frequent, Infrequent, Archive Instant, Archive) conforme padrão de acesso. Ideal quando o padrão é imprevisível. One Zone-IA seria barco se o dado não puder tolerar perda; Standard-IA incorre custo de recuperação em acesso frequente.
+It automatically moves objects between tiers (Frequent, Infrequent, Archive Instant, Archive) based on access pattern. Ideal when the pattern is unpredictable. One Zone-IA would be cheaper but only if the data can tolerate loss; Standard-IA incurs retrieval costs under frequent access.
 </details>
 
 ---
 
-**2.** Um bucket S3 precisa ser acessível publicamente para hospedar um site estático. O administrador ativou "Block Public Access" na conta mas quer liberar apenas este bucket. O que deve fazer?
+**2.** An S3 bucket needs to be publicly accessible to host a static website. The administrator enabled "Block Public Access" on the account but wants to open up only this bucket. What should they do?
 
-- A) Não é possível — Block Public Access de conta é irrevogável
-- B) Desabilitar Block Public Access na conta, depois aplicar bucket policy pública
-- C) Habilitar "requester pays" no bucket para permitir acesso público
-- D) Criar um endpoint S3 e acessar via CloudFront sem tornar o bucket público
+- A) It is not possible — account-level Block Public Access is irrevocable
+- B) Disable Block Public Access on the account, then apply a public bucket policy
+- C) Enable "requester pays" on the bucket to allow public access
+- D) Create an S3 endpoint and access it via CloudFront without making the bucket public
 
 <details>
-<summary>Resposta</summary>
-**D — Usar CloudFront com OAC (recomendado)**
-A melhor prática é NÃO tornar o bucket público. Use CloudFront com Origin Access Control (OAC). Mas se a pergunta exige bucket público: a resposta correta é B — desabilitar Block Public Access na conta e aplicar bucket policy. A opção D é arquiteturalmente superior e é o que AWS recomenda.
+<summary>Answer</summary>
+**D — Use CloudFront with OAC (recommended)**
+The best practice is NOT to make the bucket public. Use CloudFront with Origin Access Control (OAC). But if the question requires a public bucket: the correct answer is B — disable Block Public Access on the account and apply a bucket policy. Option D is architecturally superior and is what AWS recommends.
 </details>
 
 ---
 
-**3.** Uma empresa quer replicar objetos S3 de us-east-1 para ap-southeast-1 para reduzir latência de usuários na Ásia. Qual recurso habilitar?
+**3.** A company wants to replicate S3 objects from us-east-1 to ap-southeast-1 to reduce latency for users in Asia. Which feature should be enabled?
 
 - A) S3 Transfer Acceleration
 - B) Cross-Region Replication (CRR)
@@ -42,14 +42,14 @@ A melhor prática é NÃO tornar o bucket público. Use CloudFront com Origin Ac
 - D) S3 Multi-Region Access Points
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — Cross-Region Replication (CRR)**
-CRR replica objetos assincronamente entre buckets em regiões diferentes. Requer versionamento habilitado em ambos. SRR é para mesma região. Transfer Acceleration acelera uploads do cliente para S3, não replica objetos. Multi-Region Access Points roteia para o bucket mais próximo mas não replica sozinho.
+CRR asynchronously replicates objects between buckets in different Regions. It requires versioning enabled on both. SRR is for the same Region. Transfer Acceleration speeds up client uploads to S3; it does not replicate objects. Multi-Region Access Points route to the closest bucket but do not replicate on their own.
 </details>
 
 ---
 
-**4.** Qual tipo de encriptação no S3 permite que o cliente gerencie as chaves mas a AWS faça a encriptação/decriptação?
+**4.** Which type of S3 encryption lets the customer manage the keys while AWS performs the encryption/decryption?
 
 - A) SSE-S3 (AES-256)
 - B) SSE-KMS
@@ -57,74 +57,74 @@ CRR replica objetos assincronamente entre buckets em regiões diferentes. Requer
 - D) Client-Side Encryption (CSE)
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — SSE-C**
-SSE-C: o cliente fornece a chave em cada request HTTP; AWS encripta/decripta mas nunca armazena a chave. SSE-S3: AWS gerencia tudo. SSE-KMS: AWS gerencia via KMS (keys podem ser CMKs do cliente). CSE: o cliente encripta antes de enviar, AWS vê apenas bytes encriptados.
+SSE-C: the customer provides the key in each HTTP request; AWS encrypts/decrypts but never stores the key. SSE-S3: AWS manages everything. SSE-KMS: AWS manages via KMS (keys can be customer-managed CMKs). CSE: the customer encrypts before uploading, and AWS only sees encrypted bytes.
 </details>
 
 ---
 
-**5.** Um objeto no S3 precisa ser acessado por um usuário externo sem credenciais AWS por 1 hora. Qual mecanismo usar?
+**5.** An S3 object needs to be accessed by an external user without AWS credentials for 1 hour. Which mechanism should be used?
 
-- A) ACL pública no objeto
-- B) URL pre-assinada (presigned URL)
-- C) Bucket policy com condition aws:SourceIp
-- D) VPC Endpoint com policy aberta
+- A) Public ACL on the object
+- B) Pre-signed URL
+- C) Bucket policy with condition aws:SourceIp
+- D) VPC Endpoint with an open policy
 
 <details>
-<summary>Resposta</summary>
-**B — Presigned URL**
-Presigned URLs concedem acesso temporário (tempo configurável) a um objeto específico, usando as credenciais de quem gerou a URL. Expiram após o TTL. ACL pública exporia o objeto indefinidamente. SourceIp restricts por IP, não por tempo.
+<summary>Answer</summary>
+**B — Pre-signed URL**
+Pre-signed URLs grant temporary access (configurable duration) to a specific object, using the credentials of whoever generated the URL. They expire after the TTL. A public ACL would expose the object indefinitely. SourceIp restricts by IP, not by time.
 </details>
 
 ---
 
-**6.** Uma empresa tem objetos S3 que não podem ser apagados por 7 anos por regulação financeira. Qual recurso garantirá que nem mesmo administradores possam apagar?
+**6.** A company has S3 objects that cannot be deleted for 7 years due to financial regulation. Which feature will guarantee that not even administrators can delete them?
 
 - A) MFA Delete
-- B) Versionamento com lifecycle policy
-- C) S3 Object Lock no modo Compliance
-- D) S3 Object Lock no modo Governance
+- B) Versioning with a lifecycle policy
+- C) S3 Object Lock in Compliance mode
+- D) S3 Object Lock in Governance mode
 
 <details>
-<summary>Resposta</summary>
-**C — S3 Object Lock modo Compliance**
-No modo Compliance, NENHUM usuário (incluindo root) pode apagar ou alterar o objeto antes do retention period expirar. No modo Governance, usuários com permissão `s3:BypassGovernanceRetention` podem burlar. MFA Delete protege apagamento do bucket, não garante retenção mínima.
+<summary>Answer</summary>
+**C — S3 Object Lock in Compliance mode**
+In Compliance mode, NO user (including root) can delete or alter the object before the retention period expires. In Governance mode, users with the `s3:BypassGovernanceRetention` permission can bypass it. MFA Delete protects against deletion of the bucket's versions but does not guarantee a minimum retention.
 </details>
 
 ---
 
-**7.** Uma aplicação faz uploads de arquivos de 1 TB para S3. O que é necessário para garantir confiabilidade e eficiência no upload?
+**7.** An application uploads 1 TB files to S3. What is needed to ensure upload reliability and efficiency?
 
-- A) Usar S3 Transfer Acceleration exclusivamente
-- B) Usar Multipart Upload (obrigatório acima de 5 GB)
-- C) Usar S3 Batch Operations
-- D) Subir para um bucket regional e depois replica com CRR
+- A) Use S3 Transfer Acceleration exclusively
+- B) Use Multipart Upload (required above 5 GB)
+- C) Use S3 Batch Operations
+- D) Upload to a regional bucket and then replicate with CRR
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — Multipart Upload**
-Multipart Upload é **obrigatório** para objetos acima de **5 GB** e recomendado para objetos acima de 100 MB. Divide o arquivo em partes paralelas, aumenta velocidade e resiliência (partes com falha são reenviadas individualmente). Transfer Acceleration é para reduzir latência geográfica, não para confiabilidade de upload.
+Multipart Upload is **required** for objects above **5 GB** and recommended for objects above 100 MB. It splits the file into parallel parts, increasing speed and resilience (failed parts are re-sent individually). Transfer Acceleration reduces geographic latency, not upload reliability.
 </details>
 
 ---
 
-**8.** Um cliente web precisa fazer upload de arquivos diretamente do browser para um bucket S3 em domínio diferente. O que habilitar no bucket?
+**8.** A web client needs to upload files directly from the browser to an S3 bucket on a different domain. What should be enabled on the bucket?
 
 - A) Transfer Acceleration
 - B) CORS (Cross-Origin Resource Sharing)
-- C) Bucket Policy com s3:GetObject público
-- D) ACL com permissão AllUsers
+- C) Bucket Policy with public s3:GetObject
+- D) ACL with AllUsers permission
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **B — CORS**
-CORS controla quais origens (domínios externos) podem fazer requests para o bucket S3 diretamente do browser. Sem CORS configurado, o browser bloqueará requisições cross-origin por segurança. Isso é necessário para uploads diretos do browser (direct-to-S3).
+CORS controls which origins (external domains) can make requests to the S3 bucket directly from the browser. Without CORS configured, the browser will block cross-origin requests for security reasons. This is required for direct browser-to-S3 uploads.
 </details>
 
 ---
 
-**9.** Uma empresa quer minimizar custos armazenando logs de auditoria que raramente serão acessados mas que, quando necessário, precisam estar disponíveis em menos de 5 minutos. Qual classe S3?
+**9.** A company wants to minimize costs by storing audit logs that will rarely be accessed but, when needed, must be available in less than 5 minutes. Which S3 class?
 
 - A) S3 Glacier Deep Archive
 - B) S3 Glacier Flexible Retrieval
@@ -132,14 +132,14 @@ CORS controla quais origens (domínios externos) podem fazer requests para o buc
 - D) S3 Standard-IA
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — S3 Glacier Instant Retrieval**
-Glacier Instant Retrieval oferece recuperação em **milissegundos**, com custo menor que Standard-IA. Ideal para dados raramente acessados mas que precisam de acesso imediato quando solicitados. Glacier Flexible Retrieval demora minutos a horas. Deep Archive demora horas.
+Glacier Instant Retrieval offers retrieval in **milliseconds**, at a lower cost than Standard-IA. Ideal for rarely accessed data that needs immediate access when requested. Glacier Flexible Retrieval takes minutes to hours. Deep Archive takes hours.
 </details>
 
 ---
 
-**10.** Um sistema de arquivos precisa ser compartilhado simultaneamente entre 100 instâncias EC2 Linux em múltiplas AZs. Qual serviço AWS usar?
+**10.** A file system must be shared simultaneously among 100 Linux EC2 instances across multiple AZs. Which AWS service should be used?
 
 - A) Amazon S3
 - B) Amazon EBS (gp3)
@@ -147,82 +147,82 @@ Glacier Instant Retrieval oferece recuperação em **milissegundos**, com custo 
 - D) Amazon FSx for Windows File Server
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — Amazon EFS**
-EFS é NFS gerenciado para Linux, multi-AZ, permite acesso concurrent de múltiplas instâncias/AZs. EBS é block storage acoplado a uma única instância (exceto io2 Multi-Attach, limitado a 16 instâncias na mesma AZ). FSx for Windows é para ambientes Windows. S3 tem semântica diferente (object storage).
+EFS is managed NFS for Linux, multi-AZ, and allows concurrent access from multiple instances/AZs. EBS is block storage attached to a single instance (except io2 Multi-Attach, limited to 16 instances in the same AZ). FSx for Windows is for Windows environments. S3 has different semantics (object storage).
 </details>
 
 ---
 
-**11.** Uma empresa data center precisa migrar 10 TB de dados semanais por backups para AWS S3. A conexão de internet é limitada. Qual serviço usar sem AWS SnowFamily?
+**11.** A company's data center needs to migrate 10 TB of weekly backup data to AWS S3. The internet connection is limited. Which service should be used without the AWS Snow Family?
 
-- A) AWS DataSync via internet
+- A) AWS DataSync over the internet
 - B) AWS Storage Gateway — Tape Gateway
-- C) AWS DataSync via Direct Connect
+- C) AWS DataSync over Direct Connect
 - D) S3 Transfer Acceleration
 
 <details>
-<summary>Resposta</summary>
-**C — AWS DataSync via Direct Connect**
-DataSync é o serviço de migração/sincronização de dados. Com Direct Connect, os dados trafegam por link dedicado privado, evitando a internet. Storage Gateway Tape substitui fitas físicas mas não otimiza a transferência em massa. Transfer Acceleration usa internet (CloudFront edge).
+<summary>Answer</summary>
+**C — AWS DataSync over Direct Connect**
+DataSync is the data migration/synchronization service. With Direct Connect, data travels over a private dedicated link, avoiding the internet. Storage Gateway Tape replaces physical tapes but does not optimize bulk transfer. Transfer Acceleration uses the internet (CloudFront edge).
 </details>
 
 ---
 
-**12.** Uma empresa precisa que um servidor on-premises acesse arquivos armazenados no S3 usando protocolo NFS/SMB com cache local para baixa latência. Qual serviço?
+**12.** A company needs an on-premises server to access files stored in S3 using the NFS/SMB protocol with a local cache for low latency. Which service?
 
 - A) AWS DataSync
-- B) Amazon EFS com VPN
+- B) Amazon EFS with VPN
 - C) AWS Storage Gateway — File Gateway
 - D) AWS Storage Gateway — Volume Gateway (Stored mode)
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — File Gateway**
-File Gateway expõe buckets S3 como file shares NFS/SMB para aplicações on-premises. Cache local mantém arquivos recentes para baixa latência. Dados são armazenados no S3 como objetos. DataSync é para migração em lote, não acesso contínuo. Volume Gateway trabalha com block storage (iSCSI).
+File Gateway exposes S3 buckets as NFS/SMB file shares to on-premises applications. A local cache keeps recent files for low latency. Data is stored in S3 as objects. DataSync is for batch migration, not continuous access. Volume Gateway works with block storage (iSCSI).
 </details>
 
 ---
 
-**13.** Qual afirmação sobre S3 Lifecycle Policies é VERDADEIRA?
+**13.** Which statement about S3 Lifecycle Policies is TRUE?
 
-- A) Objetos podem transitar de S3 Standard diretamente para S3 Glacier Deep Archive sem passar por outros tiers
-- B) Objetos só podem transitar para tiers mais baratos (não é possível voltar para Standard)
-- C) Para transitar para Standard-IA ou One Zone-IA, os objetos devem ter pelo menos 180 dias
-- D) S3 Intelligent-Tiering não pode ser destino de uma Lifecycle Policy
+- A) Objects can transition from S3 Standard directly to S3 Glacier Deep Archive without going through other tiers
+- B) Objects can only transition to cheaper tiers (it is not possible to go back to Standard)
+- C) To transition to Standard-IA or One Zone-IA, objects must be at least 180 days old
+- D) S3 Intelligent-Tiering cannot be the destination of a Lifecycle Policy
 
 <details>
-<summary>Resposta</summary>
-**A — Correto**
-Lifecycle Policies permitem transições diretas entre quaisquer classes (ex: Standard → Deep Archive diretamente). B é verdade (lifecycle só transita para tiers mais baratos; restaurar é manual). C está errado — o mínimo para IA tiers é **30 dias**. D está errado — Intelligent-Tiering pode ser destino.
+<summary>Answer</summary>
+**A — Correct**
+Lifecycle Policies allow direct transitions between any classes (e.g., Standard → Deep Archive directly). B is also true (lifecycle only transitions to cheaper tiers; restoring is manual). C is wrong — the minimum for IA tiers is **30 days**. D is wrong — Intelligent-Tiering can be a destination.
 </details>
 
 ---
 
-**14.** Um bucket S3 recebe 100.000 PUTs por segundo distribuídos por 10 prefixos diferentes. Qual é o throughput esperado por prefixo?
+**14.** An S3 bucket receives 100,000 PUTs per second distributed across 10 different prefixes. What is the expected throughput per prefix?
 
-- A) 100 PUT/s por prefixo
-- B) 3.500 PUT/s por prefixo
-- C) 5.500 GET/s por prefixo
-- D) 10.000 PUT/s por prefixo (auto-scaling)
+- A) 100 PUT/s per prefix
+- B) 3,500 PUT/s per prefix
+- C) 5,500 GET/s per prefix
+- D) 10,000 PUT/s per prefix (auto-scaling)
 
 <details>
-<summary>Resposta</summary>
-**B — 3.500 PUT/s por prefixo**
-O S3 suporta **3.500 PUT/COPY/POST/DELETE** e **5.500 GET/HEAD** por segundo **por prefixo**. Distribuindo a carga por 10 prefixos diferentes, você consegue 35.000 PUTs/s total. Isso é linear — mais prefixos = mais throughput.
+<summary>Answer</summary>
+**B — 3,500 PUT/s per prefix**
+S3 supports **3,500 PUT/COPY/POST/DELETE** and **5,500 GET/HEAD** requests per second **per prefix**. By distributing the load across 10 different prefixes, you get 35,000 PUTs/s in total. This is linear — more prefixes = more throughput.
 </details>
 
 ---
 
-**15.** Uma empresa quer receber uma notificação imediata quando um arquivo específico for uploaded para S3. Qual configuração usar?
+**15.** A company wants to receive an immediate notification when a specific file is uploaded to S3. Which configuration should be used?
 
-- A) S3 Inventory com relatório diário
-- B) CloudTrail com filtro de eventos S3
-- C) S3 Event Notifications → SNS ou Lambda
-- D) EventBridge Scheduler com polling do bucket
+- A) S3 Inventory with a daily report
+- B) CloudTrail with an S3 event filter
+- C) S3 Event Notifications → SNS or Lambda
+- D) EventBridge Scheduler polling the bucket
 
 <details>
-<summary>Resposta</summary>
+<summary>Answer</summary>
 **C — S3 Event Notifications**
-S3 Event Notifications dispara eventos em tempo real para SNS, SQS ou Lambda quando objetos são criados, deletados, restaurados, etc. É a forma mais direta e de menor latência. CloudTrail registra chamadas API mas não é para "notificação imediata". EventBridge também pode ser usado (S3 integra com EventBridge) mas a forma mais direta é S3 Event Notifications → Lambda.
+S3 Event Notifications trigger real-time events to SNS, SQS, or Lambda when objects are created, deleted, restored, etc. It is the most direct, lowest-latency approach. CloudTrail records API calls but is not meant for "immediate notification". EventBridge can also be used (S3 integrates with EventBridge), but the most direct approach is S3 Event Notifications → Lambda.
 </details>

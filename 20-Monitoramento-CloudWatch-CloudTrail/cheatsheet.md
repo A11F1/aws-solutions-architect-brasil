@@ -1,23 +1,23 @@
-# Cheatsheet — Módulo 14: Monitoramento, CloudWatch e CloudTrail
+# Cheatsheet — Module 14: Monitoring, CloudWatch, and CloudTrail
 
-## Visão Geral dos Serviços de Monitoramento
+## Overview of Monitoring Services
 
-| Serviço | Responde | Melhor Para |
+| Service | Answers | Best For |
 |---|---|---|
-| **CloudWatch Metrics** | "Como está a performance?" | Métricas de recursos e aplicações |
-| **CloudWatch Logs** | "O que aconteceu?" | Logs de apps, Lambda, VPC Flow |
-| **CloudTrail** | "Quem fez o quê?" | Auditoria de API calls |
-| **AWS Config** | "Está configurado corretamente?" | Compliance e configuração |
-| **X-Ray** | "Onde está o gargalo?" | Tracing distribuído |
-| **GuardDuty** | "Há atividade suspeita?" | Detecção de ameaças ML |
-| **Security Hub** | "Qual é a postura de segurança?" | Consolidação de findings |
-| **Trusted Advisor** | "O que melhorar?" | Recomendações de boas práticas |
+| **CloudWatch Metrics** | "How is performance?" | Resource and application metrics |
+| **CloudWatch Logs** | "What happened?" | App, Lambda, VPC Flow logs |
+| **CloudTrail** | "Who did what?" | API call auditing |
+| **AWS Config** | "Is it configured correctly?" | Compliance and configuration |
+| **X-Ray** | "Where is the bottleneck?" | Distributed tracing |
+| **GuardDuty** | "Is there suspicious activity?" | ML threat detection |
+| **Security Hub** | "What is the security posture?" | Findings consolidation |
+| **Trusted Advisor** | "What should be improved?" | Best-practice recommendations |
 
 ---
 
-## CloudWatch — Métricas Importantes por Serviço
+## CloudWatch — Important Metrics by Service
 
-| Serviço | Métricas Built-in | Métricas Requerem Agente |
+| Service | Built-in Metrics | Metrics Requiring the Agent |
 |---|---|---|
 | EC2 | CPUUtilization, NetworkIn/Out, DiskReadOps | **MemoryUtilization**, DiskSpaceUtilization |
 | ELB | RequestCount, TargetResponseTime, HTTPCode_5XX | — |
@@ -27,117 +27,117 @@
 | SQS | ApproximateNumberOfMessagesVisible, NumberOfMessagesSent | — |
 | DynamoDB | ConsumedReadCapacityUnits, SystemErrors | — |
 
-**Memory e Disk EC2:** apenas via CloudWatch Agent (instalado na instância).
+**EC2 Memory and Disk:** only via the CloudWatch Agent (installed on the instance).
 
 ---
 
-## CloudWatch Alarms — Estados
+## CloudWatch Alarms — States
 
-| Estado | Significado |
+| State | Meaning |
 |---|---|
-| **OK** | Métrica dentro do threshold |
-| **ALARM** | Métrica violou o threshold pelo período configurado |
-| **INSUFFICIENT_DATA** | Dados insuficientes para avaliar (início ou sem dados) |
+| **OK** | Metric within the threshold |
+| **ALARM** | Metric violated the threshold for the configured period |
+| **INSUFFICIENT_DATA** | Not enough data to evaluate (startup or no data) |
 
-**Ações de Alarm:** EC2 Action (reboot, stop, terminate, recover), Auto Scaling Action, SNS notification.
+**Alarm Actions:** EC2 Action (reboot, stop, terminate, recover), Auto Scaling Action, SNS notification.
 
 ---
 
-## CloudTrail — Tipos de Eventos
+## CloudTrail — Event Types
 
-| Tipo | O Que Registra | Habilitado Por Padrão | Custo Extra |
+| Type | What It Records | Enabled by Default | Extra Cost |
 |---|---|---|---|
-| **Management Events** | Criar/deletar recursos, IAM changes, console login | **Sim** | Não (1 cópia free) |
-| **Data Events** | S3 GetObject/PutObject, Lambda Invoke | **Não** | Sim |
-| **Insights Events** | Atividade anômala de API | **Não** | Sim |
+| **Management Events** | Create/delete resources, IAM changes, console login | **Yes** | No (1 free copy) |
+| **Data Events** | S3 GetObject/PutObject, Lambda Invoke | **No** | Yes |
+| **Insights Events** | Anomalous API activity | **No** | Yes |
 
-**Retenção no console:** 90 dias. Para longo prazo: habilitar trail com destino S3 (ilimitado).
+**Retention in the console:** 90 days. For long term: enable a trail with an S3 destination (unlimited).
 
 ---
 
 ## AWS Config — Rule Types
 
-| Tipo | Quem Cria | Exemplos |
+| Type | Who Creates It | Examples |
 |---|---|---|
-| **Managed Rules** | AWS (~200 disponíveis) | `s3-bucket-public-read-prohibited`, `ec2-instance-no-public-ip`, `rds-storage-encrypted` |
-| **Custom Rules (Lambda)** | Você | Lógica customizada de compliance |
-| **Proactive Rules** | AWS (novo) | Avalia antes de criar (CloudFormation hook) |
-| **Detective Rules** | AWS/Custom | Avalia após criar/mudar |
+| **Managed Rules** | AWS (~200 available) | `s3-bucket-public-read-prohibited`, `ec2-instance-no-public-ip`, `rds-storage-encrypted` |
+| **Custom Rules (Lambda)** | You | Custom compliance logic |
+| **Proactive Rules** | AWS (new) | Evaluates before creation (CloudFormation hook) |
+| **Detective Rules** | AWS/Custom | Evaluates after create/change |
 
-**Remediação:** SSM Automation Document executado automaticamente quando NON_COMPLIANT.
+**Remediation:** SSM Automation Document executed automatically when NON_COMPLIANT.
 
 ---
 
-## SSM Parameter Store — Hierarquia e Tipos
+## SSM Parameter Store — Hierarchy and Types
 
-| Tipo de Parâmetro | Criptografia | Uso |
+| Parameter Type | Encryption | Use |
 |---|---|---|
-| **String** | Não | Configurações não-secretas |
-| **StringList** | Não | Lista de valores (ex: AMI IDs por região) |
+| **String** | No | Non-secret settings |
+| **StringList** | No | List of values (e.g., AMI IDs per region) |
 | **SecureString** | KMS | Secrets, passwords, tokens |
 
-**Hierarquia:** `/app/prod/database/host`, `/app/prod/database/password` — permite política IAM por hierarquia.
+**Hierarchy:** `/app/prod/database/host`, `/app/prod/database/password` — allows IAM policy by hierarchy.
 
-| Tier | Limite | Custo | Max Tamanho |
+| Tier | Limit | Cost | Max Size |
 |---|---|---|---|
-| Standard | 10.000 parâmetros | Gratuito | 4 KB |
-| Advanced | 100.000 parâmetros | $0.05/param/mês | 8 KB |
+| Standard | 10,000 parameters | Free | 4 KB |
+| Advanced | 100,000 parameters | $0.05/param/month | 8 KB |
 
 ---
 
-## X-Ray — Conceitos Chave
+## X-Ray — Key Concepts
 
-| Conceito | Definição |
+| Concept | Definition |
 |---|---|
-| **Trace** | Conjunto de segments representando um request end-to-end |
-| **Segment** | Dados de um único serviço/recurso no trace |
-| **Subsegment** | Granularidade dentro de um segment (chamadas de banco, HTTP externo) |
-| **Service Map** | Visualização gráfica de serviços + latências + erros |
-| **Annotations** | Key-value indexados para filtrar traces (ex: `UserID`, `OrderID`) |
-| **Metadata** | Key-value não indexados para dados adicionais de debug |
-| **Sampling Rule** | % de requests a tracear; default 5% + 1/s |
+| **Trace** | Set of segments representing an end-to-end request |
+| **Segment** | Data from a single service/resource in the trace |
+| **Subsegment** | Granularity within a segment (database calls, external HTTP) |
+| **Service Map** | Graphical visualization of services + latencies + errors |
+| **Annotations** | Indexed key-values to filter traces (e.g., `UserID`, `OrderID`) |
+| **Metadata** | Non-indexed key-values for additional debug data |
+| **Sampling Rule** | % of requests to trace; default 5% + 1/s |
 
-**X-Ray Daemon:** processo leve instalado em EC2/ECS que coleta e envia traces para X-Ray API.
+**X-Ray Daemon:** lightweight process installed on EC2/ECS that collects and sends traces to the X-Ray API.
 
 ---
 
-## CloudWatch vs CloudTrail vs Config — Decisão
+## CloudWatch vs CloudTrail vs Config — Decision
 
 ```
-Pergunta: "Quem deletou o bucket S3?"
-→ CloudTrail (API call audit: quem + quando + de onde)
+Question: "Who deleted the S3 bucket?"
+→ CloudTrail (API call audit: who + when + from where)
 
-Pergunta: "O bucket S3 estava público ontem?"
-→ AWS Config (histórico de configuração do recurso)
+Question: "Was the S3 bucket public yesterday?"
+→ AWS Config (resource configuration history)
 
-Pergunta: "Minha API está lenta?"
-→ CloudWatch (métricas de latência do API GW)
+Question: "Is my API slow?"
+→ CloudWatch (API GW latency metrics)
 
-Pergunta: "Onde está o gargalo na minha arquitetura microservices?"
+Question: "Where is the bottleneck in my microservices architecture?"
 → AWS X-Ray (distributed tracing)
 
-Pergunta: "Qual instância está usando mais CPU?"
+Question: "Which instance is using the most CPU?"
 → CloudWatch (Top Contributor via Contributor Insights)
 
-Pergunta: "Há login suspeito de IP incomum?"
-→ GuardDuty (ameaças ML-based)
+Question: "Is there a suspicious login from an unusual IP?"
+→ GuardDuty (ML-based threats)
 ```
 
 ---
 
-## Dicas de Prova — Padrões Comuns
+## Exam Tips — Common Patterns
 
-| Pista no Enunciado | Resposta Provável |
+| Clue in the Question | Likely Answer |
 |---|---|
-| "Memória da EC2 no CloudWatch" | Instalar CloudWatch Agent |
-| "Log imutável de auditoria CloudTrail" | S3 Object Lock + Log File Validation |
-| "Compliance multi-conta centralizado" | Config Aggregator + Organization |
-| "Acessar EC2 sem SSH, sem bastion" | SSM Session Manager |
-| "Auto-remediar non-compliant Config" | Config Rule + SSM Automation |
-| "Latência alta em microsserviços" | X-Ray + Service Map |
-| "Alertar quando Lambda tem > 5 erros/min" | CloudWatch Alarm na métrica Errors |
-| "Reter logs CloudTrail por 7 anos" | S3 Lifecycle + Glacier Deep Archive |
-| "Alertar quando API sem MFA acessa S3 sensível" | Config Rule ou CloudTrail + EventBridge |
-| "Detectar EC2 fazendo port scan suspeito" | GuardDuty |
-| "Password/access key rotacionada automaticamente" | Secrets Manager (não Parameter Store) |
-| "Detectar credenciais AWS expostas no GitHub" | GuardDuty FindingType: UnauthorizedAccess |
+| "EC2 memory in CloudWatch" | Install the CloudWatch Agent |
+| "Immutable CloudTrail audit log" | S3 Object Lock + Log File Validation |
+| "Centralized multi-account compliance" | Config Aggregator + Organization |
+| "Access EC2 without SSH, without bastion" | SSM Session Manager |
+| "Auto-remediate non-compliant Config" | Config Rule + SSM Automation |
+| "High latency in microservices" | X-Ray + Service Map |
+| "Alert when Lambda has > 5 errors/min" | CloudWatch Alarm on the Errors metric |
+| "Retain CloudTrail logs for 7 years" | S3 Lifecycle + Glacier Deep Archive |
+| "Alert when an API call without MFA accesses sensitive S3" | Config Rule or CloudTrail + EventBridge |
+| "Detect EC2 doing suspicious port scans" | GuardDuty |
+| "Password/access key rotated automatically" | Secrets Manager (not Parameter Store) |
+| "Detect AWS credentials exposed on GitHub" | GuardDuty FindingType: UnauthorizedAccess |

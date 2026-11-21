@@ -1,129 +1,129 @@
-# Flashcards — Módulo 16: Well-Architected Framework
+# Flashcards — Module 16: Well-Architected Framework
 
-> **Formato:** P = Pergunta | R = Resposta  
+> **Format:** Q = Question | A = Answer  
 > **Total:** 25 flashcards
 
 ---
 
-**P:** Quais são os 6 pilares do AWS Well-Architected Framework?  
-**R:** **(1) Operational Excellence** — operar e monitorar sistemas. **(2) Security** — proteger dados e sistemas. **(3) Reliability** — recuperar de falhas, escalar. **(4) Performance Efficiency** — usar recursos eficientemente. **(5) Cost Optimization** — evitar custos desnecessários. **(6) Sustainability** — minimizar impacto ambiental.
+**Q:** What are the 6 pillars of the AWS Well-Architected Framework?  
+**A:** **(1) Operational Excellence** — run and monitor systems. **(2) Security** — protect data and systems. **(3) Reliability** — recover from failures, scale. **(4) Performance Efficiency** — use resources efficiently. **(5) Cost Optimization** — avoid unnecessary costs. **(6) Sustainability** — minimize environmental impact.
 
 ---
 
-**P:** Quais são as 4 estratégias de Disaster Recovery em ordem de menor para maior custo/capacidade?  
-**R:** **(1) Backup & Restore** (RPO/RTO: horas) → **(2) Pilot Light** (core mínimo sempre ligado, RPO/RTO: dezenas de min) → **(3) Warm Standby** (versão reduzida sempre ativa, RTO: minutos) → **(4) Active-Active Multi-Site** (tráfego em múltiplas regiões simultaneamente, RTO: segundos/zero).
+**Q:** What are the 4 Disaster Recovery strategies in order from lowest to highest cost/capability?  
+**A:** **(1) Backup & Restore** (RPO/RTO: hours) → **(2) Pilot Light** (minimal core always on, RPO/RTO: tens of min) → **(3) Warm Standby** (scaled-down version always active, RTO: minutes) → **(4) Active-Active Multi-Site** (traffic in multiple Regions simultaneously, RTO: seconds/zero).
 
 ---
 
-**P:** O que é RPO vs RTO e como afetam a escolha de estratégia DR?  
-**R:** **RPO** (Recovery Point Objective): quanto de dados posso perder. **RTO** (Recovery Time Objective): quanto tempo posso ficar indisponível. Menor RPO/RTO = estratégia mais cara: Backup&Restore (RPO/RTO horas) → Pilot Light → Warm Standby → Active-Active (RPO/RTO ≈ 0, mais caro).
+**Q:** What are RPO vs RTO and how do they affect the choice of DR strategy?  
+**A:** **RPO** (Recovery Point Objective): how much data I can lose. **RTO** (Recovery Time Objective): how long I can be unavailable. Lower RPO/RTO = more expensive strategy: Backup&Restore (RPO/RTO hours) → Pilot Light → Warm Standby → Active-Active (RPO/RTO ≈ 0, most expensive).
 
 ---
 
-**P:** O que é o pilar Operational Excellence e seus princípios de design?  
-**R:** Foco em operar e melhorar processos continuamente. Princípios: **Perform operations as code** (IaC), **Annotate documentation** (auto-gerada), **Make frequent, small, reversible changes** (sem big-bang deployments), **Refine operations procedures frequently** (Game Days), **Anticipate failure** (pre-mortem), **Learn from failures** (blameless post-mortems).
+**Q:** What is the Operational Excellence pillar and its design principles?  
+**A:** Focus on continuously operating and improving processes. Principles: **Perform operations as code** (IaC), **Annotate documentation** (auto-generated), **Make frequent, small, reversible changes** (no big-bang deployments), **Refine operations procedures frequently** (Game Days), **Anticipate failure** (pre-mortem), **Learn from failures** (blameless post-mortems).
 
 ---
 
-**P:** O que é o pilar Security e seu princípio de "base of identity"?  
-**R:** **Identity is the foundation of security.** Tudo começa com "quem pode fazer o quê". Princípios: Strong identity foundation (IAM, Organizations SCP), Enable traceability (CloudTrail, CloudWatch), Apply security at all layers (SG, WAF, KMS, encryption), Protect data in transit and at rest, Keep people away from data, Prepare for security events.
+**Q:** What is the Security pillar and its "base of identity" principle?  
+**A:** **Identity is the foundation of security.** Everything starts with "who can do what". Principles: Strong identity foundation (IAM, Organizations SCP), Enable traceability (CloudTrail, CloudWatch), Apply security at all layers (SG, WAF, KMS, encryption), Protect data in transit and at rest, Keep people away from data, Prepare for security events.
 
 ---
 
-**P:** O que é o pilar Reliability e como Auto Scaling contribui?  
-**R:** Reliability = capacidade de se recuperar de falhas e crescer. Auto Scaling contribui via: escalar horizontalmente (mais instâncias, não maiores), recuperar automaticamente de falhas (substituir instâncias unhealthy), distribuir em múltiplas AZs. Princípios: Test recovery procedures, Stop guessing capacity, Manage change with automation.
+**Q:** What is the Reliability pillar and how does Auto Scaling contribute?  
+**A:** Reliability = ability to recover from failures and grow. Auto Scaling contributes by: scaling horizontally (more instances, not bigger ones), automatically recovering from failures (replacing unhealthy instances), distributing across multiple AZs. Principles: Test recovery procedures, Stop guessing capacity, Manage change with automation.
 
 ---
 
-**P:** O que é o pilar Performance Efficiency?  
-**R:** Usar recursos de computação eficientemente. Princípios: **Democratize advanced technologies** (usar serviços gerenciados em vez de construir), **Go global in minutes** (regiões, CloudFront), **Use serverless architectures** (sem gerenciar servers), **Experiment more often** (facilidade de testar tipos de instâncias), **Consider mechanical sympathy** (usar o serviço correto para o workload).
+**Q:** What is the Performance Efficiency pillar?  
+**A:** Using computing resources efficiently. Principles: **Democratize advanced technologies** (use managed services instead of building), **Go global in minutes** (Regions, CloudFront), **Use serverless architectures** (no server management), **Experiment more often** (easy to test instance types), **Consider mechanical sympathy** (use the right service for the workload).
 
 ---
 
-**P:** Quais são os princípios do pilar Cost Optimization?  
-**R:** Evitar gastos desnecessários. Princípios: **Implement cloud financial management** (processo organizacional), **Adopt a consumption model** (pagar pelo que usar, desligar ocioso), **Measure overall efficiency** (output por custo), **Stop spending on undifferentiated heavy lifting** (usar serviços gerenciados), **Analyze and attribute expenditure** (tags, cost allocation).
+**Q:** What are the principles of the Cost Optimization pillar?  
+**A:** Avoid unnecessary spending. Principles: **Implement cloud financial management** (organizational process), **Adopt a consumption model** (pay for what you use, shut down idle), **Measure overall efficiency** (output per cost), **Stop spending on undifferentiated heavy lifting** (use managed services), **Analyze and attribute expenditure** (tags, cost allocation).
 
 ---
 
-**P:** O que é o pilar Sustainability e como reduz impacto ambiental?  
-**R:** Minimizar impacto ambiental de workloads. Práticas: usar regiões com menor carbon footprint, otimizar utilização (instâncias não ociosas), usar serviços gerenciados (AWS otimiza hardware compartilhado), serverless (recursos sob demanda), scaling down em períodos de baixo uso, modernizar hardware via serviços novos (Graviton — melhor eficiência energética).
+**Q:** What is the Sustainability pillar and how does it reduce environmental impact?  
+**A:** Minimize the environmental impact of workloads. Practices: use Regions with a lower carbon footprint, optimize utilization (no idle instances), use managed services (AWS optimizes shared hardware), serverless (on-demand resources), scaling down during low-usage periods, modernize hardware via new services (Graviton — better energy efficiency).
 
 ---
 
-**P:** O que é o AWS Well-Architected Tool (WAT)?  
-**R:** Ferramenta no console AWS para revisar workloads contra os 6 pilares. Processo: criar review → responder perguntas por pilar → receber "High Risk Issues" (HRI) e "Medium Risk Issues" (MRI) com recomendações. Cria plano de melhoria (improvement plan). Gratuito. Pode ser criado por parceiros AWS via Well-Architected Partner Program.
+**Q:** What is the AWS Well-Architected Tool (WAT)?  
+**A:** A tool in the AWS console for reviewing workloads against the 6 pillars. Process: create review → answer questions per pillar → receive "High Risk Issues" (HRI) and "Medium Risk Issues" (MRI) with recommendations. Creates an improvement plan. Free. Can be performed by AWS partners via the Well-Architected Partner Program.
 
 ---
 
-**P:** O que significa "Pilot Light" na estratégia de DR?  
-**R:** Manter o **core mínimo** da aplicação sempre rodando na região DR. O core: banco de dados (replicado) e configurações básicas. Em caso de desastre: "acender o piloto" = escalar os componentes restantes (EC2, ELB) na região DR. RTO: minutos a dezenas de minutos. Custo menor que Warm Standby (só o essencial roda continuamente).
+**Q:** What does "Pilot Light" mean in a DR strategy?  
+**A:** Keep the **minimal core** of the application always running in the DR Region. The core: database (replicated) and basic configurations. In case of disaster: "light the pilot" = scale up the remaining components (EC2, ELB) in the DR Region. RTO: minutes to tens of minutes. Lower cost than Warm Standby (only the essentials run continuously).
 
 ---
 
-**P:** O que é "Warm Standby" e como difere de "Pilot Light"?  
-**R:** **Warm Standby:** versão completa (mas reduzida/sub-capacidade) da aplicação rodando na região DR. **Pilot Light:** apenas o core mínimo. Diferença: Warm Standby tem todos os componentes prontos (EC2 pequenos, RDS réplica), apenas escala no failover. Pilot Light precisa provisionar EC2 etc no failover. Warm Standby = RTO menor, custo maior.
+**Q:** What is "Warm Standby" and how does it differ from "Pilot Light"?  
+**A:** **Warm Standby:** a complete (but scaled-down/under-capacity) version of the application running in the DR Region. **Pilot Light:** only the minimal core. Difference: Warm Standby has all components ready (small EC2, RDS replica) and only scales up on failover. Pilot Light needs to provision EC2 etc. on failover. Warm Standby = lower RTO, higher cost.
 
 ---
 
-**P:** Qual é a tabela de disponibilidade para 99%, 99.9%, 99.99%, 99.999%?  
-**R:** **99%** = ~87,6h downtime/ano (~7,3h/mês). **99.9%** = ~8,7h/ano (~43,8 min/mês). **99.99%** = ~52 min/ano (~4,4 min/mês). **99.999% (Five Nines)** = ~5,26 min/ano (~26 seg/mês). Five Nines requer arquitetura ativa-ativa com zero tolerância a falha única.
+**Q:** What is the availability table for 99%, 99.9%, 99.99%, 99.999%?  
+**A:** **99%** = ~87.6h downtime/year (~7.3h/month). **99.9%** = ~8.7h/year (~43.8 min/month). **99.99%** = ~52 min/year (~4.4 min/month). **99.999% (Five Nines)** = ~5.26 min/year (~26 sec/month). Five Nines requires an active-active architecture with zero tolerance for a single failure.
 
 ---
 
-**P:** Como comparar On-Demand vs Reserved vs Savings Plans no contexto de Cost Optimization?  
-**R:** **On-Demand:** máxima flexibilidade, máximo preço. Use para: cargas imprevisíveis, picos. **Reserved (1 ou 3 anos):** até 72% desconto. Use para: carga estável e previsível 24/7. **Savings Plans:** compromisso de $ por hora (Compute ou EC2/Fargate/Lambda). Mais flexível que Reserved. **Spot:** até 90% off, interruptível. Use para: batch, tolerante a falhas.
+**Q:** How do you compare On-Demand vs Reserved vs Savings Plans in the context of Cost Optimization?  
+**A:** **On-Demand:** maximum flexibility, highest price. Use for: unpredictable workloads, spikes. **Reserved (1 or 3 years):** up to 72% discount. Use for: steady, predictable 24/7 workloads. **Savings Plans:** commitment of $ per hour (Compute or EC2/Fargate/Lambda). More flexible than Reserved. **Spot:** up to 90% off, interruptible. Use for: batch, fault-tolerant.
 
 ---
 
-**P:** O que é o Well-Architected Framework Lens?  
-**R:** Extensão do WAF para domains específicos. Disponíveis: **Serverless Lens**, **SaaS Lens**, **Machine Learning Lens**, **Data Analytics Lens**, **Games Industry Lens**, **SAP Lens**, **High Performance Computing Lens** etc. Cada Lens tem perguntas específicas e boas práticas para aquele domínio além dos 6 pilares base.
+**Q:** What is a Well-Architected Framework Lens?  
+**A:** An extension of the WAF for specific domains. Available: **Serverless Lens**, **SaaS Lens**, **Machine Learning Lens**, **Data Analytics Lens**, **Games Industry Lens**, **SAP Lens**, **High Performance Computing Lens**, etc. Each Lens has specific questions and best practices for that domain in addition to the 6 base pillars.
 
 ---
 
-**P:** Qual princípio do Well-Architected diz "design for failure"?  
-**R:** Pilar **Reliability**: "Test recovery procedures" e "Design for failure". AWS: design assumindo que componentes VÃO falhar. Tudo deve ter redundância. Evitar SPOFs (Single Points of Failure). Multi-AZ, Auto Scaling, circuit breakers, dead letter queues — arquitetura resiliente assume falhas como esperadas, não excepcionais.
+**Q:** Which Well-Architected principle says "design for failure"?  
+**A:** The **Reliability** pillar: "Test recovery procedures" and "Design for failure". AWS: design assuming components WILL fail. Everything should have redundancy. Avoid SPOFs (Single Points of Failure). Multi-AZ, Auto Scaling, circuit breakers, dead letter queues — a resilient architecture treats failures as expected, not exceptional.
 
 ---
 
-**P:** Como o princípio "Infrastructure as Code" se encaixa no Well-Architected?  
-**R:** Pilar **Operational Excellence**: "Perform operations as code". IaC (CloudFormation, Terraform, CDK): (1) reprodutível — mesmo estado toda vez; (2) auditável — mudanças em controle de versão; (3) reversível — rollback para versão anterior; (4) testável — validar antes de produção. Elimina configuração manual inconsistente.
+**Q:** How does the "Infrastructure as Code" principle fit into Well-Architected?  
+**A:** The **Operational Excellence** pillar: "Perform operations as code". IaC (CloudFormation, Terraform, CDK): (1) reproducible — same state every time; (2) auditable — changes under version control; (3) reversible — rollback to a previous version; (4) testable — validate before production. Eliminates inconsistent manual configuration.
 
 ---
 
-**P:** O que é o princípio "Loose Coupling" no Well-Architected?  
-**R:** Pilar **Reliability**: componentes com dependências fracas falham de forma isolada. Implementação: SQS entre serviços (mensagens bufferizadas se downstream falhar), SNS para fan-out, API Gateway desacopla clientes de backends, ELB desacopla clientes de instâncias. Contrária: tight coupling (serviços chamam diretamente → falha em um cascadeia).
+**Q:** What is the "Loose Coupling" principle in Well-Architected?  
+**A:** The **Reliability** pillar: components with weak dependencies fail in isolation. Implementation: SQS between services (messages buffered if downstream fails), SNS for fan-out, API Gateway decouples clients from backends, ELB decouples clients from instances. The opposite: tight coupling (services call each other directly → a failure in one cascades).
 
 ---
 
-**P:** O que são Game Days no contexto de Operational Excellence?  
-**R:** Simulações planejadas de falhas e incidentes para testar procedimentos de resposta. "Pre-mortems": imaginar que o sistema falhou e identificar causas. Objetivo: descobrir vulnerabilidades e gaps nos runbooks antes que aconteçam em produção. Cultura de aprendizado por simulação. Relacionado ao Chaos Engineering (Netflix Chaos Monkey).
+**Q:** What are Game Days in the context of Operational Excellence?  
+**A:** Planned simulations of failures and incidents to test response procedures. "Pre-mortems": imagine the system has failed and identify the causes. Goal: discover vulnerabilities and gaps in runbooks before they happen in production. A culture of learning through simulation. Related to Chaos Engineering (Netflix Chaos Monkey).
 
 ---
 
-**P:** Qual a diferença entre "vertical scaling" e "horizontal scaling" no Well-Architected?  
-**R:** **Vertical (Scale Up):** aumentar o tamanho da instância (m5.large → m5.xlarge). Limite físico. Requer downtime (geralmente). SPOF. **Horizontal (Scale Out):** adicionar mais instâncias do mesmo tipo. Sem limite prático. Sem downtime (gradual). Elimina SPOF. Well-Architected favorece horizontal: "Scale horizontally to increase aggregate system availability."
+**Q:** What is the difference between "vertical scaling" and "horizontal scaling" in Well-Architected?  
+**A:** **Vertical (Scale Up):** increase the instance size (m5.large → m5.xlarge). Physical limit. Requires downtime (usually). SPOF. **Horizontal (Scale Out):** add more instances of the same type. No practical limit. No downtime (gradual). Eliminates SPOF. Well-Architected favors horizontal: "Scale horizontally to increase aggregate system availability."
 
 ---
 
-**P:** O que é o "consumption model" no pilar Cost Optimization?  
-**R:** Pagar apenas pelo que usar — contrário do modelo on-premises (pagar por capacidade pico, mesmo quando ociosa). AWS: escalar para baixo quando demanda cai. Desligar ambientes de dev à noite/fim de semana. Lambda/Fargate/DynamoDB On-Demand: pagam apenas por execução real. Meta: custo proporcional ao uso real, não ao pico teórico.
+**Q:** What is the "consumption model" in the Cost Optimization pillar?  
+**A:** Pay only for what you use — the opposite of the on-premises model (paying for peak capacity, even when idle). AWS: scale down when demand drops. Shut down dev environments at night/on weekends. Lambda/Fargate/DynamoDB On-Demand: pay only for actual execution. Goal: cost proportional to actual usage, not theoretical peak.
 
 ---
 
-**P:** Quais são os 3 tipos de controles de segurança segundo o Well-Architected?  
-**R:** **(1) Preventive:** impede problemas antes de acontecerem (IAM policies, SCP, SGs, encryption). **(2) Detective:** detecta quando algo acontece (CloudTrail, Config Rules, GuardDuty, Security Hub). **(3) Responsive:** responde após detecção (runbooks, automação SNS/Lambda, incident response plans). Arquitetura segura precisa dos 3 tipos.
+**Q:** What are the 3 types of security controls according to Well-Architected?  
+**A:** **(1) Preventive:** prevents problems before they happen (IAM policies, SCP, SGs, encryption). **(2) Detective:** detects when something happens (CloudTrail, Config Rules, GuardDuty, Security Hub). **(3) Responsive:** responds after detection (runbooks, SNS/Lambda automation, incident response plans). A secure architecture needs all 3 types.
 
 ---
 
-**P:** O que é "blast radius reduction" no pilar Security?  
-**R:** Limitar o impacto potencial de uma falha de segurança. Técnicas: **Least privilege** (conta comprometida tem acesso mínimo), **Accounts separation** (AWS Organizations — workloads em contas separadas, falha em uma não afeta outras), **Network segmentation** (VPCs separadas, subnets privadas), **Encryption per-resource** (chave comprometida afeta apenas dados daquela chave).
+**Q:** What is "blast radius reduction" in the Security pillar?  
+**A:** Limiting the potential impact of a security failure. Techniques: **Least privilege** (a compromised account has minimal access), **Accounts separation** (AWS Organizations — workloads in separate accounts, a failure in one does not affect others), **Network segmentation** (separate VPCs, private subnets), **Encryption per-resource** (a compromised key affects only the data under that key).
 
 ---
 
-**P:** Como o Sustainability pilar se aplica praticamente na AWS?  
-**R:** Práticas: **(1)** Escolher região com fator de emissão de carbono menor. **(2)** Usar instâncias Graviton (ARM — melhor performance/watt). **(3)** Otimizar utilização: evitar over-provisioning (Compute Optimizer). **(4)** Serverless: recursos liberados quando não usados. **(5)** S3 Lifecycle: mover dados frios para Glacier (menos energia). **(6)** Eliminar workloads desnecessários.
+**Q:** How does the Sustainability pillar apply in practice on AWS?  
+**A:** Practices: **(1)** Choose a Region with a lower carbon emission factor. **(2)** Use Graviton instances (ARM — better performance/watt). **(3)** Optimize utilization: avoid over-provisioning (Compute Optimizer). **(4)** Serverless: resources are released when not in use. **(5)** S3 Lifecycle: move cold data to Glacier (less energy). **(6)** Eliminate unnecessary workloads.
 
 ---
 
-**P:** O que são Shared Responsibility Areas no Well-Architected?  
-**R:** Well-Architected reconhece que algumas responsabilidades são compartilhadas entre equipes: Dev, Ops, Security e Cloud Center of Excellence (CCoE). Revisões WAT idealmente envolvem: arquiteto de soluções + engenheiro de segurança + representante de negócio. Não é responsabilidade apenas de ops ou apenas de dev. Cultura de arquitetura compartilhada.
+**Q:** What are Shared Responsibility Areas in Well-Architected?  
+**A:** Well-Architected recognizes that some responsibilities are shared across teams: Dev, Ops, Security, and the Cloud Center of Excellence (CCoE). WAT reviews ideally involve: a solutions architect + a security engineer + a business representative. It is not solely the responsibility of ops or solely of dev. A culture of shared architecture.

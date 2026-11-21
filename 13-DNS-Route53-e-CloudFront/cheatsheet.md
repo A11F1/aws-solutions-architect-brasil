@@ -1,88 +1,88 @@
-# Cheatsheet — Módulo 08: DNS, Route 53 e CloudFront
+# Cheatsheet — Module 08: DNS, Route 53, and CloudFront
 
-## Route 53 — Tipos de Records
+## Route 53 — Record Types
 
-| Record | Uso | Apex? | Custo de Query |
+| Record | Use | Apex? | Query Cost |
 |---|---|---|---|
-| A | IPv4 address | Sim | Padrão |
-| AAAA | IPv6 address | Sim | Padrão |
-| CNAME | Alias para outro hostname | **NÃO** | Padrão |
-| **Alias** | Recursos AWS (ALB, CF, S3) | **SIM** | Gratuito |
-| MX | Email servers | Sim | Padrão |
-| TXT | Verificação, SPF, DKIM | Sim | Padrão |
-| NS | Nameservers da zona | Sim | Padrão |
+| A | IPv4 address | Yes | Standard |
+| AAAA | IPv6 address | Yes | Standard |
+| CNAME | Alias to another hostname | **NO** | Standard |
+| **Alias** | AWS resources (ALB, CF, S3) | **YES** | Free |
+| MX | Email servers | Yes | Standard |
+| TXT | Verification, SPF, DKIM | Yes | Standard |
+| NS | Zone nameservers | Yes | Standard |
 
-## Políticas de Roteamento Route 53
+## Route 53 Routing Policies
 
-| Política | Caso de Uso | Health Check? |
+| Policy | Use Case | Health Check? |
 |---|---|---|
-| Simple | Single resource, sem HA | Não |
-| Weighted | A/B testing, migração gradual | Opcional |
-| Latency | Menor latência para usuário | Opcional |
-| Failover | Active-Passive DR | **Obrigatório** para primário |
-| Geolocation | Conteúdo por país/região | Opcional |
-| Geoproximity | Por distância geográfica com bias | Opcional |
-| Multi-Value | Múltiplos IPs saudáveis (pseudo LB) | Recomendado |
-| IP-based | Roteamento por CIDR de origem | Não |
+| Simple | Single resource, no HA | No |
+| Weighted | A/B testing, gradual migration | Optional |
+| Latency | Lowest latency for the user | Optional |
+| Failover | Active-Passive DR | **Required** for primary |
+| Geolocation | Content by country/region | Optional |
+| Geoproximity | By geographic distance with bias | Optional |
+| Multi-Value | Multiple healthy IPs (pseudo LB) | Recommended |
+| IP-based | Routing by source CIDR | No |
 
-## CloudFront — Componentes e Configuração
+## CloudFront — Components and Configuration
 
-| Componente | Descrição |
+| Component | Description |
 |---|---|
-| Distribution | Ponto de entrada — define origems, behaviors, certificado |
-| Origin | Origem do conteúdo: S3, ALB, EC2, API GW, HTTP custom |
-| Behavior | Regra de cache associada a um path pattern (ex: `/api/*`) |
-| Cache Policy | Define cache key (query strings, headers, cookies) e TTLs |
-| Origin Request Policy | O que enviar à origin além da cache key |
-| OAC | Substitui OAI — autentica CF com origin S3 via SigV4 |
+| Distribution | Entry point — defines origins, behaviors, certificate |
+| Origin | Content source: S3, ALB, EC2, API GW, custom HTTP |
+| Behavior | Cache rule associated with a path pattern (e.g., `/api/*`) |
+| Cache Policy | Defines the cache key (query strings, headers, cookies) and TTLs |
+| Origin Request Policy | What to send to the origin besides the cache key |
+| OAC | Replaces OAI — authenticates CF to the S3 origin via SigV4 |
 
 ## CloudFront TTLs
-- `Cache-Control: max-age=<segundos>` no response do origin → define TTL no edge
-- Default TTL: **86.400s** (24h) se origin não definir
-- Minimum TTL e Maximum TTL no behavior sobrescrevem o header do origin se for menor/maior
-- Invalidation: força cache miss imediato (1.000 paths/mês = gratuito)
+- `Cache-Control: max-age=<segundos>` in the origin response → sets the TTL at the edge
+- Default TTL: **86.400s** (24h) if the origin does not set one
+- Minimum TTL and Maximum TTL on the behavior override the origin header if it is lower/higher
+- Invalidation: forces an immediate cache miss (1,000 paths/month = free)
 
 ## Lambda@Edge vs CloudFront Functions
 
 | | CloudFront Functions | Lambda@Edge |
 |---|---|---|
 | Runtime | JavaScript (ES5.1) | Node.js, Python |
-| Gatilhos | Viewer Request, Viewer Response | Viewer Req/Res + Origin Req/Res |
-| Tempo máx. | < 1ms | 5s (Viewer), 30s (Origin) |
-| Memória | 2 MB | 128 MB (Viewer), 10 GB (Origin) |
-| Body request | NÃO (em Viewer Req) | SIM (com size limits) |
-| Preço | $0,0000001 por invocação | $0,00000625 por 100ms |
-| Casos de uso | Headers, redirects, URL rewrites simples | Auth, A/B test, JWT validation, body inspection |
+| Triggers | Viewer Request, Viewer Response | Viewer Req/Res + Origin Req/Res |
+| Max duration | < 1ms | 5s (Viewer), 30s (Origin) |
+| Memory | 2 MB | 128 MB (Viewer), 10 GB (Origin) |
+| Request body | NO (in Viewer Req) | YES (with size limits) |
+| Price | $0.0000001 per invocation | $0.00000625 per 100ms |
+| Use cases | Headers, redirects, simple URL rewrites | Auth, A/B test, JWT validation, body inspection |
 
 ## Global Accelerator vs Route 53 vs CloudFront
 
 | | Route 53 | Global Accelerator | CloudFront |
 |---|---|---|---|
 | Tipo | DNS | Anycast network proxy | CDN |
-| IPs | DNS (muda) | 2 Anycast IPs estáticos | IPs CF (mudam) |
-| Protocolo | HTTP/S, TCP, UDP | TCP, UDP, HTTP/S | HTTP/S |
-| Failover speed | Minutos (TTL) | < 1 minuto | Varia |
-| Caching | Não | Não | **Sim** |
-| Caso principal | DNS routing | Global TCP apps, IPs fixos, non-HTTP | Conteúdo estático/dinâmico global |
+| IPs | DNS (changes) | 2 static Anycast IPs | CF IPs (change) |
+| Protocol | HTTP/S, TCP, UDP | TCP, UDP, HTTP/S | HTTP/S |
+| Failover speed | Minutes (TTL) | < 1 minute | Varies |
+| Caching | No | No | **Yes** |
+| Main use case | DNS routing | Global TCP apps, fixed IPs, non-HTTP | Global static/dynamic content |
 
-## Proteção e Segurança CloudFront + WAF
+## CloudFront + WAF Protection and Security
 
-| Serviço | Protege contra |
+| Service | Protects against |
 |---|---|
 | AWS WAF | OWASP Top 10 (SQL injection, XSS), rate limiting, IP reputation, custom rules |
-| Shield Standard | DDoS L3/L4 (gratuito, automático) |
-| Shield Advanced | DDoS L7, DRT 24/7, crédito de custo (~$3K/mês) |
-| Geo Restriction | Bloquear/permitir países (MaxMind GeoIP) |
-| Signed URLs/Cookies | Conteúdo pago/privado com expiração |
+| Shield Standard | DDoS L3/L4 (free, automatic) |
+| Shield Advanced | DDoS L7, 24/7 DRT, cost protection credits (~$3K/month) |
+| Geo Restriction | Block/allow countries (MaxMind GeoIP) |
+| Signed URLs/Cookies | Paid/private content with expiration |
 
-## Dicas Rápidas de Prova
-- **CNAME não funciona no apex** (empresa.com); use Alias
-- Alias records são **gratuitos** para Route 53 → recursos AWS
-- CloudFront caching: `Cache-Control: no-cache` força revalidação; TTL=0 nunca armazena em cache
-- OAC > OAI para novos projetos (SSE-KMS, todas regiões S3, mais métodos HTTP)
-- Route 53 Health Check de recurso privado: via **CloudWatch Alarm** (HCs não alcançam recursos sem IP público)
-- Calculated Health Check: combine múltiplos HCs com AND/OR/NOT
-- WAF pode ser associado a: **CloudFront, ALB, API Gateway, AppSync**
-- Global Accelerator: ideal quando precisa de **IP fixo** para whitelist de firewall
-- Lambda@Edge executa nas **edge locations** (regions específicas); CloudFront Functions em **todos os PoPs**
-- Route 53 TTL baixo antes de migração DNS → acelera propagação de mudanças
+## Quick Exam Tips
+- **CNAME does not work at the apex** (company.com); use Alias
+- Alias records are **free** for Route 53 → AWS resources
+- CloudFront caching: `Cache-Control: no-cache` forces revalidation; TTL=0 never caches
+- OAC > OAI for new projects (SSE-KMS, all S3 regions, more HTTP methods)
+- Route 53 Health Check for a private resource: via **CloudWatch Alarm** (HCs cannot reach resources without a public IP)
+- Calculated Health Check: combine multiple HCs with AND/OR/NOT
+- WAF can be associated with: **CloudFront, ALB, API Gateway, AppSync**
+- Global Accelerator: ideal when you need a **fixed IP** for firewall whitelisting
+- Lambda@Edge runs at **Regional Edge Caches** (specific locations); CloudFront Functions run at **all PoPs**
+- Route 53 low TTL before a DNS migration → speeds up change propagation

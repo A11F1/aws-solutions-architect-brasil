@@ -1,17 +1,17 @@
-# Lab Prático — RDS: Multi-AZ, Read Replica e Backup (Módulo 06)
+# Hands-On Lab — RDS: Multi-AZ, Read Replica, and Backup (Module 06)
 
-> **Região:** us-east-1 | **Custo estimado:** ~$0.30 (RDS db.t3.micro, < 1h de uso)  
-> **Pré-requisitos:** AWS CLI configurado, Terraform >= 1.5, cliente MySQL
-
----
-
-## Objetivo
-
-Criar RDS MySQL com Multi-AZ, promover Read Replica, realizar backup manual e monitorar métricas via CloudWatch.
+> **Region:** us-east-1 | **Estimated cost:** ~$0.30 (RDS db.t3.micro, < 1h of use)  
+> **Prerequisites:** AWS CLI configured, Terraform >= 1.5, MySQL client
 
 ---
 
-## Parte 1 — Terraform: RDS Multi-AZ + Read Replica
+## Objective
+
+Create an RDS MySQL instance with Multi-AZ, promote a Read Replica, take a manual backup, and monitor metrics via CloudWatch.
+
+---
+
+## Part 1 — Terraform: RDS Multi-AZ + Read Replica
 
 ```hcl
 # main.tf
@@ -38,13 +38,13 @@ data "aws_subnets" "default" {
   }
 }
 
-# Subnet Group usando VPC default
+# Subnet Group using the default VPC
 resource "aws_db_subnet_group" "lab" {
   name       = "lab-rds-subnet-group"
   subnet_ids = data.aws_subnets.default.ids
 }
 
-# Security Group para RDS
+# Security Group for RDS
 resource "aws_security_group" "rds" {
   name   = "lab-rds-sg"
   vpc_id = data.aws_vpc.default.id
@@ -53,7 +53,7 @@ resource "aws_security_group" "rds" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Em prod: IP específico ou SG de app
+    cidr_blocks = ["0.0.0.0/0"]  # In prod: specific IP or app SG
     description = "MySQL lab"
   }
 
@@ -65,7 +65,7 @@ resource "aws_security_group" "rds" {
   }
 }
 
-# Parameter Group customizado
+# Custom Parameter Group
 resource "aws_db_parameter_group" "lab" {
   name   = "lab-mysql8-pg"
   family = "mysql8.0"
@@ -86,7 +86,7 @@ resource "aws_db_parameter_group" "lab" {
   }
 }
 
-# RDS MySQL Multi-AZ — instância principal
+# RDS MySQL Multi-AZ — primary instance
 resource "aws_db_instance" "primary" {
   identifier        = "lab-mysql-primary"
   engine            = "mysql"
@@ -103,20 +103,20 @@ resource "aws_db_instance" "primary" {
   vpc_security_group_ids = [aws_security_group.rds.id]
   parameter_group_name   = aws_db_parameter_group.lab.name
 
-  multi_az              = true  # HA: standby em outra AZ
-  publicly_accessible   = true  # para lab; false em produção
+  multi_az              = true  # HA: standby in another AZ
+  publicly_accessible   = true  # for lab; false in production
   skip_final_snapshot   = true
 
-  backup_retention_period = 7  # 7 dias de backups automáticos
+  backup_retention_period = 7  # 7 days of automated backups
   backup_window           = "03:00-04:00"
   maintenance_window      = "Mon:04:00-Mon:05:00"
 
-  deletion_protection = false  # true em produção
+  deletion_protection = false  # true in production
 
   tags = { Environment = "lab", Module = "06-rds" }
 }
 
-# Read Replica (mesma região)
+# Read Replica (same region)
 resource "aws_db_instance" "read_replica" {
   identifier_prefix   = "lab-mysql-replica-"
   replicate_source_db = aws_db_instance.primary.identifier
@@ -135,7 +135,7 @@ output "primary_arn"       { value = aws_db_instance.primary.arn }
 
 ---
 
-## Parte 2 — Popular e Testar
+## Part 2 — Populate and Test
 
 ```bash
 terraform init && terraform apply -auto-approve
@@ -147,7 +147,7 @@ RDS_ARN=$(terraform output -raw primary_arn)
 echo "Primary: $PRIMARY"
 echo "Replica: $REPLICA"
 
-# Popular banco primário
+# Populate the primary database
 mysql -h "${PRIMARY%:*}" -P 3306 -u admin -p"Lab@12345Secure!" loja << 'SQL'
 CREATE TABLE produtos (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -160,58 +160,58 @@ CREATE TABLE produtos (
 );
 
 INSERT INTO produtos (nome, preco, categoria, estoque) VALUES
-  ('Notebook Pro', 3500.00, 'Eletrônicos', 10),
-  ('Mouse Wireless', 89.90, 'Periféricos', 50),
-  ('Teclado Mecânico', 350.00, 'Periféricos', 25),
-  ('Monitor 27 pol.', 1200.00, 'Eletrônicos', 8),
-  ('Headset USB', 180.00, 'Periféricos', 30);
+  ('Notebook Pro', 3500.00, 'Electronics', 10),
+  ('Mouse Wireless', 89.90, 'Peripherals', 50),
+  ('Mechanical Keyboard', 350.00, 'Peripherals', 25),
+  ('27-inch Monitor', 1200.00, 'Electronics', 8),
+  ('Headset USB', 180.00, 'Peripherals', 30);
 
 SELECT COUNT(*) AS total, categoria FROM produtos GROUP BY categoria;
 SQL
 
-# Aguardar replicação (< 1 min em mesma região)
+# Wait for replication (< 1 min in the same region)
 sleep 15
 
-# Verificar na Read Replica
-echo "Verificando dados na Read Replica..."
+# Check on the Read Replica
+echo "Checking data on the Read Replica..."
 mysql -h "${REPLICA%:*}" -P 3306 -u admin -p"Lab@12345Secure!" loja \
   -e "SELECT id, nome, preco FROM produtos ORDER BY id;"
 
-# Tentar ESCREVER na replica (deve falhar)
-echo "Testando write na replica (deve dar erro)..."
+# Try to WRITE to the replica (should fail)
+echo "Testing write on the replica (should error)..."
 mysql -h "${REPLICA%:*}" -P 3306 -u admin -p"Lab@12345Secure!" loja \
-  -e "INSERT INTO produtos VALUES (NULL, 'Teste', 1, 'X', 1, NOW());" 2>&1 | head -3
+  -e "INSERT INTO produtos VALUES (NULL, 'Test', 1, 'X', 1, NOW());" 2>&1 | head -3
 ```
 
 ---
 
-## Parte 3 — Backup Manual e Monitoramento
+## Part 3 — Manual Backup and Monitoring
 
 ```bash
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 RDS_ARN=$(terraform output -raw primary_arn)
 
-# Criar snapshot manual
+# Create manual snapshot
 SNAPSHOT_ID="lab-mysql-snapshot-$(date +%Y%m%d%H%M)"
 aws rds create-db-snapshot \
   --db-instance-identifier "lab-mysql-primary" \
   --db-snapshot-identifier "$SNAPSHOT_ID"
 
-# Aguardar snapshot ficar disponível
+# Wait for the snapshot to become available
 aws rds wait db-snapshot-available \
   --db-snapshot-identifier "$SNAPSHOT_ID"
 
-echo "Snapshot pronto: $SNAPSHOT_ID"
+echo "Snapshot ready: $SNAPSHOT_ID"
 
-# Listar todos os snapshots (auto + manual)
+# List all snapshots (automated + manual)
 aws rds describe-db-snapshots \
   --db-instance-identifier "lab-mysql-primary" \
   --query 'DBSnapshots[*].[DBSnapshotIdentifier, SnapshotType, Status, AllocatedStorage]' \
   --output table
 
-# Monitorar métricas CloudWatch
+# Monitor CloudWatch metrics
 echo ""
-echo "=== Métricas CloudWatch RDS ==="
+echo "=== RDS CloudWatch Metrics ==="
 START=$(date -u -d "1 hour ago" +%FT%TZ 2>/dev/null || date -u -v-1H +%FT%TZ)
 END=$(date -u +%FT%TZ)
 
@@ -223,13 +223,13 @@ for METRIC in "CPUUtilization" "FreeStorageSpace" "DatabaseConnections" "ReadLat
     --start-time "$START" --end-time "$END" \
     --period 3600 --statistics Average \
     --query 'Datapoints[0].Average' --output text 2>/dev/null)
-  echo "  $METRIC: ${VALUE:-sem dados}"
+  echo "  $METRIC: ${VALUE:-no data}"
 done
 
-# Criar alarme para CPU alta
+# Create alarm for high CPU
 aws cloudwatch put-metric-alarm \
-  --alarm-name "lab-rds-cpu-alta" \
-  --alarm-description "CPU RDS acima de 80%" \
+  --alarm-name "lab-rds-high-cpu" \
+  --alarm-description "RDS CPU above 80%" \
   --namespace AWS/RDS \
   --metric-name CPUUtilization \
   --dimensions "Name=DBInstanceIdentifier,Value=lab-mysql-primary" \
@@ -239,30 +239,30 @@ aws cloudwatch put-metric-alarm \
   --comparison-operator GreaterThanThreshold \
   --evaluation-periods 2
 
-echo "Alarme de CPU criado."
+echo "CPU alarm created."
 ```
 
 ---
 
-## Limpeza
+## Cleanup
 
 ```bash
-# Deletar snapshot manual
+# Delete manual snapshot
 aws rds delete-db-snapshot --db-snapshot-identifier "$SNAPSHOT_ID"
 
-# Deletar alarme
-aws cloudwatch delete-alarms --alarm-names "lab-rds-cpu-alta"
+# Delete alarm
+aws cloudwatch delete-alarms --alarm-names "lab-rds-high-cpu"
 
-# Destruir infraestrutura
+# Destroy infrastructure
 terraform destroy -auto-approve
 ```
 
 ---
 
-## O Que Você Aprendeu
+## What You Learned
 
-- **Multi-AZ:** standby sincrônico na mesma região; failover automático em ~1-2 min; NÃO serve para leitura
-- **Read Replica:** assíncrono; pode ser cross-region; promovível a instância independente; serve para leitura
-- **Snapshot manual vs automático:** snapshots manuais não expiram; automáticos respeitam `backup_retention_period`
-- **Restaurar snapshot:** cria nova instância (não substitui a atual) — RDS sem `UPDATE` de instância in-place
-- **Parameter Group:** configurações do engine (slow query log, max connections) — aplicado com reinicialização (static) ou imediato (dynamic)
+- **Multi-AZ:** synchronous standby in the same region; automatic failover in ~1-2 min; NOT usable for reads
+- **Read Replica:** asynchronous; can be cross-region; can be promoted to a standalone instance; serves reads
+- **Manual vs automated snapshot:** manual snapshots do not expire; automated ones follow `backup_retention_period`
+- **Restaurar snapshot:** creates a new instance (does not replace the current one) — RDS has no in-place instance restore
+- **Parameter Group:** engine settings (slow query log, max connections) — applied with a reboot (static) or immediately (dynamic)

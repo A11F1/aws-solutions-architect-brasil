@@ -1,33 +1,33 @@
-# Casos de Uso — Computação EC2
+# Use Cases — EC2 Compute
 
-## Caso 1: Cluster de HPC com Placement Group e EFA
+## Case 1: HPC Cluster with Placement Group and EFA
 
-**Contexto:**  
-Uma empresa de engenharia executa simulações de CFD (Computational Fluid Dynamics) que exigem comunicação MPI ultra-rápida entre instâncias. Qualquer latência de rede acima de 1ms degrada significativamente a performance.
+**Context:**  
+An engineering company runs CFD (Computational Fluid Dynamics) simulations that require ultra-fast MPI communication between instances. Any network latency above 1ms significantly degrades performance.
 
-**Arquitetura:**
+**Architecture:**
 
 ```
-Cluster Placement Group (mesma AZ, mesmo rack)
+Cluster Placement Group (same AZ, same rack)
 ┌──────────────────────────────────────────────────────┐
 │                                                      │
 │  hpc6a.48xlarge  ←──EFA──→  hpc6a.48xlarge           │
 │       │                          │                   │
 │       └──────────────────────────┘                   │
-│              10 Gbps / <100μs latência               │
+│              10 Gbps / <100μs latency                │
 │                                                      │
 │  hpc6a.48xlarge  ←──EFA──→  hpc6a.48xlarge           │
 │                                                      │
 └──────────────────────────────────────────────────────┘
      ↑
 EFA (Elastic Fabric Adapter) = RDMA-capable network interface
-Bypass do kernel de rede para latência mínima
+Bypasses the network kernel for minimum latency
 
-Storage: Lustre (FSx) montado em todas as instâncias
-Orquestração: AWS ParallelCluster
+Storage: Lustre (FSx) mounted on all instances
+Orchestration: AWS ParallelCluster
 ```
 
-**Configuração do Placement Group:**
+**Placement Group configuration:**
 ```bash
 aws ec2 create-placement-group \
   --group-name hpc-cluster \
@@ -40,27 +40,27 @@ aws ec2 run-instances \
   --count 8
 ```
 
-**Trade-off:** Cluster PG → todos no mesmo rack → se o rack falhar, todas as instâncias caem. Para HPC a latência é prioridade sobre disponibilidade.
+**Trade-off:** Cluster PG → all on the same rack → if the rack fails, all instances go down. For HPC, latency takes priority over availability.
 
-**Conceitos cobrados:** Cluster Placement Group, EFA, HPC, instâncias hpc6a
+**Concepts tested:** Cluster Placement Group, EFA, HPC, hpc6a instances
 
 ---
 
-## Caso 2: Batch Processing com Spot Fleet e Tolerância a Falhas
+## Case 2: Batch Processing with Spot Fleet and Fault Tolerance
 
-**Contexto:**  
-Uma empresa de data science executa jobs de machine learning que demoram entre 2 e 6 horas. O custo é crítico. Os jobs podem ser reiniciados do ponto de checkpoint se a instância for interrompida.
+**Context:**  
+A data science company runs machine learning jobs that take between 2 and 6 hours. Cost is critical. Jobs can be restarted from the checkpoint if the instance is interrupted.
 
-**Arquitetura:**
+**Architecture:**
 
 ```
 SQS Queue (1000 jobs)
        │
        ▼
-Spot Fleet (ASG com Mixed Instance Policy)
+Spot Fleet (ASG with Mixed Instance Policy)
 ┌─────────────────────────────────────────────────────┐
 │  Strategy: capacityOptimized                        │
-│  Tipos: m5.4xlarge, m5a.4xlarge, m4.4xlarge         │
+│  Types: m5.4xlarge, m5a.4xlarge, m4.4xlarge         │
 │         c5.4xlarge, r5.2xlarge                      │
 │                                                     │
 │  [m5.4xl] [c5.4xl] [m5a.4xl] [r5.2xl] [m5.4xl]    │
@@ -70,15 +70,15 @@ Spot Fleet (ASG com Mixed Instance Policy)
 └─────────────────────────────────────────────────────┘
        │
        ▼
-S3 (Checkpoint a cada hora + result final)
+S3 (Checkpoint every hour + final result)
 
-Se instância interrompida:
-  → Job volta para fila SQS (visibility timeout expira)
-  → Outra instância pega o job
-  → Retoma do último checkpoint no S3
+If instance is interrupted:
+  → Job returns to the SQS queue (visibility timeout expires)
+  → Another instance picks up the job
+  → Resumes from the last checkpoint in S3
 ```
 
-**Configuração do ASG com Mixed Instance:**
+**ASG configuration with Mixed Instances:**
 ```json
 {
   "MixedInstancesPolicy": {
@@ -98,50 +98,50 @@ Se instância interrompida:
 }
 ```
 
-**Conceitos cobrados:** Spot Fleet, capacityOptimized, checkpointing, SQS para distribuição de jobs, tolerância a interrupção
+**Concepts tested:** Spot Fleet, capacityOptimized, checkpointing, SQS for job distribution, interruption tolerance
 
 ---
 
-## Caso 3: Servidor de Banco de Dados OLTP com io2 e Placement Group
+## Case 3: OLTP Database Server with io2 and Placement Group
 
-**Contexto:**  
-Uma empresa migra um banco de dados Oracle para EC2. O banco requer 50.000 IOPS garantidos, backup via snapshots e licença Oracle BYO-L (por socket).
+**Context:**  
+A company migrates an Oracle database to EC2. The database requires 50,000 guaranteed IOPS, backup via snapshots and an Oracle BYOL (per-socket) license.
 
-**Arquitetura:**
+**Architecture:**
 
 ```
 Dedicated Host (r6i.16xlarge)
-  ├── Licença Oracle: 2 sockets × 16 cores = 32 cores BYO-L
-  ├── RAM: 512 GB (instância memory-optimized)
+  ├── Oracle license: 2 sockets × 16 cores = 32 cores BYOL
+  ├── RAM: 512 GB (memory-optimized instance)
   └── Storage:
-        ├── EBS io2 Block Express (500 GB, 50.000 IOPS provisionados)
-        │     └── Multi-attach para standby? → Não neste caso
-        └── EBS gp3 (logs de redo/archive: 2 TB)
+        ├── EBS io2 Block Express (500 GB, 50,000 provisioned IOPS)
+        │     └── Multi-attach for standby? → Not in this case
+        └── EBS gp3 (redo/archive logs: 2 TB)
 
 Backup:
-  └── EBS Snapshots automáticos via Data Lifecycle Manager
-        └── Retenção: 7 dias, horário: 02:00 UTC
-        └── Cross-region copy para DR
+  └── Automatic EBS Snapshots via Data Lifecycle Manager
+        └── Retention: 7 days, schedule: 02:00 UTC
+        └── Cross-Region copy for DR
 
 Monitoring:
   └── CloudWatch enhanced monitoring (1s granularity)
-  └── CloudWatch Alarm → SNS → PagerDuty se IOPS > 45.000
+  └── CloudWatch Alarm → SNS → PagerDuty if IOPS > 45,000
 ```
 
-**Por que Dedicated Host vs Dedicated Instance:**
-- Dedicated Host: visibilidade de socket/núcleo → necessário para Oracle license compliance
-- Dedicated Instance: hardware exclusivo mas sem contagem de socket → não conta para BYO-L Oracle
+**Why Dedicated Host vs Dedicated Instance:**
+- Dedicated Host: socket/core visibility → required for Oracle license compliance
+- Dedicated Instance: exclusive hardware but no socket count → does not count for Oracle BYOL
 
-**Conceitos cobrados:** io2 Block Express, Dedicated Host para BYO-L, EBS snapshots, enhanced monitoring
+**Concepts tested:** io2 Block Express, Dedicated Host for BYOL, EBS snapshots, enhanced monitoring
 
 ---
 
-## Caso 4: Ambiente Web com ASG, Spot e Launch Template
+## Case 4: Web Environment with ASG, Spot and Launch Template
 
-**Contexto:**  
-Um e-commerce quer reduzir custos de EC2 em 60% usando Spot para instâncias web stateless (sessão no ElastiCache), mantendo uma base On-Demand para disponibilidade mínima.
+**Context:**  
+An e-commerce company wants to reduce EC2 costs by 60% by using Spot for stateless web instances (session in ElastiCache), while keeping an On-Demand base for minimum availability.
 
-**Arquitetura:**
+**Architecture:**
 
 ```
 ALB (us-east-1)
@@ -149,61 +149,61 @@ ALB (us-east-1)
   ├── Target Group: Web-TG
   │
 ASG (mixed instances policy)
-├── Base: 2 On-Demand (m5.large) — disponibilidade mínima garantida
-├── Spot: até 10 instâncias (m5.large, m5a.large, m4.large, t3.xlarge)
+├── Base: 2 On-Demand (m5.large) — guaranteed minimum availability
+├── Spot: up to 10 instances (m5.large, m5a.large, m4.large, t3.xlarge)
 │     └── Strategy: capacityOptimized
 │
 ├── Launch Template v2:
 │     ├── AMI: ami-prod-web (golden AMI)
-│     ├── UserData: inicia app, registra no service discovery
+│     ├── UserData: starts app, registers in service discovery
 │     ├── Spot interruption handler (SSM parameter)
 │     └── IMDSv2: HttpTokens=required
 │
-├── Scale-out: CPU > 70% por 2 minutos → +2 instâncias
-├── Scale-in: CPU < 30% por 5 minutos → -1 instância
-└── Scheduled: +4 instâncias às 18h-22h (horário de pico)
+├── Scale-out: CPU > 70% for 2 minutes → +2 instances
+├── Scale-in: CPU < 30% for 5 minutes → -1 instance
+└── Scheduled: +4 instances from 6 PM to 10 PM (peak hours)
 
 ElastiCache Redis
-  └── Sessões dos usuários (TTL 30min)
-  └── Quando instância Spot é interrompida, sessão persiste no Redis
+  └── User sessions (TTL 30min)
+  └── When a Spot instance is interrupted, the session persists in Redis
 ```
 
-**Conceitos cobrados:** ASG Mixed Instances, Spot com On-Demand base, Launch Template, stateless app, Target Tracking + Scheduled scaling
+**Concepts tested:** ASG Mixed Instances, Spot with On-Demand base, Launch Template, stateless app, Target Tracking + Scheduled scaling
 
 ---
 
-## Caso 5: Hibernate para Workloads de Análise com Estado
+## Case 5: Hibernate for Stateful Analysis Workloads
 
-**Contexto:**  
-Uma cientista de dados executa notebooks Jupyter em EC2 com grandes datasets carregados em RAM (150 GB). Ao final do dia, ela desligar a instância mas quer retomar exatamente de onde parou no dia seguinte sem recarregar dados.
+**Context:**  
+A data scientist runs Jupyter notebooks on EC2 with large datasets loaded in RAM (150 GB). At the end of the day, she shuts down the instance but wants to resume exactly where she left off the next day without reloading data.
 
-**Solução com Hibernate:**
+**Solution with Hibernate:**
 
 ```
 r6i.4xlarge (128 vCPU, 128 GB RAM)
-  ├── EBS root (gp3, 500 GB) — encriptado com CMK ⚠️
-  │     └── Armazena: OS + dados + conteúdo da RAM ao hibernar
+  ├── EBS root (gp3, 500 GB) — encrypted with CMK ⚠️
+  │     └── Stores: OS + data + RAM contents when hibernating
   └── EBS data (gp3, 2 TB) — datasets
 
-Fluxo:
-  18:00: hibernate-instância
-    → RAM (150 GB) gravada no EBS root
-    → Instância para de cobrar (cobra apenas EBS)
-  08:00: start-instância
-    → RAM restaurada do EBS root
-    → Jupyter continua exatamente onde parou
-    → Datasets em memória preservados
+Flow:
+  18:00: hibernate-instance
+    → RAM (150 GB) written to the root EBS
+    → Instance stops being billed (only EBS is billed)
+  08:00: start-instance
+    → RAM restored from the root EBS
+    → Jupyter continues exactly where it left off
+    → In-memory datasets preserved
 
-Requisitos para hibernate:
-  ✅ RAM ≤ 150 GB (limite para hiberna)
-  ✅ Root EBS encriptado
-  ✅ Root EBS com espaço ≥ tamanho da RAM
-  ✅ Instância não pode estar no Instance Store
-  ✅ Prazo máximo: 60 dias hibernado
+Requirements for hibernate:
+  ✅ RAM ≤ 150 GB (limit for hibernation)
+  ✅ Root EBS encrypted
+  ✅ Root EBS with space ≥ RAM size
+  ✅ Instance cannot be on Instance Store
+  ✅ Maximum period: 60 days hibernated
 ```
 
-**Custo comparativo:**
-- Stop: para de cobrar EC2, mas perde dados de RAM → recarregamento = horas de tempo da cientista
-- Hibernate: para de cobrar EC2, RAM preservada → produtividade mantida
+**Cost comparison:**
+- Stop: stops EC2 billing, but loses RAM data → reloading = hours of the scientist's time
+- Hibernate: stops EC2 billing, RAM preserved → productivity maintained
 
-**Conceitos cobrados:** EC2 Hibernate, EBS encryption requirement, cost optimization, memory-optimized instances
+**Concepts tested:** EC2 Hibernate, EBS encryption requirement, cost optimization, memory-optimized instances

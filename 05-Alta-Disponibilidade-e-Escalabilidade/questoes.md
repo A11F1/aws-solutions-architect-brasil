@@ -1,31 +1,31 @@
-# Questões — Alta Disponibilidade e Escalabilidade
+# Questions — High Availability and Scalability
 
-## Questão 1
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Médio
+## Question 1
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Medium
 
-Uma empresa tem uma API REST usando EC2 com Auto Scaling. Clientes corporativos precisam adicionar os IPs da API ao whitelist do firewall deles. Qual tipo de load balancer resolve isso com IP fixo?
+A company has a REST API using EC2 with Auto Scaling. Corporate customers need to add the API's IPs to their firewall allowlist. Which type of load balancer solves this with a fixed IP?
 
-- A) ALB com IP estático
-- B) NLB com Elastic IP por AZ
-- C) CLB com IP estático
-- D) ALB com wildcard SSL
+- A) ALB with static IP
+- B) NLB with Elastic IP per AZ
+- C) CLB with static IP
+- D) ALB with wildcard SSL
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-NLB permite associar um Elastic IP por Availability Zone, fornecendo endereços IP estáticos e previsíveis. ALB usa DNS e o IP pode mudar. CLB é legado e não tem IP estático confiável. Wildcard SSL não resolve o problema de IP.
+NLB allows associating one Elastic IP per Availability Zone, providing static and predictable IP addresses. ALB uses DNS and the IP can change. CLB is legacy and has no reliable static IP. Wildcard SSL does not solve the IP problem.
 
-**Conceito-chave:** NLB com Elastic IP para allowlist de IP no cliente
+**Key concept:** NLB with Elastic IP for client-side IP allowlisting
 </details>
 
-## Questão 2
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Médio
+## Question 2
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Medium
 
-Uma plataforma SaaS com múltiplos tenants roteia tráfego para diferentes target groups baseados no hostname da requisição: `tenant-a.app.com` vai para TG-A e `tenant-b.app.com` vai para TG-B. Qual recurso do ALB implementa isso?
+A multi-tenant SaaS platform routes traffic to different target groups based on the request hostname: `tenant-a.app.com` goes to TG-A and `tenant-b.app.com` goes to TG-B. Which ALB feature implements this?
 
 - A) Path-based routing
 - B) Host-based routing
@@ -33,284 +33,284 @@ Uma plataforma SaaS com múltiplos tenants roteia tráfego para diferentes targe
 - D) Weighted target groups
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Host-based routing usa o header HTTP Host para selecionar o target group de acordo com o hostname da requisição. Path-based usa o caminho da URL (/api, /admin). IP-based routing não existe como regra de listener no ALB. Weighted target groups dividem tráfego proporcional entre grupos, não por hostname.
+Host-based routing uses the HTTP Host header to select the target group according to the request hostname. Path-based uses the URL path (/api, /admin). IP-based routing does not exist as a listener rule on the ALB. Weighted target groups split traffic proportionally between groups, not by hostname.
 
-**Conceito-chave:** host-based routing no ALB para multi-tenant por hostname
+**Key concept:** host-based routing on the ALB for multi-tenant by hostname
 </details>
 
-## Questão 3
-**Domínio:** Design High-Performing Architectures  
-**Dificuldade:** Médio
+## Question 3
+**Domain:** Design High-Performing Architectures  
+**Difficulty:** Medium
 
-Um time quer usar ALB para um canary release, enviando 5% do tráfego para a nova versão e 95% para a versão atual. Qual recurso do ALB permite isso?
+A team wants to use an ALB for a canary release, sending 5% of traffic to the new version and 95% to the current version. Which ALB feature allows this?
 
-- A) Host-based routing com dois listeners
-- B) Weighted target groups em uma mesma regra de listener
-- C) NLB com cross-zone balancing
-- D) Auto Scaling Group com Launch Template ponderado
+- A) Host-based routing with two listeners
+- B) Weighted target groups in a single listener rule
+- C) NLB with cross-zone balancing
+- D) Auto Scaling Group with a weighted Launch Template
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-ALB suporta weighted target groups em uma regra de listener, distribuindo tráfego de forma proporcional entre dois ou mais target groups na mesma ação. É o mecanismo padrão para canary e blue/green gradual. Host-based routing roteia por hostname, não por peso. NLB não tem esse recurso. ASG não controla proporção de tráfego no nível do load balancer.
+ALB supports weighted target groups in a listener rule, distributing traffic proportionally between two or more target groups in the same action. It is the standard mechanism for canary and gradual blue/green. Host-based routing routes by hostname, not by weight. NLB does not have this feature. The ASG does not control traffic proportion at the load balancer level.
 
-**Conceito-chave:** weighted target groups no ALB para canary release
+**Key concept:** weighted target groups on the ALB for canary release
 </details>
 
-## Questão 4
-**Domínio:** Design Secure Applications and Architectures  
-**Dificuldade:** Difícil
+## Question 4
+**Domain:** Design Secure Applications and Architectures  
+**Difficulty:** Hard
 
-Uma empresa quer inspecionar todo tráfego de entrada da internet antes de chegar à aplicação, usando um firewall next-gen de terceiro que roda em EC2. Qual tipo de load balancer suporta esse modelo de inserção de appliance transparentemente?
+A company wants to inspect all inbound internet traffic before it reaches the application, using a third-party next-gen firewall running on EC2. Which type of load balancer supports this appliance insertion model transparently?
 
-- A) ALB com Lambda authorizer
-- B) NLB com TLS pass-through
-- C) GWLB com VPC routing para appliances no target group
-- D) CLB com proxy protocol
+- A) ALB with Lambda authorizer
+- B) NLB with TLS pass-through
+- C) GWLB with VPC routing to appliances in the target group
+- D) CLB with proxy protocol
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: C**
+**Correct answer: C**
 
-GWLB opera na camada 3 com o protocolo GENEVE, permitindo inserção transparente de appliances de segurança no path do tráfego. Os pacotes são enviados ao GWLB endpoint, processados pelos appliances no target group e devolvidos ao GWLB, que os redireciona ao destino. ALB, NLB e CLB não suportam esse modelo de encapsulamento de pacotes IP.
+GWLB operates at layer 3 with the GENEVE protocol, allowing transparent insertion of security appliances into the traffic path. Packets are sent to the GWLB endpoint, processed by the appliances in the target group and returned to the GWLB, which redirects them to the destination. ALB, NLB and CLB do not support this IP packet encapsulation model.
 
-**Conceito-chave:** GWLB para inserção transparente de appliances de segurança
+**Key concept:** GWLB for transparent insertion of security appliances
 </details>
 
-## Questão 5
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Médio
+## Question 5
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Medium
 
-Um ASG está configurado com health check do tipo EC2 apenas. Uma instância está em execução mas o processo da aplicação travou e retorna HTTP 500 para qualquer requisição. O ASG vai substituí-la automaticamente?
+An ASG is configured with EC2-only health check. An instance is running but the application process has hung and returns HTTP 500 for any request. Will the ASG replace it automatically?
 
-- A) Sim, o EC2 health check detecta qualquer falha de aplicação
-- B) Não, EC2 health check valida apenas status da instância, não da aplicação
-- C) Sim, o ALB notifica o ASG automaticamente sem configuração adicional
-- D) Não, é necessário reiniciar a instância manualmente
+- A) Yes, the EC2 health check detects any application failure
+- B) No, EC2 health check validates only the instance status, not the application
+- C) Yes, the ALB notifies the ASG automatically with no additional configuration
+- D) No, it is necessary to restart the instance manually
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-O EC2 health check detecta apenas falhas de status do hardware/SO (instance status check e system status check). Uma aplicação travada retornando HTTP 500 ainda está em estado "running" para o EC2. Para o ASG substituir instâncias com aplicação falha, é necessário habilitar o ELB health check no ASG, que avalia a saúde no target group do ALB.
+The EC2 health check only detects hardware/OS status failures (instance status check and system status check). A hung application returning HTTP 500 is still in the "running" state as far as EC2 is concerned. For the ASG to replace instances with a failing application, you must enable the ELB health check on the ASG, which evaluates health in the ALB's target group.
 
-**Conceito-chave:** ELB health check no ASG para detectar falhas de aplicação
+**Key concept:** ELB health check on the ASG to detect application failures
 </details>
 
-## Questão 6
-**Domínio:** Design High-Performing Architectures  
-**Dificuldade:** Médio
+## Question 6
+**Domain:** Design High-Performing Architectures  
+**Difficulty:** Medium
 
-Uma aplicação recebe picos previsíveis toda segunda-feira às 8h quando funcionários chegam ao trabalho. A equipe quer garantir que as instâncias já estejam disponíveis antes do pico, evitando latência de scale-out. Qual política de scaling é mais adequada?
+An application receives predictable peaks every Monday at 8 AM when employees arrive at work. The team wants to ensure the instances are already available before the peak, avoiding scale-out latency. Which scaling policy is most suitable?
 
-- A) Target Tracking com CPUUtilization
-- B) Scheduled Scaling aumentando capacidade às 7h45 toda segunda
-- C) Step Scaling com alarm em CPU > 70%
-- D) Manual scaling toda segunda pela manhã
+- A) Target Tracking with CPUUtilization
+- B) Scheduled Scaling increasing capacity at 7:45 AM every Monday
+- C) Step Scaling with an alarm on CPU > 70%
+- D) Manual scaling every Monday morning
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Scheduled Scaling antecipa o aumento de capacidade para antes do pico esperado, evitando o lag inerente a políticas reativas. Target Tracking e Step Scaling são reativas: esperame a métrica subir para agir — chegando tarde para picos abruptos. Manual scaling depende de intervenção humana. Para picos previsíveis, Scheduled (ou Predictive com histórico) é a resposta.
+Scheduled Scaling brings the capacity increase ahead of the expected peak, avoiding the lag inherent to reactive policies. Target Tracking and Step Scaling are reactive: they wait for the metric to rise before acting — arriving late for abrupt peaks. Manual scaling depends on human intervention. For predictable peaks, Scheduled (or Predictive with history) is the answer.
 
-**Conceito-chave:** Scheduled Scaling para provisionar antes de picos previsíveis
+**Key concept:** Scheduled Scaling to provision before predictable peaks
 </details>
 
-## Questão 7
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Médio
+## Question 7
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Medium
 
-Uma empresa quer garantir que ao adicionar novas instâncias EC2 via ASG, o agente de monitoramento seja instalado e configurado antes que a instância comece a receber tráfego do load balancer. Qual mecanismo deve ser usado?
+A company wants to ensure that when new EC2 instances are added via the ASG, the monitoring agent is installed and configured before the instance starts receiving traffic from the load balancer. Which mechanism should be used?
 
-- A) User Data com script de instalação
-- B) Lifecycle Hook em EC2_INSTANCE_LAUNCHING com Lambda que instala o agente
-- C) Golden AMI com agente pré-instalado
-- D) AWS Config rule para verificar o agente
+- A) User Data with an installation script
+- B) Lifecycle Hook on EC2_INSTANCE_LAUNCHING with a Lambda that installs the agent
+- C) Golden AMI with the agent pre-installed
+- D) AWS Config rule to verify the agent
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Lifecycle Hook em `Pending:Wait` mantém a instância fora do target group do ELB enquanto a automação corre. Uma Lambda (acionada via SNS/SQS/EventBridge) instala e configura o agente e depois chama `CompleteLifecycleAction(CONTINUE)`. User Data executa na boot mas não garante que a instância só entre no load balancer depois — o hook sim. Golden AMI é bom para o agente pré-instalado, mas não para configurações dinâmicas.
+A Lifecycle Hook in `Pending:Wait` keeps the instance out of the ELB target group while the automation runs. A Lambda (triggered via SNS/SQS/EventBridge) installs and configures the agent and then calls `CompleteLifecycleAction(CONTINUE)`. User Data runs at boot but does not guarantee that the instance only joins the load balancer afterwards — the hook does. A Golden AMI is good for a pre-installed agent, but not for dynamic configuration.
 
-**Conceito-chave:** Lifecycle Hook Pending:Wait para custom initialization antes do ELB
+**Key concept:** Lifecycle Hook Pending:Wait for custom initialization before the ELB
 </details>
 
-## Questão 8
-**Domínio:** Design Cost-Optimized Architectures  
-**Dificuldade:** Médio
+## Question 8
+**Domain:** Design Cost-Optimized Architectures  
+**Difficulty:** Medium
 
-Um ALB tem dois target groups em duas AZs: TG-A com 10 instâncias na AZ1 e TG-B com 2 instâncias na AZ2. Com cross-zone load balancing habilitado no ALB, como o tráfego é distribuído?
+An ALB has two target groups in two AZs: TG-A with 10 instances in AZ1 and TG-B with 2 instances in AZ2. With cross-zone load balancing enabled on the ALB, how is traffic distributed?
 
-- A) 50% para AZ1 e 50% para AZ2
-- B) Uniformemente entre as 12 instâncias (~8,3% cada)
-- C) 83% para TG-A e 17% para TG-B
-- D) 100% para TG-A por ter mais instâncias
+- A) 50% to AZ1 and 50% to AZ2
+- B) Evenly across the 12 instances (~8.3% each)
+- C) 83% to TG-A and 17% to TG-B
+- D) 100% to TG-A because it has more instances
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Com cross-zone load balancing habilitado, cada nó do ALB distribui tráfego igualmente entre todas as instâncias saudáveis em todas as AZs, independentemente de quantas estão por AZ. 12 instâncias = ~8,3% cada. Sem cross-zone, cada nó distribui apenas para instâncias na sua AZ (50% para cada AZ, então AZ1 com 10 instâncias cada uma recebe 5% e AZ2 com 2 instâncias cada uma recebe 25%).
+With cross-zone load balancing enabled, each ALB node distributes traffic equally across all healthy instances in all AZs, regardless of how many are in each AZ. 12 instances = ~8.3% each. Without cross-zone, each node distributes only to instances in its own AZ (50% to each AZ, so AZ1 with 10 instances gives each one 5% and AZ2 with 2 instances gives each one 25%).
 
-**Conceito-chave:** cross-zone load balancing distribui uniformemente entre todas as instâncias
+**Key concept:** cross-zone load balancing distributes evenly across all instances
 </details>
 
-## Questão 9
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Difícil
+## Question 9
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Hard
 
-Um ASG está executando scale-in. A política de termination está como default. A AZ1 tem 4 instâncias e a AZ2 tem 2. Qual instância é selecionada para terminação primeiro?
+An ASG is performing scale-in. The termination policy is the default. AZ1 has 4 instances and AZ2 has 2. Which instance is selected for termination first?
 
-- A) A instância mais nova em qualquer AZ
-- B) Uma instância da AZ2, pois tem menos e está desbalanceada
-- C) Uma instância da AZ1, por ser a AZ com mais instâncias, seguido pela mais antiga pelo launch template
-- D) Aleatório entre todas as instâncias
+- A) The newest instance in any AZ
+- B) An instance from AZ2, since it has fewer and is unbalanced
+- C) An instance from AZ1, as it is the AZ with the most instances, followed by the oldest by launch template
+- D) Random among all instances
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: C**
+**Correct answer: C**
 
-A política de terminação padrão do ASG: (1) seleciona a AZ com mais instâncias para rebalancear; (2) dentro dessa AZ, seleciona a instância com o launch template ou configuration mais antigo; (3) se empate, a mais próxima da próxima hora chargeable. AZ1 com 4 instâncias é selecionada primeiro. A mais antiga pelo template seria encerrada.
+The ASG's default termination policy: (1) selects the AZ with the most instances to rebalance; (2) within that AZ, selects the instance with the oldest launch template or configuration; (3) if tied, the one closest to the next chargeable hour. AZ1 with 4 instances is selected first. The oldest by template would be terminated.
 
-**Conceito-chave:** termination policy padrão: AZ com mais instâncias → mais antiga pelo template
+**Key concept:** default termination policy: AZ with the most instances → oldest by template
 </details>
 
-## Questão 10
-**Domínio:** Design High-Performing Architectures  
-**Dificuldade:** Médio
+## Question 10
+**Domain:** Design High-Performing Architectures  
+**Difficulty:** Medium
 
-Um serviço precisa de acesso a uma API interna que roda numa VPC de outra conta, sem expor tráfego à internet e sem criar VPC Peering. Qual arquitetura atende a esse requisito?
+A service needs access to an internal API running in a VPC in another account, without exposing traffic to the internet and without creating a VPC Peering. Which architecture meets this requirement?
 
-- A) Internet Gateway com security group restrito
-- B) NLB com VPC Endpoint Service (PrivateLink) na conta produtora
-- C) ALB multi-region com CloudFront
-- D) VPN site-to-site entre as contas
+- A) Internet Gateway with a restricted security group
+- B) NLB with VPC Endpoint Service (PrivateLink) in the producer account
+- C) Multi-Region ALB with CloudFront
+- D) Site-to-site VPN between the accounts
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-AWS PrivateLink usa um NLB como backend de um VPC Endpoint Service. O consumidor cria um Interface Endpoint (VPC Endpoint) que aparece como um ENI na sua VPC com IP privado. O tráfego nunca sai da rede AWS e não requer peering, routing, ou exposição à internet. VPN é mais complexa e não soluciona a questão de forma elegante.
+AWS PrivateLink uses an NLB as the backend of a VPC Endpoint Service. The consumer creates an Interface Endpoint (VPC Endpoint) that appears as an ENI in its VPC with a private IP. Traffic never leaves the AWS network and requires no peering, routing, or internet exposure. VPN is more complex and does not solve the problem elegantly.
 
-**Conceito-chave:** NLB + PrivateLink para exposição privada de serviço cross-account sem peering
+**Key concept:** NLB + PrivateLink for private cross-account service exposure without peering
 </details>
 
-## Questão 11
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Médio
+## Question 11
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Medium
 
-Uma instância EC2 do ASG está processando uma tarefa longa quando o scale-in é disparado. Qual mecanismo garante que a tarefa seja concluída antes da instância ser terminada?
+An EC2 instance in the ASG is processing a long task when scale-in is triggered. Which mechanism ensures the task completes before the instance is terminated?
 
-- A) Cooldown period de 3600 segundos
-- B) Connection Draining no ELB
-- C) Lifecycle Hook em EC2_INSTANCE_TERMINATING
-- D) Suspended scaling para scale-in
+- A) Cooldown period of 3600 seconds
+- B) Connection Draining on the ELB
+- C) Lifecycle Hook on EC2_INSTANCE_TERMINATING
+- D) Suspended scaling for scale-in
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: C**
+**Correct answer: C**
 
-Lifecycle Hook em `Terminating:Wait` mantém a instância em estado de espera antes da terminação efetiva. A automação pode monitorar a conclusão da tarefa e chamar `CompleteLifecycleAction(CONTINUE)` quando terminar. Connection Draining apenas drena conexões HTTP ativas do ELB, não aguarda tarefas em segundo plano. Cooldown afeta quando o próximo scaling ocorre, não o timing de um já iniciado. Suspend interromperia o scaling.
+A Lifecycle Hook in `Terminating:Wait` keeps the instance in a waiting state before the actual termination. The automation can monitor task completion and call `CompleteLifecycleAction(CONTINUE)` when finished. Connection Draining only drains active HTTP connections from the ELB, it does not wait for background tasks. Cooldown affects when the next scaling occurs, not the timing of one already started. Suspend would interrupt scaling.
 
-**Conceito-chave:** Lifecycle Hook Terminating:Wait para tarefas de longa duração no scale-in
+**Key concept:** Lifecycle Hook Terminating:Wait for long-running tasks on scale-in
 </details>
 
-## Questão 12
-**Domínio:** Design High-Performing Architectures  
-**Dificuldade:** Médio
+## Question 12
+**Domain:** Design High-Performing Architectures  
+**Difficulty:** Medium
 
-Um arquiteto precisa criar uma frota de instâncias EC2 usando múltiplos tipos (m5.large, m5.xlarge, m6i.large) com mix de On-Demand e Spot para reduzir custo. Qual recurso permite isso?
+An architect needs to create a fleet of EC2 instances using multiple types (m5.large, m5.xlarge, m6i.large) with a mix of On-Demand and Spot to reduce cost. Which feature allows this?
 
-- A) Launch Configuration com múltiplos tipos
-- B) Launch Template com overrides de tipo + Mixed Instance Policy no ASG
-- C) Múltiplos ASGs separados por tipo
-- D) Dedicated Host com multiplex de tipos
+- A) Launch Configuration with multiple types
+- B) Launch Template with type overrides + Mixed Instance Policy on the ASG
+- C) Multiple separate ASGs per type
+- D) Dedicated Host with type multiplexing
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Launch Template suporta overrides de tipo de instância. No ASG, a Mixed Instance Policy permite definir múltiplos tipos e a distribuição On-Demand/Spot. O ASG escolhe o mais barato disponível do pool de tipos definidos. Launch Configuration não suporta múltiplos tipos. Múltiplos ASGs aumentam complexidade operacional. Dedicated Host não tem a ver com diversificação de tipos Spot.
+Launch Template supports instance type overrides. On the ASG, the Mixed Instance Policy allows defining multiple types and the On-Demand/Spot distribution. The ASG chooses the cheapest available from the pool of defined types. Launch Configuration does not support multiple types. Multiple ASGs increase operational complexity. Dedicated Host has nothing to do with Spot type diversification.
 
-**Conceito-chave:** Launch Template com Mixed Instance Policy para frota diversificada
+**Key concept:** Launch Template with Mixed Instance Policy for a diversified fleet
 </details>
 
-## Questão 13
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Fácil
+## Question 13
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Easy
 
-Uma empresa quer garantir que mesmo se uma instância do ASG parecer saudável para o EC2, ela será substituída se a aplicação não retornar HTTP 200 nas requisições de health check. Qual configuração implementa isso?
+A company wants to ensure that even if an ASG instance looks healthy to EC2, it will be replaced if the application does not return HTTP 200 on health check requests. Which configuration implements this?
 
-- A) Criar um alarm CloudWatch para response code
-- B) Habilitar ELB health check no ASG e configurar health check no target group
-- C) Usar enhanced monitoring no EC2
-- D) Configurar CloudTrail para detectar erros HTTP
+- A) Create a CloudWatch alarm for response code
+- B) Enable ELB health check on the ASG and configure the health check on the target group
+- C) Use enhanced monitoring on EC2
+- D) Configure CloudTrail to detect HTTP errors
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-Para o ASG considerar health checks de aplicação, é preciso: (1) configurar o health check no ALB target group com o caminho e código de sucesso esperados; (2) habilitar o ELB health check no ASG. Assim, instâncias que falham no health check do ALB são marcadas como unhealthy no ASG e substituídas. Alarm CloudWatch não age no ASG automaticamente dessa forma. Enhanced monitoring traz métricas mas não substitui instâncias.
+For the ASG to consider application health checks, you need to: (1) configure the health check on the ALB target group with the expected path and success code; (2) enable the ELB health check on the ASG. That way, instances that fail the ALB health check are marked unhealthy in the ASG and replaced. A CloudWatch alarm does not act on the ASG automatically in this way. Enhanced monitoring provides metrics but does not replace instances.
 
-**Conceito-chave:** habilitar ELB health check no ASG + configurar TG health check
+**Key concept:** enable ELB health check on the ASG + configure TG health check
 </details>
 
-## Questão 14
-**Domínio:** Design Cost-Optimized Architectures  
-**Dificuldade:** Médio
+## Question 14
+**Domain:** Design Cost-Optimized Architectures  
+**Difficulty:** Medium
 
-Um time quer escalar o ASG baseado no número de mensagens visíveis na fila SQS (ApproximateNumberOfMessagesVisible). Qual política de scaling suporta métricas customizadas do CloudWatch diretamente?
+A team wants to scale the ASG based on the number of visible messages in the SQS queue (ApproximateNumberOfMessagesVisible). Which scaling policy directly supports custom CloudWatch metrics?
 
 - A) Scheduled Scaling
 - B) Predictive Scaling
-- C) Target Tracking Scaling com métrica customizada do CloudWatch
+- C) Target Tracking Scaling with a custom CloudWatch metric
 - D) EC2 Auto Recovery
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: C**
+**Correct answer: C**
 
-Target Tracking suporta métricas customizadas do CloudWatch além das métricas predefinidas. É possível configurar APproximateNumberOfMessagesVisible/number-of-instances como target para manter uma carga de mensagens por instância constante. Scheduled é baseado em horário. Predictive usa histórico de métricas padrão. Auto Recovery é para falhas de hardware, não scaling.
+Target Tracking supports custom CloudWatch metrics in addition to predefined metrics. You can configure ApproximateNumberOfMessagesVisible/number-of-instances as the target to keep a constant message load per instance. Scheduled is time-based. Predictive uses standard metric history. Auto Recovery is for hardware failures, not scaling.
 
-**Conceito-chave:** Target Tracking com métrica customizada do CloudWatch para escalar por SQS
+**Key concept:** Target Tracking with a custom CloudWatch metric to scale by SQS
 </details>
 
-## Questão 15
-**Domínio:** Design Resilient Architectures  
-**Dificuldade:** Difícil
+## Question 15
+**Domain:** Design Resilient Architectures  
+**Difficulty:** Hard
 
-Uma empresa tem um ALB com listener HTTPS na porta 443. O certificado SSL está configurado no listener. A aplicação backend roda HTTP na porta 8080. Um arquiteto precisa garantir que a comunicação ALB → EC2 também seja criptografada. Qual configuração implementa isso?
+A company has an ALB with an HTTPS listener on port 443. The SSL certificate is configured on the listener. The backend application runs HTTP on port 8080. An architect needs to ensure that ALB → EC2 communication is also encrypted. Which configuration implements this?
 
-- A) ALB não pode estabelecer HTTPS para targets, apenas HTTP
-- B) Configurar o target group protocol como HTTPS na porta 443 e instalar certificado nas instâncias
-- C) Usar NLB com TLS pass-through
-- D) Configurar SSL policy no ALB para criptografar automaticamente o backend
+- A) The ALB cannot establish HTTPS to targets, only HTTP
+- B) Configure the target group protocol as HTTPS on port 443 and install a certificate on the instances
+- C) Use an NLB with TLS pass-through
+- D) Configure an SSL policy on the ALB to automatically encrypt the backend
 
 <details>
-<summary>✅ Resposta e Explicação</summary>
+<summary>✅ Answer and Explanation</summary>
 
-**Resposta correta: B**
+**Correct answer: B**
 
-O ALB suporta HTTPS como protocolo de target group. Configure o target group com protocolo HTTPS e instale certificados nas instâncias (self-signed ou ACM via Private CA). O ALB estabelece HTTPS até cada instância. A alternativa A está errada — ALB suporta sim HTTPS backend. NLB com TLS pass-through é uma solução diferente. SSL policy no listener controla apenas a negociação TLS do cliente ao ALB.
+The ALB supports HTTPS as a target group protocol. Configure the target group with the HTTPS protocol and install certificates on the instances (self-signed or ACM via Private CA). The ALB establishes HTTPS to each instance. Option A is wrong — the ALB does support HTTPS backends. NLB with TLS pass-through is a different solution. The SSL policy on the listener only controls the TLS negotiation from the client to the ALB.
 
-**Conceito-chave:** target group HTTPS para criptografia end-to-end no ALB
+**Key concept:** HTTPS target group for end-to-end encryption on the ALB
 </details>

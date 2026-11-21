@@ -1,18 +1,18 @@
-# Lab — Alta Disponibilidade e Escalabilidade
+# Lab — High Availability and Scalability
 
-> **Região:** us-east-1  
-> **Custo estimado:** ~$0,02/hora ALB + EC2 t3.micro durante o lab  
-> **Pré-requisito:** AWS CLI configurado, Terraform >= 1.5
+> **Region:** us-east-1  
+> **Estimated cost:** ~$0.02/hour ALB + EC2 t3.micro during the lab  
+> **Prerequisite:** AWS CLI configured, Terraform >= 1.5
 
-## Objetivos do Lab
-1. Criar um ALB com path-based routing para dois target groups
-2. Configurar ASG com Target Tracking vinculado ao ALB
-3. Adicionar Lifecycle Hook com notificação via EventBridge
-4. Testar scale-out e scale-in com stress test
+## Lab Objectives
+1. Create an ALB with path-based routing to two target groups
+2. Configure an ASG with Target Tracking attached to the ALB
+3. Add a Lifecycle Hook with notification via EventBridge
+4. Test scale-out and scale-in with a stress test
 
 ---
 
-## Parte 1: ALB com Path-Based Routing via AWS CLI
+## Part 1: ALB with Path-Based Routing via AWS CLI
 
 ```bash
 REGION="us-east-1"
@@ -26,7 +26,7 @@ SUBNET_2=$(echo $SUBNETS | cut -d' ' -f2)
 
 echo "VPC: $VPC_ID | Subnets: $SUBNET_1 $SUBNET_2"
 
-# Security Group para ALB
+# Security Group for the ALB
 ALB_SG=$(aws ec2 create-security-group \
   --group-name lab-alb-sg --description "ALB Lab" \
   --vpc-id $VPC_ID --region $REGION \
@@ -36,7 +36,7 @@ aws ec2 authorize-security-group-ingress \
   --group-id $ALB_SG --protocol tcp --port 80 \
   --cidr 0.0.0.0/0 --region $REGION
 
-# Security Group para instâncias (aceita do ALB apenas)
+# Security Group for instances (accepts traffic from the ALB only)
 EC2_SG=$(aws ec2 create-security-group \
   --group-name lab-ec2-sg --description "EC2 Lab" \
   --vpc-id $VPC_ID --region $REGION \
@@ -46,7 +46,7 @@ aws ec2 authorize-security-group-ingress \
   --group-id $EC2_SG --protocol tcp --port 80 \
   --source-group $ALB_SG --region $REGION
 
-# Criar ALB
+# Create the ALB
 ALB_ARN=$(aws elbv2 create-load-balancer \
   --name lab-alb \
   --subnets $SUBNET_1 $SUBNET_2 \
@@ -54,9 +54,9 @@ ALB_ARN=$(aws elbv2 create-load-balancer \
   --region $REGION \
   --query "LoadBalancers[0].LoadBalancerArn" --output text)
 
-echo "ALB criado: $ALB_ARN"
+echo "ALB created: $ALB_ARN"
 
-# Criar dois Target Groups
+# Create two Target Groups
 TG_API=$(aws elbv2 create-target-group \
   --name lab-tg-api \
   --protocol HTTP --port 80 \
@@ -79,7 +79,7 @@ TG_WEB=$(aws elbv2 create-target-group \
 
 echo "TG API: $TG_API | TG WEB: $TG_WEB"
 
-# Criar Listener HTTP:80 com regras de roteamento
+# Create HTTP:80 Listener with routing rules
 LISTENER_ARN=$(aws elbv2 create-listener \
   --load-balancer-arn $ALB_ARN \
   --protocol HTTP --port 80 \
@@ -87,7 +87,7 @@ LISTENER_ARN=$(aws elbv2 create-listener \
   --region $REGION \
   --query "Listeners[0].ListenerArn" --output text)
 
-# Adicionar regra de path-based para /api/*
+# Add a path-based rule for /api/*
 aws elbv2 create-rule \
   --listener-arn $LISTENER_ARN \
   --priority 10 \
@@ -98,7 +98,7 @@ aws elbv2 create-rule \
 
 ---
 
-## Parte 2: Terraform — ASG completo com Target Tracking e Lifecycle Hook
+## Part 2: Terraform — Complete ASG with Target Tracking and Lifecycle Hook
 
 ```hcl
 # main.tf
@@ -187,7 +187,7 @@ resource "aws_lb" "main" {
   security_groups    = [aws_security_group.alb_sg.id]
   subnets            = data.aws_subnets.available.ids
 
-  enable_deletion_protection = false # lab: permite destroy fácil
+  enable_deletion_protection = false # lab: allows easy destroy
 
   tags = {
     Name   = "lab-ha-alb"
@@ -211,7 +211,7 @@ resource "aws_lb_target_group" "web" {
     matcher             = "200"
   }
 
-  deregistration_delay = 30 # lab: reduzido para 30s (padrão 300s)
+  deregistration_delay = 30 # lab: reduced to 30s (default 300s)
 }
 
 resource "aws_lb_listener" "http" {
@@ -246,12 +246,12 @@ resource "aws_launch_template" "web" {
     yum install -y httpd stress
     systemctl enable --now httpd
 
-    # Endpoint de health check
+    # Health check endpoint
     cat > /var/www/html/health <<'HEALTH'
     OK
     HEALTH
 
-    # Endpoint principal
+    # Main endpoint
     INSTANCE_ID=$(curl -s -X PUT http://169.254.169.254/latest/api/token \
       -H "X-aws-ec2-metadata-token-ttl-seconds: 60" | \
       xargs -I {} curl -s http://169.254.169.254/latest/meta-data/instance-id \
@@ -287,7 +287,7 @@ resource "aws_autoscaling_group" "web" {
 
   target_group_arns = [aws_lb_target_group.web.arn]
 
-  # Importante: usar ELB health check em produção
+  # Important: use ELB health check in production
   health_check_type         = "ELB"
   health_check_grace_period = 60
 
@@ -302,7 +302,7 @@ resource "aws_autoscaling_group" "web" {
 }
 
 # ──────────────────────────────────────────────────────
-# 5. Target Tracking Policy (baseada em ALB requests)
+# 5. Target Tracking Policy (based on ALB requests)
 # ──────────────────────────────────────────────────────
 
 resource "aws_autoscaling_policy" "target_tracking" {
@@ -311,7 +311,7 @@ resource "aws_autoscaling_policy" "target_tracking" {
   policy_type            = "TargetTrackingScaling"
 
   target_tracking_configuration {
-    # Escalar para manter 100 requests/target por minuto
+    # Scale to maintain 100 requests/target per minute
     predefined_metric_specification {
       predefined_metric_type = "ALBRequestCountPerTarget"
       resource_label = "${aws_lb.main.arn_suffix}/${aws_lb_target_group.web.arn_suffix}"
@@ -335,7 +335,7 @@ resource "aws_autoscaling_lifecycle_hook" "launch_hook" {
   autoscaling_group_name = aws_autoscaling_group.web.name
   lifecycle_transition   = "autoscaling:EC2_INSTANCE_LAUNCHING"
   default_result         = "CONTINUE"
-  heartbeat_timeout      = 120 # lab: 2 minutos
+  heartbeat_timeout      = 120 # lab: 2 minutes
 
   notification_target_arn = aws_sns_topic.lifecycle.arn
   role_arn                = aws_iam_role.asg_lifecycle_role.arn
@@ -367,7 +367,7 @@ resource "aws_iam_role_policy" "asg_lifecycle_policy" {
 }
 
 # ──────────────────────────────────────────────────────
-# 7. CloudWatch Alarm para Step Scaling adicional
+# 7. CloudWatch Alarm for additional Step Scaling
 # ──────────────────────────────────────────────────────
 
 resource "aws_cloudwatch_metric_alarm" "high_cpu" {
@@ -379,7 +379,7 @@ resource "aws_cloudwatch_metric_alarm" "high_cpu" {
   period              = 60
   statistic           = "Average"
   threshold           = 80
-  alarm_description   = "Trigger scale-out quando CPU > 80% por 2 minutos"
+  alarm_description   = "Trigger scale-out when CPU > 80% for 2 minutes"
 
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.web.name
@@ -412,7 +412,7 @@ resource "aws_autoscaling_policy" "step_scale_out" {
 
 output "alb_dns" {
   value       = aws_lb.main.dns_name
-  description = "DNS do ALB para teste"
+  description = "ALB DNS for testing"
 }
 
 output "asg_name" {
@@ -422,27 +422,27 @@ output "asg_name" {
 
 ---
 
-## Parte 3: Stress Test e Monitoramento
+## Part 3: Stress Test and Monitoring
 
 ```bash
-# Obter DNS do ALB
+# Get the ALB DNS
 ALB_DNS=$(terraform output -raw alb_dns)
 
-# Testar routing
+# Test routing
 curl http://$ALB_DNS/         # → TG-web
-curl http://$ALB_DNS/health   # → health check resposta
+curl http://$ALB_DNS/health   # → health check response
 
-# Gerar carga para disparar scale-out (emula via ab - Apache Benchmark)
-# (instalar: yum install -y httpd-tools)
+# Generate load to trigger scale-out (emulated via ab - Apache Benchmark)
+# (install: yum install -y httpd-tools)
 ab -n 10000 -c 50 http://$ALB_DNS/ &
 
-# Monitorar ASG em tempo real
+# Monitor the ASG in real time
 watch -n5 "aws autoscaling describe-auto-scaling-groups \
   --auto-scaling-group-names lab-ha-asg \
   --query 'AutoScalingGroups[0].{Min:MinSize,Max:MaxSize,Desired:DesiredCapacity,Instances:Instances[*].LifecycleState}' \
   --output json --region us-east-1"
 
-# Ver atividades de scaling
+# View scaling activities
 aws autoscaling describe-scaling-activities \
   --auto-scaling-group-name lab-ha-asg \
   --region us-east-1 \
@@ -455,31 +455,31 @@ aws autoscaling describe-scaling-activities \
 ## Cleanup
 
 ```bash
-# Terraform destroy (remove tudo)
+# Terraform destroy (removes everything)
 terraform destroy -auto-approve
 
-# Ou CLI para recursos criados manualmente:
-# Deletar Listener e ALB
+# Or CLI for manually created resources:
+# Delete Listener and ALB
 aws elbv2 delete-listener --listener-arn $LISTENER_ARN --region us-east-1
 aws elbv2 delete-load-balancer --load-balancer-arn $ALB_ARN --region us-east-1
 
-# Deletar Target Groups
+# Delete Target Groups
 aws elbv2 delete-target-group --target-group-arn $TG_API --region us-east-1
 aws elbv2 delete-target-group --target-group-arn $TG_WEB --region us-east-1
 
-# Deletar Security Groups
+# Delete Security Groups
 aws ec2 delete-security-group --group-id $EC2_SG --region us-east-1
 aws ec2 delete-security-group --group-id $ALB_SG --region us-east-1
 
-echo "Cleanup concluído."
+echo "Cleanup complete."
 ```
 
 ---
 
-## Pontos de Revisão
+## Review Points
 
-- [ ] Por que o `deregistration_delay` foi reduzido para 30s no lab?
-- [ ] O que acontece se o health check na `/health` retornar 404?
-- [ ] Com Target Tracking configurado para ALBRequestCountPerTarget=100, quantas instâncias são necessárias para 500 req/min?
-- [ ] O Lifecycle Hook em `EC2_INSTANCE_LAUNCHING` afeta o scale-in?
-- [ ] Por que o Step Scaling adiciona 1 instância para CPU 80-100% mas 2 para >100%?
+- [ ] Why was `deregistration_delay` reduced to 30s in the lab?
+- [ ] What happens if the health check on `/health` returns 404?
+- [ ] With Target Tracking configured for ALBRequestCountPerTarget=100, how many instances are needed for 500 req/min?
+- [ ] Does the Lifecycle Hook on `EC2_INSTANCE_LAUNCHING` affect scale-in?
+- [ ] Why does Step Scaling add 1 instance for CPU 80-100% but 2 for >100%?

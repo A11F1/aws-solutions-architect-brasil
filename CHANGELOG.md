@@ -1,9 +1,9 @@
 # Changelog
 
-Todas as mudanças relevantes deste repositório serão documentadas aqui.
+All notable changes to this repository will be documented here.
 
 ## [0.1.0] - 2026-04-08
-### Adicionado
-- Estrutura inicial com módulos 01 a 31 cobrindo os principais tópicos do exame AWS SAA-C03.
-- Plano de estudos em 9 semanas para progressão de teoria, prática e revisão.
-- Conteúdos de apoio por módulo: cheatsheets, flashcards, questões, labs e links oficiais.
+### Added
+- Initial structure with modules 01 to 31 covering the main topics of the AWS SAA-C03 exam.
+- 9-week study plan for progressing through theory, practice, and review.
+- Supporting content per module: cheatsheets, flashcards, questions, labs, and official links.

@@ -1,4 +1,4 @@
-# Links Oficiais - Recuperacao de Desastres e Continuidade
+# Official Links - Disaster Recovery and Continuity
 
 - AWS Disaster Recovery Overview: https://aws.amazon.com/disaster-recovery/
 - Choosing an AWS disaster recovery strategy: https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html

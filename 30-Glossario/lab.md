@@ -1,22 +1,22 @@
-# Lab Prático — Glossário AWS: IAM Avançado e Investigação de Policies (Módulo 20)
+# Hands-On Lab — AWS Glossary: Advanced IAM and Policy Investigation (Module 20)
 
-> **Região:** us-east-1 | **Custo estimado:** ~$0 (IAM é gratuito)  
-> **Pré-requisitos:** AWS CLI configurado, permissão de IAM na conta
-
----
-
-## Objetivo
-
-Explorar os tipos de policies IAM na prática, simular avaliações de permissão, criar roles cross-account, e entender o modelo de avaliação de políticas AWS.
+> **Region:** us-east-1 | **Estimated cost:** ~$0 (IAM is free)  
+> **Prerequisites:** AWS CLI configured, IAM permissions in the account
 
 ---
 
-## Parte 1 — Tipos de Policies IAM
+## Objective
+
+Explore the IAM policy types in practice, simulate permission evaluations, create cross-account roles, and understand the AWS policy evaluation model.
+
+---
+
+## Part 1 — IAM Policy Types
 
 ```bash
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-# 1. Identity-based Policy (inline em usuário)
+# 1. Identity-based Policy (inline on a user)
 aws iam create-user --user-name "lab-glossario-dev"
 
 # Attach managed policy
@@ -24,7 +24,7 @@ aws iam attach-user-policy \
   --user-name "lab-glossario-dev" \
   --policy-arn "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
 
-# Criar customer managed policy
+# Create customer managed policy
 POLICY_ARN=$(aws iam create-policy \
   --policy-name "lab-s3-bucket-especifico" \
   --policy-document "{
@@ -43,13 +43,13 @@ POLICY_ARN=$(aws iam create-policy \
 
 echo "Policy ARN: $POLICY_ARN"
 
-# Attach ao usuário
+# Attach to the user
 aws iam attach-user-policy \
   --user-name "lab-glossario-dev" \
   --policy-arn "$POLICY_ARN"
 
-# Listar políticas do usuário
-echo "Managed policies do usuário:"
+# List the user's policies
+echo "User's managed policies:"
 aws iam list-attached-user-policies \
   --user-name "lab-glossario-dev" \
   --query 'AttachedPolicies[*].[PolicyName, PolicyArn]' \
@@ -58,10 +58,10 @@ aws iam list-attached-user-policies \
 
 ---
 
-## Parte 2 — Permissions Boundary
+## Part 2 — Permissions Boundary
 
 ```bash
-# Criar Permissions Boundary — define o MÁXIMO que a role pode ter
+# Create a Permissions Boundary — defines the MAXIMUM the role can have
 BOUNDARY_ARN=$(aws iam create-policy \
   --policy-name "lab-dev-boundary" \
   --policy-document '{
@@ -94,7 +94,7 @@ BOUNDARY_ARN=$(aws iam create-policy \
   }' \
   --query 'Policy.Arn' --output text)
 
-# Criar role COM permissions boundary
+# Create a role WITH a permissions boundary
 ROLE_ARN=$(aws iam create-role \
   --role-name "lab-dev-role-com-boundary" \
   --assume-role-policy-document "{
@@ -108,24 +108,24 @@ ROLE_ARN=$(aws iam create-role \
   --permissions-boundary "$BOUNDARY_ARN" \
   --query 'Role.Arn' --output text)
 
-# Dar ao usuário permissão de AdministratorAccess (mas bucket boundary limita)
+# Give the role AdministratorAccess (but the boundary limits it)
 aws iam attach-role-policy \
   --role-name "lab-dev-role-com-boundary" \
   --policy-arn "arn:aws:iam::aws:policy/AdministratorAccess"
 
-echo "Role com boundary criada: $ROLE_ARN"
+echo "Role with boundary created: $ROLE_ARN"
 echo ""
-echo "Mesmo com AdministratorAccess, a role NÃO pode:"
-echo "  - Executar ações IAM"
-echo "  - Lançar EC2 de tipos diferentes de t3.* e t4g.*"
+echo "Even with AdministratorAccess, the role can NOT:"
+echo "  - Perform IAM actions"
+echo "  - Launch EC2 instance types other than t3.* and t4g.*"
 ```
 
 ---
 
-## Parte 3 — simulate-principal-policy
+## Part 3 — simulate-principal-policy
 
 ```bash
-# Simular se usuário pode fazer PutObject em S3
+# Simulate whether the user can do PutObject on S3
 aws iam simulate-principal-policy \
   --policy-source-arn "arn:aws:iam::${ACCOUNT_ID}:user/lab-glossario-dev" \
   --action-names "s3:PutObject" \
@@ -133,7 +133,7 @@ aws iam simulate-principal-policy \
   --query 'EvaluationResults[0].[EvalActionName, EvalDecision]' \
   --output table
 
-# Simular se pode criar EC2
+# Simulate whether it can create EC2
 aws iam simulate-principal-policy \
   --policy-source-arn "arn:aws:iam::${ACCOUNT_ID}:user/lab-glossario-dev" \
   --action-names "ec2:RunInstances" \
@@ -141,7 +141,7 @@ aws iam simulate-principal-policy \
   --query 'EvaluationResults[0].[EvalActionName, EvalDecision]' \
   --output table
 
-# Simular ações múltiplas de uma vez
+# Simulate multiple actions at once
 aws iam simulate-principal-policy \
   --policy-source-arn "arn:aws:iam::${ACCOUNT_ID}:user/lab-glossario-dev" \
   --action-names \
@@ -157,10 +157,10 @@ aws iam simulate-principal-policy \
 
 ---
 
-## Parte 4 — Role Cross-Account
+## Part 4 — Cross-Account Role
 
 ```bash
-# Role para ser assumida por OUTRA conta (ou pela própria para demo)
+# Role to be assumed by ANOTHER account (or by the same account for the demo)
 CROSS_ROLE_ARN=$(aws iam create-role \
   --role-name "lab-cross-account-readonly" \
   --assume-role-policy-document "{
@@ -180,9 +180,9 @@ aws iam attach-role-policy \
   --role-name "lab-cross-account-readonly" \
   --policy-arn "arn:aws:iam::aws:policy/ReadOnlyAccess"
 
-echo "Role Cross-Account: $CROSS_ROLE_ARN"
+echo "Cross-Account Role: $CROSS_ROLE_ARN"
 
-# Assumir a role (AssumeRole com ExternalId)
+# Assume the role (AssumeRole with ExternalId)
 CREDS=$(aws sts assume-role \
   --role-arn "$CROSS_ROLE_ARN" \
   --role-session-name "lab-cross-session" \
@@ -190,7 +190,7 @@ CREDS=$(aws sts assume-role \
   --duration-seconds 3600 \
   --query 'Credentials' --output json)
 
-echo "Credenciais temporárias recebidas:"
+echo "Temporary credentials received:"
 echo "$CREDS" | python3 -c "
 import json, sys
 c = json.load(sys.stdin)
@@ -198,12 +198,12 @@ print(f'  AccessKeyId: {c[\"AccessKeyId\"][:10]}...')
 print(f'  Expiration: {c[\"Expiration\"]}')
 "
 
-# Usar credenciais assumidas
+# Use the assumed credentials
 AWS_ACCESS_KEY_ID=$(echo "$CREDS" | python3 -c "import json,sys; print(json.load(sys.stdin)['AccessKeyId'])")
 AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | python3 -c "import json,sys; print(json.load(sys.stdin)['SecretAccessKey'])")
 AWS_SESSION_TOKEN=$(echo "$CREDS" | python3 -c "import json,sys; print(json.load(sys.stdin)['SessionToken'])")
 
-# Verificar identidade com as credenciais assumidas
+# Verify identity with the assumed credentials
 AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
 AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
 AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
@@ -212,11 +212,11 @@ aws sts get-caller-identity
 
 ---
 
-## Parte 5 — Revisar Políticas AWS Managed
+## Part 5 — Review AWS Managed Policies
 
 ```bash
-# Listar policies AWS managed mais usadas
-echo "=== AWS Managed Policies Comuns ==="
+# List the most commonly used AWS managed policies
+echo "=== Common AWS Managed Policies ==="
 for POLICY in \
   "AmazonS3FullAccess" \
   "AmazonEC2ReadOnlyAccess" \
@@ -244,10 +244,10 @@ done
 
 ---
 
-## Limpeza
+## Cleanup
 
 ```bash
-# Desanexar e deletar policies/roles/usuário
+# Detach and delete policies/roles/user
 aws iam detach-user-policy \
   --user-name "lab-glossario-dev" \
   --policy-arn "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
@@ -273,11 +273,11 @@ aws iam delete-role --role-name "lab-cross-account-readonly"
 
 ---
 
-## O Que Você Aprendeu
+## What You Learned
 
-- **Identity-based policy:** attached a user/role/group — define o que a identidade PODE fazer
-- **Resource-based policy:** attached ao recurso (S3, SQS) — define quem PODE acessar o recurso
-- **Permissions Boundary:** não concede acesso — somente reduz o teto; avaliação: `identidade AND boundary`
-- **`simulate-principal-policy`:** ferramenta essencial para depurar permissões sem fazer mudanças reais
-- **AssumeRole:** troca credenciais de longa duração por temporárias; ExternalId previne confused deputy
-- **Regra de avaliação:** Deny explícito > tudo. Sem Allow explícito = Deny implícito = acesso negado
+- **Identity-based policy:** attached to a user/role/group — defines what the identity CAN do
+- **Resource-based policy:** attached to the resource (S3, SQS) — defines who CAN access the resource
+- **Permissions Boundary:** does not grant access — it only lowers the ceiling; evaluation: `identity AND boundary`
+- **`simulate-principal-policy`:** essential tool for debugging permissions without making real changes
+- **AssumeRole:** swaps long-lived credentials for temporary ones; ExternalId prevents the confused deputy problem
+- **Evaluation rule:** Explicit Deny > everything. No explicit Allow = implicit Deny = access denied

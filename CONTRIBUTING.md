@@ -1,51 +1,51 @@
-# Como contribuir
+# How to contribute
 
-Obrigado por querer contribuir com este repositório.
-O objetivo aqui é manter um material claro, técnico e atualizado para preparação no exame AWS SAA-C03.
+Thank you for wanting to contribute to this repository.
+The goal here is to maintain clear, technical, and up-to-date material for preparing for the AWS SAA-C03 exam.
 
-## Como abrir issues
-Abra uma issue quando identificar:
-- bugs técnicos, comandos incorretos ou inconsistências no conteúdo
-- mudanças relevantes em serviços AWS que impactem explicações, labs ou questões
-- melhorias pedagógicas (didática, exemplos, diagramas, sequência de estudo)
+## How to open issues
+Open an issue when you identify:
+- technical bugs, incorrect commands, or inconsistencies in the content
+- relevant changes in AWS services that impact explanations, labs, or questions
+- pedagogical improvements (teaching approach, examples, diagrams, study sequence)
 
-Ao abrir a issue, inclua:
-- descrição clara do problema ou sugestão
-- links para arquivos afetados
-- contexto técnico (documentação oficial AWS, release notes, comportamento observado)
+When opening the issue, include:
+- a clear description of the problem or suggestion
+- links to the affected files
+- technical context (official AWS documentation, release notes, observed behavior)
 
-Use os templates em .github/ISSUE_TEMPLATE para facilitar a triagem.
+Use the templates in .github/ISSUE_TEMPLATE to make triage easier.
 
-## Como propor novos labs ou questões
-Para sugerir conteúdo novo:
-- explique o objetivo de aprendizado
-- indique pré-requisitos
-- descreva o cenário arquitetural
-- aponte cuidados de custo e teardown
-- informe o nível de dificuldade (iniciante, intermediário, avançado)
+## How to propose new labs or questions
+To suggest new content:
+- explain the learning objective
+- indicate prerequisites
+- describe the architectural scenario
+- point out cost and teardown considerations
+- state the difficulty level (beginner, intermediate, advanced)
 
-Para questões de prática, inclua:
-- enunciado
-- 4-5 alternativas
-- resposta correta
-- justificativa curta das alternativas incorretas
+For practice questions, include:
+- the question stem
+- 4-5 options
+- the correct answer
+- a short justification for the incorrect options
 
-## Fluxo básico de contribuição (fork e pull request)
-1. Faça um fork do repositório.
-2. Crie uma branch com nome descritivo.
-   Exemplo: feat/atualiza-route53 ou fix/correcao-questao-s3
-3. Faça mudanças pequenas e focadas.
-4. Revise links e consistência de Markdown.
-5. Abra um pull request com:
-   - resumo do que mudou
-   - motivo da mudança
-   - links de issues relacionadas
-   - referência oficial da AWS quando aplicável
+## Basic contribution flow (fork and pull request)
+1. Fork the repository.
+2. Create a branch with a descriptive name.
+   Example: feat/update-route53 or fix/s3-question-correction
+3. Make small, focused changes.
+4. Review links and Markdown consistency.
+5. Open a pull request with:
+   - a summary of what changed
+   - the reason for the change
+   - links to related issues
+   - an official AWS reference when applicable
 
-## Boas práticas
-- Mantenha o texto em PT-BR.
-- Preserve precisão técnica e contexto de prova.
-- Prefira clareza e objetividade.
-- Evite mudanças grandes sem contexto.
+## Best practices
+- Keep the text in English.
+- Preserve technical accuracy and exam context.
+- Prefer clarity and objectivity.
+- Avoid large changes without context.
 
-Contribuições são muito bem-vindas. Obrigado por ajudar a melhorar este material.
+Contributions are very welcome. Thank you for helping improve this material.

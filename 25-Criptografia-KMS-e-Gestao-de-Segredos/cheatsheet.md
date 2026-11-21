@@ -1,25 +1,25 @@
-# Cheatsheet - Criptografia, KMS e Gestao de Segredos
+# Cheatsheet - Encryption, KMS, and Secrets Management
 
-## Mapa rapido
+## Quick map
 
-| Necessidade | Melhor escolha | Observacao |
+| Need | Best choice | Note |
 |---|---|---|
-| Chave com controle de policy e auditoria | KMS customer-managed key | Mais controle para compliance |
-| Rotacao automatica de segredos | Secrets Manager | Integracao forte com RDS |
-| Parametros de app com baixo custo | Parameter Store | SecureString usa KMS |
-| Certificado TLS para ALB/CloudFront/API Gateway | ACM | Public cert gratuito |
-| Controle criptografico em HSM dedicado | CloudHSM | Maior complexidade operacional |
+| Key with policy control and auditing | KMS customer-managed key | More control for compliance |
+| Automatic secret rotation | Secrets Manager | Strong integration with RDS |
+| Low-cost app parameters | Parameter Store | SecureString uses KMS |
+| TLS certificate for ALB/CloudFront/API Gateway | ACM | Free public cert |
+| Cryptographic control on a dedicated HSM | CloudHSM | Higher operational complexity |
 
-## Regras de prova
+## Exam rules
 
-- key policy e essencial para permissao no KMS
-- explicit deny sempre prevalece
-- use IAM role para apps em vez de chaves estaticas
-- CloudFront + ACM publico => certificado em us-east-1
+- key policy is essential for permissions in KMS
+- explicit deny always prevails
+- use an IAM role for apps instead of static keys
+- CloudFront + public ACM => certificate in us-east-1
 
-## Armadilhas
+## Pitfalls
 
-- confundir Secrets Manager com Parameter Store em cenario de rotacao automatica
-- esquecer permissao kms:Decrypt no principal consumidor
-- assumir que criptografar no servico dispensa gestao de acesso
-- ignorar custo de chamadas KMS em alto throughput
+- confusing Secrets Manager with Parameter Store in an automatic-rotation scenario
+- forgetting the kms:Decrypt permission on the consuming principal
+- assuming that encrypting in the service removes the need for access management
+- ignoring the cost of KMS calls at high throughput

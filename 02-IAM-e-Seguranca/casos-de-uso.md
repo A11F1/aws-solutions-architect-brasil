@@ -1,33 +1,33 @@
-# Casos de Uso — IAM e Segurança
+# Use Cases — IAM and Security
 
-## Caso 1: Acesso Cross-Account Seguro com MFA para Operações Críticas
+## Case 1: Secure Cross-Account Access with MFA for Critical Operations
 
-**Contexto:**  
-Uma empresa possui uma conta de produção AWS (`conta-prod`) e uma conta de ferramentas de DevOps (`conta-devops`). Engenheiros trabalham na `conta-devops` e precisam realizar deploys na `conta-prod`. Operações de deletar recursos (ECR images, snapshots) devem exigir MFA.
+**Context:**  
+A company has an AWS production account (`conta-prod`) and a DevOps tooling account (`conta-devops`). Engineers work in `conta-devops` and need to perform deployments in `conta-prod`. Operations that delete resources (ECR images, snapshots) must require MFA.
 
-**Requisitos:**
-- Engenheiros na conta-devops assumem uma role na conta-prod
-- Operações destrutivas exigem MFA
-- Apenas a OU "Engineering" da organização pode assumir a role
+**Requirements:**
+- Engineers in conta-devops assume a role in conta-prod
+- Destructive operations require MFA
+- Only the organization's "Engineering" OU can assume the role
 
-**Arquitetura:**
+**Architecture:**
 
 ```
-conta-devops (Engenheiros)              conta-prod
+conta-devops (Engineers)                conta-prod
 ┌─────────────────────┐                ┌──────────────────────────────┐
 │ IAM User: eng-user  │                │ IAM Role: DevOpsDeployRole    │
 │  └── Policy:        │  AssumeRole    │  ├── Trust Policy:            │
 │       sts:AssumeRole│───────────────▶│  │  Allow: conta-devops       │
-│       (com MFA)     │                │  │  Condition: MFA + OrgID    │
+│       (with MFA)    │                │  │  Condition: MFA + OrgID    │
 └─────────────────────┘                │  └── Permission Policy:       │
                                        │       - ecs:*                 │
                                        │       - ecr:*                 │
                                        │       - ec2:DescribeInstances │
-                                       │       - Deny: DeleteX sem MFA │
+                                       │       - Deny: DeleteX w/o MFA │
                                        └──────────────────────────────┘
 ```
 
-**Trust Policy da Role (conta-prod):**
+**Role Trust Policy (conta-prod):**
 ```json
 {
   "Version": "2012-10-17",
@@ -43,7 +43,7 @@ conta-devops (Engenheiros)              conta-prod
 }
 ```
 
-**Permission Policy com Deny destrutivo sem MFA:**
+**Permission Policy with destructive Deny without MFA:**
 ```json
 {
   "Statement": [{
@@ -57,16 +57,16 @@ conta-devops (Engenheiros)              conta-prod
 }
 ```
 
-**Conceitos cobrados:** cross-account role assumption, Trust Policy, MFA condition, PrincipalOrgID, explicit deny
+**Concepts tested:** cross-account role assumption, Trust Policy, MFA condition, PrincipalOrgID, explicit deny
 
 ---
 
-## Caso 2: KMS com Envelope Encryption para Dados Sensíveis no S3
+## Case 2: KMS with Envelope Encryption for Sensitive Data in S3
 
-**Contexto:**  
-Uma fintech precisa encriptar arquivos de clientes no S3 com uma CMK gerenciada pelo cliente, garantir que apenas a aplicação específica possa decriptar (não todos os devs), e ter logs de auditoria de quem acessou a chave.
+**Context:**  
+A fintech needs to encrypt customer files in S3 with a customer-managed CMK, ensure that only the specific application can decrypt (not all devs), and have audit logs of who accessed the key.
 
-**Arquitetura:**
+**Architecture:**
 
 ```
                     ┌──────────────────────────────────┐
@@ -84,28 +84,28 @@ EC2 (app-role)      │  KMS Customer-Managed CMK         │
   │   encrypted_data,                 │
   │   encrypted_data_key              │ CloudTrail
   │  }                                ▼
-  └─────────────────────────  Logs de auditoria:
+  └─────────────────────────  Audit logs:
                               - Who called kms:Decrypt
                               - From which EC2 (via ARN)
-                              - IP de origem
+                              - Source IP
 ```
 
-**Decisão de design:** Por que CMK e não SSE-S3?
-- SSE-S3: AWS gerencia a chave → sem controle de quem decripta
-- CMK: key policy define exatamente quais roles podem usar → princípio do menor privilégio
-- Rotação anual automática pode ser habilitada
-- CloudTrail registra cada uso da CMK (GenerateDataKey, Decrypt)
+**Design decision:** Why CMK and not SSE-S3?
+- SSE-S3: AWS manages the key → no control over who decrypts
+- CMK: the key policy defines exactly which roles can use it → principle of least privilege
+- Automatic annual rotation can be enabled
+- CloudTrail records each use of the CMK (GenerateDataKey, Decrypt)
 
-**Conceitos cobrados:** Customer-managed CMK, key policy, envelope encryption, auditoria via CloudTrail
+**Concepts tested:** Customer-managed CMK, key policy, envelope encryption, auditing via CloudTrail
 
 ---
 
-## Caso 3: Secrets Manager para Rotação Automática de Credenciais do RDS
+## Case 3: Secrets Manager for Automatic RDS Credential Rotation
 
-**Contexto:**  
-Uma aplicação Node.js na EC2 acessa um banco RDS PostgreSQL. A política de segurança exige rotação de senhas a cada 30 dias sem downtime da aplicação.
+**Context:**  
+A Node.js application on EC2 accesses an RDS PostgreSQL database. The security policy requires password rotation every 30 days without application downtime.
 
-**Arquitetura:**
+**Architecture:**
 
 ```
 EC2 (app-role)                                  Secrets Manager
@@ -117,7 +117,7 @@ EC2 (app-role)                                  Secrets Manager
    │                                           │   "host": "db.xxx",  │
    │                                           │   "port": 5432       │
    │                                           │  }                   │
-    (Aplicação NUNCA armazena senha localmente) └────────┬─────────────┘
+    (Application NEVER stores password locally) └────────┬─────────────┘
                                                          │ Rotation (30d)
                                                ┌─────────▼─────────────┐
                                                │ Lambda (rotation fn)  │
@@ -134,7 +134,7 @@ EC2 (app-role)                                  Secrets Manager
                                                └───────────────────────┘
 ```
 
-**IAM para a instância EC2:**
+**IAM for the EC2 instance:**
 ```json
 {
   "Effect": "Allow",
@@ -146,36 +146,36 @@ EC2 (app-role)                                  Secrets Manager
 }
 ```
 
-**Conceitos cobrados:** Secrets Manager, rotação automática, instância profile, GetSecretValue, ResourceARN com wildcard
+**Concepts tested:** Secrets Manager, automatic rotation, instance profile, GetSecretValue, ResourceARN with wildcard
 
 ---
 
-## Caso 4: Permission Boundary para Delegar Criação de Roles
+## Case 4: Permission Boundary to Delegate Role Creation
 
-**Contexto:**  
-Uma empresa quer permitir que o time de DevOps crie roles IAM para aplicações, mas sem que eles possam criar uma role com mais permissões do que eles mesmos têm (privilege escalation).
+**Context:**  
+A company wants to allow the DevOps team to create IAM roles for applications, but without letting them create a role with more permissions than they have themselves (privilege escalation).
 
-**Solução:**
+**Solution:**
 
 ```
 Admin (SysOps)
-  └── Cria Permission Boundary Policy (max-app-boundary)
-        Permite apenas: ec2:Describe*, s3:Get*, s3:Put*, sqs:*, cloudwatch:*
-        Proíbe: iam:*, kms:*, ec2:RunInstances
+  └── Creates Permission Boundary Policy (max-app-boundary)
+        Allows only: ec2:Describe*, s3:Get*, s3:Put*, sqs:*, cloudwatch:*
+        Forbids: iam:*, kms:*, ec2:RunInstances
 
-  └── Cria Policy para DevOps com condição:
+  └── Creates Policy for DevOps with condition:
         Allow: iam:CreateRole, iam:AttachRolePolicy
         Condition: iam:PermissionsBoundary = arn:...max-app-boundary
 
 DevOps Team
-  └── Pode criar roles APENAS SE:
-        - Attach ao boundary max-app-boundary
-        - A role final fica limitada ao boundary
-        - Mesmo que o DevOps tente dar AdministratorAccess,
-          o boundary limita o resultado efetivo
+  └── Can create roles ONLY IF:
+        - Attached to the max-app-boundary boundary
+        - The resulting role is limited by the boundary
+        - Even if DevOps tries to grant AdministratorAccess,
+          the boundary limits the effective result
 ```
 
-**Policy do time DevOps:**
+**DevOps team policy:**
 ```json
 {
   "Effect": "Allow",
@@ -189,14 +189,14 @@ DevOps Team
 }
 ```
 
-**Conceitos cobrados:** Permission Boundary, privilege escalation prevention, delegated administration
+**Concepts tested:** Permission Boundary, privilege escalation prevention, delegated administration
 
 ---
 
-## Caso 5: Acesso Restrito ao S3 Apenas via VPC Endpoint
+## Case 5: S3 Access Restricted to a VPC Endpoint Only
 
-**Contexto:**  
-Uma empresa quer garantir que dados confidenciais no S3 só sejam acessados de dentro da VPC corporativa, bloqueando qualquer acesso externo (incluindo acesso direto com credenciais válidas pela internet).
+**Context:**  
+A company wants to ensure that confidential data in S3 is only accessed from inside the corporate VPC, blocking any external access (including direct access with valid credentials over the internet).
 
 **Bucket Policy:**
 ```json
@@ -217,14 +217,14 @@ Uma empresa quer garantir que dados confidenciais no S3 só sejam acessados de d
 ```
 
 ```
-Internet                   VPC Privada
+Internet                   Private VPC
    │                          │
    │ ❌ DENY (no SourceVpce)  │ ✅ ALLOW (SourceVpce match)
    │                          │
    ×                         EC2       S3 Gateway Endpoint
-            (Acesso bloqueado)│         │
+            (Access blocked)  │         │
                               │◀────────┘
-                         VPC Routing → S3 sem internet gateway
+                         VPC Routing → S3 without internet gateway
 ```
 
-**Conceitos cobrados:** resource-based policy, aws:SourceVpce, VPC Gateway Endpoint para S3, zero-trust
+**Concepts tested:** resource-based policy, aws:SourceVpce, VPC Gateway Endpoint for S3, zero-trust

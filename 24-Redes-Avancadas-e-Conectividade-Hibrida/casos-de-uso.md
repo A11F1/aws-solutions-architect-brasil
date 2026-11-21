@@ -1,42 +1,42 @@
-# Casos de Uso - Redes Avancadas e Conectividade Hibrida
+# Use Cases - Advanced Networking and Hybrid Connectivity
 
-## Caso 1: Grupo empresarial multi-conta
+## Case 1: Multi-account corporate group
 
-Cenario:
-- 50 VPCs em varias contas
-- necessidade de comunicacao controlada
+Scenario:
+- 50 VPCs across several accounts
+- need for controlled communication
 
-Arquitetura:
-- Transit Gateway central
-- route tables separadas por dominio
-- inspeção de trafego em VPC de seguranca
+Architecture:
+- Central Transit Gateway
+- separate route tables per domain
+- traffic inspection in a security VPC
 
-## Caso 2: SaaS privado para clientes enterprise
+## Case 2: Private SaaS for enterprise customers
 
-Cenario:
-- clientes em contas AWS diferentes
-- sem exposicao publica
+Scenario:
+- customers in different AWS accounts
+- no public exposure
 
-Arquitetura:
+Architecture:
 - NLB + Endpoint Service
-- consumo via Interface VPC Endpoint (PrivateLink)
+- consumption via Interface VPC Endpoint (PrivateLink)
 
-## Caso 3: Datacenter para AWS com baixa variacao de latencia
+## Case 3: Datacenter to AWS with low latency variation
 
-Cenario:
-- cargas sensiveis a variacao de rede
-- alto volume de dados
+Scenario:
+- workloads sensitive to network variation
+- high data volume
 
-Arquitetura:
-- AWS Direct Connect principal
-- Site-to-Site VPN como backup
-- BGP para failover
+Architecture:
+- AWS Direct Connect as primary
+- Site-to-Site VPN as backup
+- BGP for failover
 
-## Caso 4: Integracao DNS hibrida
+## Case 4: Hybrid DNS integration
 
-Cenario:
-- aplicacoes on-premises precisam resolver zonas privadas na AWS
+Scenario:
+- on-premises applications need to resolve private zones in AWS
 
-Arquitetura:
+Architecture:
 - Route 53 Resolver inbound endpoint
-- conditional forwarding no DNS on-premises
+- conditional forwarding on the on-premises DNS

@@ -1,124 +1,124 @@
-# Cheatsheet — Módulo 12: Dados e Analytics
+# Cheatsheet — Module 12: Data and Analytics
 
-## Comparativo Rápido dos Serviços de Analytics
+## Quick Comparison of Analytics Services
 
-| Serviço | Tipo | Modelo | Melhor Para |
+| Service | Type | Model | Best For |
 |---|---|---|---|
-| **Athena** | Query interativa | Serverless, pay-per-TB | SQL ad-hoc em S3 |
-| **Glue** | ETL | Serverless | Transformações ETL, Catalog |
-| **EMR** | Big Data Cluster | EC2 gerenciado | Spark/Hive/Presto customizado |
-| **Redshift** | Data Warehouse | Cluster ou Serverless | OLAP, BI, SQL analítico |
+| **Athena** | Interactive query | Serverless, pay-per-TB | Ad-hoc SQL on S3 |
+| **Glue** | ETL | Serverless | ETL transformations, Catalog |
+| **EMR** | Big Data Cluster | Managed EC2 | Custom Spark/Hive/Presto |
+| **Redshift** | Data Warehouse | Cluster or Serverless | OLAP, BI, analytical SQL |
 | **OpenSearch** | Search/Analytics | Cluster | Full-text search, logs, dashboards |
-| **MSK** | Kafka gerenciado | Cluster | Streaming Kafka nativo |
-| **Kinesis Data Streams** | Streaming | Shards | Streaming real-time customizável |
-| **Kinesis Firehose** | Delivery streaming | Serverless | Entrega automática para S3/Redshift |
-| **QuickSight** | BI/Visualização | SaaS | Dashboards, SPICE |
+| **MSK** | Managed Kafka | Cluster | Native Kafka streaming |
+| **Kinesis Data Streams** | Streaming | Shards | Customizable real-time streaming |
+| **Kinesis Firehose** | Streaming delivery | Serverless | Automatic delivery to S3/Redshift |
+| **QuickSight** | BI/Visualization | SaaS | Dashboards, SPICE |
 
 ---
 
-## Athena — Otimizações de Custo e Performance
+## Athena — Cost and Performance Optimizations
 
-| Técnica | Impacto | Implementação |
+| Technique | Impact | Implementation |
 |---|---|---|
-| **Formato colunar** (Parquet/ORC) | Reduz até 90% dados escaneados | Converter CSV → Parquet com Glue |
-| **Compressão** (Snappy, GZIP) | Reduz tamanho dos arquivos | Configurar no job ETL |
-| **Particionamento** | Escaneia apenas partições relevantes | `year=2024/month=01/day=15/` |
-| **Bucketing** | Reduz data shuffle no join | `CLUSTERED BY (user_id) INTO 64 BUCKETS` |
-| **CTAS** (Create Table As Select) | Transforma in-place para Parquet | `CREATE TABLE ... WITH (format='PARQUET')` |
+| **Columnar format** (Parquet/ORC) | Reduces scanned data by up to 90% | Convert CSV → Parquet with Glue |
+| **Compression** (Snappy, GZIP) | Reduces file size | Configure in the ETL job |
+| **Partitioning** | Scans only relevant partitions | `year=2024/month=01/day=15/` |
+| **Bucketing** | Reduces data shuffle in joins | `CLUSTERED BY (user_id) INTO 64 BUCKETS` |
+| **CTAS** (Create Table As Select) | Transforms in-place to Parquet | `CREATE TABLE ... WITH (format='PARQUET')` |
 
-**Preço:** $5.00 por TB escaneado. Free: DDL queries, queries falhas, queries com partições (exceto data escaneada).
+**Pricing:** $5.00 per TB scanned. Free: DDL queries, failed queries, queries with partitions (except scanned data).
 
 ---
 
 ## Kinesis Data Streams vs Kinesis Firehose
 
-| Característica | KDS | KDF |
+| Characteristic | KDS | KDF |
 |---|---|---|
-| Latência | Milissegundos (real-time) | Near real-time (60s-900s buffer) |
-| Consumers | Customizados (Lambda, App, KDA) | Automático (S3, Redshift, OpenSearch) |
-| Retação dos dados | 1-365 dias | Não há (entrega e descarta) |
-| Reprocessamento | Sim (cursor de múltiplos consumers) | Não |
-| Throughput | 1 MB/s por shard (write), 2 MB/s (read) | Automático |
-| Code necessário | Sim (consumer code) | Não (configuração) |
-| Transformação | Não nativo | Lambda opcional |
+| Latency | Milliseconds (real-time) | Near real-time (60s-900s buffer) |
+| Consumers | Custom (Lambda, App, KDA) | Automatic (S3, Redshift, OpenSearch) |
+| Data retention | 1-365 days | None (delivers and discards) |
+| Reprocessing | Yes (cursor for multiple consumers) | No |
+| Throughput | 1 MB/s per shard (write), 2 MB/s (read) | Automatic |
+| Code required | Yes (consumer code) | No (configuration) |
+| Transformation | Not native | Optional Lambda |
 
 ---
 
-## Glue — Componentes
+## Glue — Components
 
-| Componente | Função |
+| Component | Function |
 |---|---|
-| **Data Catalog** | Repositório central de schemas/metadados |
-| **Crawler** | Descobre schemas e popula o Catalog automaticamente |
-| **ETL Job** | Código Spark (Python/Scala) para transformação |
-| **DataBrew** | Interface visual de transformação sem código |
-| **Studio** | IDE visual para jobs Glue |
-| **Workflow** | Orquestração de crawlers + jobs + events |
-| **Streaming ETL** | ETL contínuo de Kinesis/Kafka |
+| **Data Catalog** | Central repository of schemas/metadata |
+| **Crawler** | Discovers schemas and populates the Catalog automatically |
+| **ETL Job** | Spark code (Python/Scala) for transformation |
+| **DataBrew** | Visual no-code transformation interface |
+| **Studio** | Visual IDE for Glue jobs |
+| **Workflow** | Orchestration of crawlers + jobs + events |
+| **Streaming ETL** | Continuous ETL from Kinesis/Kafka |
 
 ---
 
-## Redshift — Distribuição e Sort Keys
+## Redshift — Distribution and Sort Keys
 
-| Tipo | Quando Usar |
+| Type | When to Use |
 |---|---|
-| DISTKEY: campo de join | Colocaliza linhas relacionadas nos mesmos nós |
-| DISTKEY: ALL | Replica toda a tabela em cada nó (tabelas pequenas de dimensão) |
-| DISTKEY: EVEN | Distribuição round-robin (sem join frequente) |
-| SORTKEY: campo de filtro/range | Organiza fisicamente linhas — range scan mais eficiente |
+| DISTKEY: join field | Co-locates related rows on the same nodes |
+| DISTKEY: ALL | Replicates the whole table on every node (small dimension tables) |
+| DISTKEY: EVEN | Round-robin distribution (no frequent join) |
+| SORTKEY: filter/range field | Physically orders rows — more efficient range scans |
 
 ---
 
-## Redshift Serverless vs Provisionado
+## Redshift Serverless vs Provisioned
 
-| | Serverless | Provisionado |
+| | Serverless | Provisioned |
 |---|---|---|
-| **Gerenciamento** | Zero | Gerenciar cluster, resize |
-| **Escalabilidade** | Automática | Manual ou Elastic Resize |
-| **Custo** | RPU-hours (pay-per-use) | Hora do nó (independente de uso) |
-| **Melhor para** | Intermitente, dev/test | Workloads previsíveis e contínuas |
-| **Concurrency Scaling** | N/A | Clusters transientes automáticos |
+| **Management** | Zero | Manage the cluster, resize |
+| **Scalability** | Automatic | Manual or Elastic Resize |
+| **Cost** | RPU-hours (pay-per-use) | Node-hour (regardless of usage) |
+| **Best for** | Intermittent, dev/test | Predictable, continuous workloads |
+| **Concurrency Scaling** | N/A | Automatic transient clusters |
 
 ---
 
-## EMR — Tipos de Nó e Instâncias Recomendadas
+## EMR — Node Types and Recommended Instances
 
-| Nó | Função | Instância Recomendada | Spot OK? |
+| Node | Function | Recommended Instance | Spot OK? |
 |---|---|---|---|
-| **Master** | Coordena cluster (YARN RM, HDFS NN) | On-Demand ou Reserved | Não (SPOF) |
-| **Core** | Processa + armazena HDFS | On-Demand ou Reserved | Não (perder dados HDFS) |
-| **Task** | Apenas processa (sem HDFS) | **Spot** (ideal) | **Sim** — pode ser interrompido sem perder dados |
+| **Master** | Coordinates the cluster (YARN RM, HDFS NN) | On-Demand or Reserved | No (SPOF) |
+| **Core** | Processes + stores HDFS | On-Demand or Reserved | No (would lose HDFS data) |
+| **Task** | Processes only (no HDFS) | **Spot** (ideal) | **Yes** — can be interrupted without losing data |
 
 ---
 
-## Lake Formation — Controles de Acesso
+## Lake Formation — Access Controls
 
-| Nível | Exemplo |
+| Level | Example |
 |---|---|
-| **Database** | Lista/describe tabelas |
-| **Table** | Select de todas colunas |
-| **Column** | Select apenas das colunas autorizadas |
-| **Row** | Filtros de linhas (Row-level filters) |
-| **Cell** | Combinação de coluna + linha |
+| **Database** | List/describe tables |
+| **Table** | Select all columns |
+| **Column** | Select only the authorized columns |
+| **Row** | Row filters (Row-level filters) |
+| **Cell** | Combination of column + row |
 
-Fine-Grained Access Control (FGAC) substitui gerenciamento de S3 bucket policies para data lakes.
+Fine-Grained Access Control (FGAC) replaces S3 bucket policy management for data lakes.
 
 ---
 
-## Dicas de Prova — Padrões Comuns
+## Exam Tips — Common Patterns
 
-| Pista no Enunciado | Resposta Provável |
+| Clue in the Question | Likely Answer |
 |---|---|
-| "SQL ad-hoc em S3" | Athena |
-| "Reduzir custo Athena" | Parquet + Particionamento |
-| "ETL visual sem código" | AWS Glue DataBrew |
-| "Schema discovery automático" | Glue Crawler → Glue Data Catalog |
-| "Migrar Kafka para AWS" | Amazon MSK |
-| "Entrega automática de stream para S3" | Kinesis Data Firehose |
-| "Real-time com consumer customizado" | Kinesis Data Streams |
-| "BI self-service para não técnicos" | QuickSight (SPICE) |
-| "Full-text search + dashboards Kibana" | OpenSearch Service |
-| "Dados históricos no S3 + query SQL" | Redshift Spectrum ou Athena |
-| "Segurança granular colunar em data lake" | Lake Formation FGAC |
-| "Stream processing com Apache Flink" | MSF (Managed Apache Flink) |
-| "Oracle → Aurora de forma heterogênea" | SCT (schema) + DMS (dados) |
+| "Ad-hoc SQL on S3" | Athena |
+| "Reduce Athena cost" | Parquet + Partitioning |
+| "Visual ETL without code" | AWS Glue DataBrew |
+| "Automatic schema discovery" | Glue Crawler → Glue Data Catalog |
+| "Migrate Kafka to AWS" | Amazon MSK |
+| "Automatic stream delivery to S3" | Kinesis Data Firehose |
+| "Real-time with a custom consumer" | Kinesis Data Streams |
+| "Self-service BI for non-technical users" | QuickSight (SPICE) |
+| "Full-text search + Kibana dashboards" | OpenSearch Service |
+| "Historical data in S3 + SQL query" | Redshift Spectrum or Athena |
+| "Granular column-level security in a data lake" | Lake Formation FGAC |
+| "Stream processing with Apache Flink" | MSF (Managed Apache Flink) |
+| "Oracle → Aurora heterogeneously" | SCT (schema) + DMS (data) |

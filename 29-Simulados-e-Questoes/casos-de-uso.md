@@ -1,180 +1,180 @@
-# Casos de Uso Reais — Simulados e Questões (Módulo 19)
+# Real-World Use Cases — Practice Exams and Questions (Module 19)
 
-## Caso 1 — Analisando uma Questão Difícil sobre Alta Disponibilidade
+## Case 1 — Analyzing a Hard High-Availability Question
 
-**Contexto:** Questão de exame pede a arquitetura de maior disponibilidade para um banco de dados relacional com requisito de failover automático < 30 segundos, sem perda de dados.
+**Context:** An exam question asks for the highest-availability architecture for a relational database with an automatic failover requirement of < 30 seconds and no data loss.
 
-**Questão Simulada:**
-> Uma empresa precisa de um banco de dados relacional MySQL com RTO < 30 segundos e RPO = 0 (zero perda de dados). Qual configuração atende esses requisitos?
-> A) RDS MySQL com duas Read Replicas em AZs diferentes
-> B) RDS MySQL Multi-AZ com replica síncrona em AZ separada
-> C) RDS MySQL com backup automático diário habilitado
-> D) EC2 MySQL com script de failover Lambda
+**Simulated Question:**
+> A company needs a MySQL relational database with RTO < 30 seconds and RPO = 0 (zero data loss). Which configuration meets these requirements?
+> A) RDS MySQL with two Read Replicas in different AZs
+> B) RDS MySQL Multi-AZ with a synchronous replica in a separate AZ
+> C) RDS MySQL with daily automated backup enabled
+> D) EC2 MySQL with a Lambda failover script
 
-**Análise de Por Que Cada Opção é Certa ou Errada:**
+**Analysis of Why Each Option Is Right or Wrong:**
 ```
-A) ❌ Read Replicas são ASSÍNCRONAS → pode ter lag (RPO ≠ 0)
-      Read Replicas não fazem failover automático para writes
-      Read Replicas = escalar reads, não HA
+A) ❌ Read Replicas are ASYNCHRONOUS → can have lag (RPO ≠ 0)
+      Read Replicas do not automatically fail over for writes
+      Read Replicas = scale reads, not HA
 
-B) ✅ CORRETO:
-   Multi-AZ = réplica SÍNCRONA → RPO = 0 (sem perda de dados)
-   Failover automático: 15-30 segundos
-   DNS endpoint muda automaticamente para standby
+B) ✅ CORRECT:
+   Multi-AZ = SYNCHRONOUS replica → RPO = 0 (no data loss)
+   Automatic failover: 15-30 seconds
+   The DNS endpoint automatically switches to the standby
    
-C) ❌ Backup diário = RPO de até 24h (muito longe de 0)
-      Restore de backup leva horas (RTO muito alto)
+C) ❌ Daily backup = RPO of up to 24h (very far from 0)
+      Restoring from backup takes hours (RTO far too high)
 
-D) ❌ Gerenciamento manual = complexidade, possível erro humano
-      EC2 MySQL = você gerencia SO, patches, HA
-      Lambda failover = latência adicional e falha possível
+D) ❌ Manual management = complexity, possible human error
+      EC2 MySQL = you manage the OS, patches, HA
+      Lambda failover = additional latency and possible failure
 
-PALAVRA-CHAVE IDENTIFICADA: "failover automático" + "sem perda de dados"
-→ Multi-AZ RDS (síncrono = RPO 0, automático = RTO < 30s)
+KEYWORDS IDENTIFIED: "automatic failover" + "no data loss"
+→ Multi-AZ RDS (synchronous = RPO 0, automatic = RTO < 30s)
 ```
 
 ---
 
-## Caso 2 — Questão-Armadilha: Multi-AZ vs Read Replica
+## Case 2 — Trap Question: Multi-AZ vs Read Replica
 
-**Contexto:** Questão de exame mistura os dois conceitos para confundir candidatos.
+**Context:** An exam question mixes the two concepts to confuse candidates.
 
-**Questão Simulada:**
-> Uma aplicação de e-commerce tem lentidão em consultas de relatório que impactam as transações dos clientes. O DBA identifica que queries analíticas pesadas são executadas no mesmo banco que processa pedidos. Qual é a solução mais simples?
-> A) Habilitar RDS Multi-AZ no banco existente
-> B) Criar uma Read Replica e direcionar queries analíticas para ela
-> C) Migrar para Aurora Serverless
-> D) Adicionar ElastiCache na frente do RDS
+**Simulated Question:**
+> An e-commerce application has slow reporting queries that impact customer transactions. The DBA identifies that heavy analytical queries run on the same database that processes orders. What is the simplest solution?
+> A) Enable RDS Multi-AZ on the existing database
+> B) Create a Read Replica and direct analytical queries to it
+> C) Migrate to Aurora Serverless
+> D) Add ElastiCache in front of RDS
 
-**Análise:**
+**Analysis:**
 ```
-A) ❌ Multi-AZ = HA/failover, não melhora performance
-      A replica Multi-AZ é STANDBY (não aceita reads)
-      Habilitar Multi-AZ não resolve o problema de carga
+A) ❌ Multi-AZ = HA/failover, does not improve performance
+      The Multi-AZ replica is a STANDBY (does not accept reads)
+      Enabling Multi-AZ does not solve the load problem
 
-B) ✅ CORRETO:
-   Read Replica = cópia assíncrona para leitura
-   Direcionar queries analíticas para Read Replica endpoint
-   Banco principal fica dedicado apenas para transações (writes)
+B) ✅ CORRECT:
+   Read Replica = asynchronous copy for reads
+   Direct analytical queries to the Read Replica endpoint
+   The primary database stays dedicated to transactions (writes)
    
-C) ⚠️ Funciona mas é mudança maior (migração de dados, custo)
-      "Mais simples" aponta para Read Replica
+C) ⚠️ Works but is a bigger change (data migration, cost)
+      "Simplest" points to Read Replica
       
-D) ⚠️ ElastiCache ajuda para queries repetidas/idênticas
-      Queries analíticas são geralmente únicas (ad hoc)
-      Não resolve queries complexas que mudam sempre
+D) ⚠️ ElastiCache helps with repeated/identical queries
+      Analytical queries are generally unique (ad hoc)
+      Does not solve complex queries that always change
 
-LIÇÃO: "problema de performance" + "queries de leitura pesadas" → Read Replica
-       "failover/disponibilidade" → Multi-AZ
+LESSON: "performance problem" + "heavy read queries" → Read Replica
+        "failover/availability" → Multi-AZ
 ```
 
 ---
 
-## Caso 3 — Analisando Questão sobre Custo-Eficiência
+## Case 3 — Analyzing a Cost-Efficiency Question
 
-**Contexto:** Questão pede escolha de storage S3 baseada em padrão de acesso específico.
+**Context:** A question asks you to choose S3 storage based on a specific access pattern.
 
-**Questão Simulada:**
-> Uma empresa armazena logs de aplicação no S3. Logs do mês atual são acessados diariamente para debug. Logs com mais de 30 dias são raramente acessados mas precisam estar disponíveis em minutos quando necessário. Logs com mais de 1 ano podem ter retrieval de horas. Qual combinação de classes S3 é mais econômica?
-> A) Tudo em S3 Standard
-> B) S3 Standard por 30 dias, depois Glacier Deep Archive
-> C) S3 Standard por 30 dias, Standard-IA por 30-365 dias, depois Glacier Flexible Retrieval
-> D) S3 Intelligent-Tiering para todos os objetos
+**Simulated Question:**
+> A company stores application logs in S3. Logs from the current month are accessed daily for debugging. Logs older than 30 days are rarely accessed but must be available within minutes when needed. Logs older than 1 year can tolerate hours of retrieval time. Which combination of S3 classes is the most cost-effective?
+> A) Everything in S3 Standard
+> B) S3 Standard for 30 days, then Glacier Deep Archive
+> C) S3 Standard for 30 days, Standard-IA for 30-365 days, then Glacier Flexible Retrieval
+> D) S3 Intelligent-Tiering for all objects
 
-**Análise:**
+**Analysis:**
 ```
-Mapeamento dos requisitos:
-- 0-30 dias: acesso frequente, debug diário → S3 Standard
-- 30-365 dias: raramente acessados, disponível "em minutos" → Standard-IA
-  (NOT Glacier — Glacier leva horas para Flexible ou 12h para Deep Archive)
-- > 1 ano: retrieval pode demorar horas → Glacier Flexible (1-5h) ✓
+Requirements mapping:
+- 0-30 days: frequent access, daily debugging → S3 Standard
+- 30-365 days: rarely accessed, available "within minutes" → Standard-IA
+  (NOT Glacier — Glacier takes hours for Flexible or 12h for Deep Archive)
+- > 1 year: retrieval can take hours → Glacier Flexible (1-5h) ✓
 
-A) ❌ Custo muito alto, tudo em Standard mesmo arquivos antigos
-B) ❌ Depois de 30 dias vai para Deep Archive (12h retrieval)
-      Mas o requisito 30-365 dias pede "disponível em minutos"!
-C) ✅ CORRETO — mapeamento perfeito por período
-D) ⚠️ Funciona automaticamente mas:
-      Taxa de monitoramento por objeto ($0.0025/1000 objetos)
-      Para muitos objetos pequenos: pode ser mais caro que C
-      "Mais econômica" → C é mais otimizado quando padrão é conhecido
+A) ❌ Cost too high, everything in Standard even old files
+B) ❌ After 30 days it goes to Deep Archive (12h retrieval)
+      But the 30-365 day requirement asks for "available within minutes"!
+C) ✅ CORRECT — perfect mapping by period
+D) ⚠️ Works automatically but:
+      Per-object monitoring fee ($0.0025/1000 objects)
+      For many small objects: can be more expensive than C
+      "Most cost-effective" → C is more optimized when the pattern is known
 
-LIÇÃO: Glacier = horas (não minutos). Standard-IA = milissegundos (custo menor)
+LESSON: Glacier = hours (not minutes). Standard-IA = milliseconds (lower cost)
 ```
 
 ---
 
-## Caso 4 — Questão sobre Segurança: Qual Serviço para Qual Ameaça
+## Case 4 — Security Question: Which Service for Which Threat
 
-**Contexto:** Questões de segurança frequentemente confundem GuardDuty, WAF, Shield, Macie e Inspector.
+**Context:** Security questions often confuse GuardDuty, WAF, Shield, Macie, and Inspector.
 
-**Questão Simulada:**
-> Uma empresa detectou que seu bucket S3 com dados de clientes contém CPFs e cartões de crédito expostos sem criptografia. Qual serviço da AWS identifica e alerta sobre esses dados sensíveis?
+**Simulated Question:**
+> A company detected that its S3 bucket with customer data contains national ID numbers and credit card numbers exposed without encryption. Which AWS service identifies and alerts on this sensitive data?
 > A) AWS GuardDuty
 > B) Amazon Macie
 > C) AWS WAF
 > D) AWS Config
 
-**Análise:**
+**Analysis:**
 ```
-A) ❌ GuardDuty = detecta AMEAÇAS (comportamento anômalo, mineração, exfiltração)
-      Analisa: VPC Flow Logs, CloudTrail, DNS
-      NÃO analisa CONTEÚDO de dados no S3
+A) ❌ GuardDuty = detects THREATS (anomalous behavior, mining, exfiltration)
+      Analyzes: VPC Flow Logs, CloudTrail, DNS
+      Does NOT analyze the CONTENT of data in S3
       
-B) ✅ CORRETO — Amazon Macie:
-   Usa ML para descobrir dados sensíveis em S3
-   Identifica: PII (CPF, nome, email), PCI (cartões), credenciais
-   Gera findings: "S3BucketEncryptionDisabled" + "SensitiveData:S3Object/PII"
+B) ✅ CORRECT — Amazon Macie:
+   Uses ML to discover sensitive data in S3
+   Identifies: PII (national ID, name, email), PCI (cards), credentials
+   Generates findings: "S3BucketEncryptionDisabled" + "SensitiveData:S3Object/PII"
    
-C) ❌ WAF = filtro de requisições web HTTP (SQLi, XSS)
-      NÃO analisa conteúdo de objetos armazenados
+C) ❌ WAF = filters HTTP web requests (SQLi, XSS)
+      Does NOT analyze the content of stored objects
       
-D) ❌ AWS Config = conformidade de CONFIGURAÇÃO de recursos
-      Verifica se bucket tem criptografia habilitada (configuração)
-      NÃO verifica CONTEÚDO dos objetos
+D) ❌ AWS Config = resource CONFIGURATION compliance
+      Checks whether the bucket has encryption enabled (configuration)
+      Does NOT check the CONTENT of objects
 
-MAPEAMENTO SERVIÇOS DE SEGURANÇA:
-├── Dados sensíveis em S3 → Macie
-├── Ameaças e comportamento anômalo → GuardDuty
-├── Ataques web HTTP → WAF
+SECURITY SERVICES MAPPING:
+├── Sensitive data in S3 → Macie
+├── Threats and anomalous behavior → GuardDuty
+├── HTTP web attacks → WAF
 ├── DDoS → Shield
-├── Configuração incorreta de recursos → Config
-├── Vulnerabilidades em EC2/containers → Inspector
-└── Centralização de findings → Security Hub
+├── Resource misconfiguration → Config
+├── Vulnerabilities in EC2/containers → Inspector
+└── Centralizing findings → Security Hub
 ```
 
 ---
 
-## Caso 5 — Simulando Estratégia de Revisão no Dia do Exame
+## Case 5 — Simulating a Review Strategy on Exam Day
 
-**Contexto:** Candidato tem 65 questões e 130 minutos. Como gerenciar o tempo e as questões marcadas.
+**Context:** The candidate has 65 questions and 130 minutes. How to manage time and flagged questions.
 
-**Simulação de Execução:**
+**Execution Simulation:**
 ```
-QUESTÃO 1-20 (40 min — ~2 min/questão):
-Q1: Sei a resposta → respondo imediatamente (45s)
-Q5: Dúvida entre A e C → marco, escolho C (o que parece melhor), arquivo "revisar"
-Q12: Muito longa, muitos detalhes → marco, pulo para próxima (economiza tempo)
-Q15: Sei com certeza → 30s
+QUESTIONS 1-20 (40 min — ~2 min/question):
+Q1: I know the answer → answer immediately (45s)
+Q5: Torn between A and C → flag it, pick C (the one that seems better), file under "review"
+Q12: Too long, too many details → flag it, skip to the next (saves time)
+Q15: I'm certain → 30s
 
-QUESTÃO 21-65 (continuando...):
-Q33: Palavra "multi-AZ" + "performance" → Red flag (armadilha Multi-AZ vs Read Replica)
-     Leio com atenção → é sobre leitura → Read Replica → respondo
-Q47: Questão sobre custo de NAT Gateway → sei que NAT GW é cobrado por hora
-     Respondo com confiança
-Q55: 3 serviços que nunca vi combinados → marco, escolho eliminando os que parecem errados
+QUESTIONS 21-65 (continuing...):
+Q33: Words "multi-AZ" + "performance" → Red flag (Multi-AZ vs Read Replica trap)
+     Read carefully → it is about reads → Read Replica → answer
+Q47: Question about NAT Gateway cost → I know NAT GW is billed per hour
+     Answer with confidence
+Q55: 3 services I have never seen combined → flag it, pick by eliminating the ones that seem wrong
 
-REVISÃO (questões marcadas — 30 min):
-Q5 (dúvida A vs C): Releio a questão, identifico "síncrone" → Multi-AZ → mudei para B
-Q12 (longa): Agora com calma, leio → questão de Kinesis vs SQS, identifico "replay"
-             → Kinesis. Respondo.
-Q55 (serviços desconhecidos): 2 opções restantes, escolho a com serviços gerenciados
-                               → Princípio: "managed > self-managed" na AWS
+REVIEW (flagged questions — 30 min):
+Q5 (torn between A vs C): Re-read the question, spot "synchronous" → Multi-AZ → changed to B
+Q12 (long): Now calmly, I read it → Kinesis vs SQS question, I spot "replay"
+            → Kinesis. Answer.
+Q55 (unfamiliar services): 2 options left, choose the one with managed services
+                           → Principle: "managed > self-managed" on AWS
 
-LIÇÕES DA SIMULAÇÃO:
-1. Questões longas: ler o ÚLTIMO parágrafo primeiro (geralmente tem a constraint chave)
-2. Questões com listas: eliminar as claramente erradas
-3. "Mínimo custo" → Spot/Reserved/Serverless/S3-IA/Glacier
-4. "Mínimo operacional" → Managed services (RDS > EC2+MySQL)
-5. "Máxima disponibilidade" → Multi-AZ + Multi-Region + Auto Scaling
-6. Nunca gastar > 3 minutos em uma questão — marcar e seguir
+LESSONS FROM THE SIMULATION:
+1. Long questions: read the LAST paragraph first (it usually has the key constraint)
+2. Questions with lists: eliminate the clearly wrong ones
+3. "Minimum cost" → Spot/Reserved/Serverless/S3-IA/Glacier
+4. "Minimum operational overhead" → Managed services (RDS > EC2+MySQL)
+5. "Maximum availability" → Multi-AZ + Multi-Region + Auto Scaling
+6. Never spend > 3 minutes on a question — flag it and move on
 ```

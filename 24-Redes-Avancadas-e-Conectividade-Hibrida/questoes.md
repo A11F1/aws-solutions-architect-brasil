@@ -1,51 +1,51 @@
-# Questoes - Redes Avancadas e Conectividade Hibrida
+# Questions - Advanced Networking and Hybrid Connectivity
 
 ## 1)
-Uma empresa conecta 30 VPCs em 10 contas. Qual solucao simplifica roteamento central?
+A company connects 30 VPCs across 10 accounts. Which solution simplifies central routing?
 
 A. VPC Peering full mesh
 B. Transit Gateway
-C. NAT Gateway compartilhado
+C. Shared NAT Gateway
 D. PrivateLink
 
-Resposta: B
+Answer: B
 
 ## 2)
-Qual opcao permite consumir um servico privado em outra conta sem peering completo entre CIDRs?
+Which option allows consuming a private service in another account without full peering between CIDRs?
 
 A. Transit Gateway
 B. VPC Peering
 C. PrivateLink
 D. Internet Gateway
 
-Resposta: C
+Answer: C
 
 ## 3)
-Qual tecnologia oferece conectividade dedicada entre datacenter e AWS com menor variabilidade de latencia?
+Which technology offers dedicated connectivity between a datacenter and AWS with the lowest latency variability?
 
 A. Site-to-Site VPN
 B. AWS Direct Connect
 C. NAT Gateway
-D. VPC Endpoint Gateway
+D. VPC Gateway Endpoint
 
-Resposta: B
+Answer: B
 
 ## 4)
-Sobre VPC Peering, qual afirmacao e correta?
+About VPC Peering, which statement is correct?
 
-A. Permite transitive routing
-B. Nao permite transitive routing
-C. Substitui TGW em qualquer escala
-D. Resolve sobreposicao de CIDR automaticamente
+A. Allows transitive routing
+B. Does not allow transitive routing
+C. Replaces TGW at any scale
+D. Automatically resolves CIDR overlap
 
-Resposta: B
+Answer: B
 
 ## 5)
-Para alta disponibilidade na conectividade hibrida, recomendacao comum:
+For high availability in hybrid connectivity, a common recommendation is:
 
-A. Apenas DX unico
-B. Apenas VPN unica
-C. DX principal + VPN backup
-D. Somente internet publica
+A. Single DX only
+B. Single VPN only
+C. Primary DX + backup VPN
+D. Public internet only
 
-Resposta: C
+Answer: C

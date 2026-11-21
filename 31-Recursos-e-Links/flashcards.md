@@ -1,109 +1,109 @@
-# Flashcards — Módulo 21: Recursos e Links
+# Flashcards — Module 21: Resources and Links
 
-> **Formato:** P = Pergunta | R = Resposta  
-> **Total:** 20 flashcards — recursos, estratégias e orientações de estudo
-
----
-
-**P:** Qual é o site oficial da AWS para todas as certificações e onde agendar o exame?  
-**R:** **aws.amazon.com/certification/** — página principal de certificações. Para agendar: botão "Schedule Exam" → redireciona para **Pearson VUE** (centro de testes presenciais ou online proctored). Alternativa: registro pelo próprio site da certificação SAA-C03. Lembrar: identificação válida necessária (CPF + RG ou passaporte para proctored online).
+> **Format:** Q = Question | A = Answer  
+> **Total:** 20 flashcards — resources, strategies, and study guidance
 
 ---
 
-**P:** Quais são os 3 principais cursos pagos recomendados para SAA-C03?  
-**R:** **(1) Stephane Maarek (Udemy):** Ultimate AWS Certified Solutions Architect Associate — mais popular, 30h+, atualizado, foco em exame. **(2) Neal Davis (Digital Cloud Training):** AWS SAA-C03 — explicações claras, bom para iniciantes. **(3) Adrian Cantrill:** profundidade técnica superior, mais difícil, anime style — para quem quer entender de verdade. Todos disponíveis na Udemy frequentemente com desconto.
+**Q:** What is the official AWS site for all certifications and where do you schedule the exam?  
+**A:** **aws.amazon.com/certification/** — main certifications page. To schedule: "Schedule Exam" button → redirects to **Pearson VUE** (in-person test center or online proctored). Alternative: register through the SAA-C03 certification page itself. Remember: valid identification is required (government-issued ID or passport for online proctored).
 
 ---
 
-**P:** Qual é o recurso oficial AWS mais importante para questões de prática reais?  
-**R:** **AWS Skill Builder** (skillbuilder.aws): **(1)** "AWS Certified Solutions Architect – Associate Official Practice Question Set" — 20 questões oficiais gratuitas. **(2)** "Exam Prep Official Practice Exam: AWS SAA-C03" — 65 questões pagas, com feedback detalhado. Credenciais: conta free no Skill Builder. As questões oficiais dão o nível real de dificuldade do exame.
+**Q:** What are the 3 main paid courses recommended for the SAA-C03?  
+**A:** **(1) Stephane Maarek (Udemy):** Ultimate AWS Certified Solutions Architect Associate — most popular, 30h+, up to date, exam-focused. **(2) Neal Davis (Digital Cloud Training):** AWS SAA-C03 — clear explanations, good for beginners. **(3) Adrian Cantrill:** superior technical depth, harder, anime style — for those who want to truly understand. All available on Udemy, often at a discount.
 
 ---
 
-**P:** O que é Tutorials Dojo e por que é altamente recomendado?  
-**R:** **tutorialsdojo.com** — plataforma de simulados criada por Jon Bonso. Destaques: explicações para CADA opção de cada questão (por que certa + por que cada errada está errada); cheat sheets por serviço; modos timed e review; correlação alta com exame real. Custo: ~$15-30 por exame de prática. Amplamente citado como melhor recurso de prática além do oficial.
+**Q:** What is the most important official AWS resource for real practice questions?  
+**A:** **AWS Skill Builder** (skillbuilder.aws): **(1)** "AWS Certified Solutions Architect – Associate Official Practice Question Set" — 20 free official questions. **(2)** "Exam Prep Official Practice Exam: AWS SAA-C03" — 65 paid questions, with detailed feedback. Credentials: a free Skill Builder account. The official questions give the real difficulty level of the exam.
 
 ---
 
-**P:** Qual whitepaper AWS é mais importante para o SAA-C03 e onde encontrá-lo?  
-**R:** **"AWS Well-Architected Framework"** — aws.amazon.com/architecture/well-architected. Descreve os 6 pilares com design principles. Outros essenciais: **(1)** "Architecting for the Cloud: AWS Best Practices". **(2)** "AWS Security Best Practices". **(3)** "Disaster Recovery of Workloads on AWS". Todos gratuitos em aws.amazon.com/whitepapers.
+**Q:** What is Tutorials Dojo and why is it highly recommended?  
+**A:** **tutorialsdojo.com** — practice exam platform created by Jon Bonso. Highlights: explanations for EVERY option of every question (why the right one is right + why each wrong one is wrong); cheat sheets per service; timed and review modes; high correlation with the real exam. Cost: ~$15-30 per practice exam. Widely cited as the best practice resource besides the official one.
 
 ---
 
-**P:** Como usar o AWS Architecture Center para estudar?  
-**R:** **aws.amazon.com/architecture** — biblioteca de Reference Architectures por caso de uso (web apps, serverless, data lake, microservices) e indústria. Para estudar: abrir diagramas de arquiteturas relevantes ao exame (3-tier web app, serverless API, data lake), entender quais serviços são combinados e por quê. Arquiteturas de referência oficiais AWS.
+**Q:** Which AWS whitepaper is most important for the SAA-C03 and where do you find it?  
+**A:** **"AWS Well-Architected Framework"** — aws.amazon.com/architecture/well-architected. Describes the 6 pillars with design principles. Other essentials: **(1)** "Architecting for the Cloud: AWS Best Practices". **(2)** "AWS Security Best Practices". **(3)** "Disaster Recovery of Workloads on AWS". All free at aws.amazon.com/whitepapers.
 
 ---
 
-**P:** Qual é a ferramenta oficial para estimar custos de uma arquitetura AWS?  
-**R:** **AWS Pricing Calculator** (calculator.aws) — gratuito. Selecionar serviços, configurar parâmetros (região, tipo de instância, uso esperado en horas/GB/requisições), adicionar ao estimate, compartilhar estimativa via URL. Diferente do Cost Explorer (para custos já incorridos). No exame: "estimar custos antes de implementar" → Pricing Calculator.
+**Q:** How do you use the AWS Architecture Center to study?  
+**A:** **aws.amazon.com/architecture** — library of Reference Architectures by use case (web apps, serverless, data lake, microservices) and industry. To study: open diagrams of architectures relevant to the exam (3-tier web app, serverless API, data lake), and understand which services are combined and why. Official AWS reference architectures.
 
 ---
 
-**P:** Onde encontrar os FAQs dos serviços AWS e como usá-los para estudar?  
-**R:** Em cada página de serviço AWS: `aws.amazon.com/[service]/faqs/`. Ex: `aws.amazon.com/s3/faqs/`, `aws.amazon.com/ec2/faqs/`. FAQs explicam limites, casos edge e comportamentos específicos que aparecem no exame. Prioridade de leitura: EC2, S3, RDS, IAM, VPC, Lambda, DynamoDB — serviços com maior peso no exam.
+**Q:** What is the official tool for estimating the cost of an AWS architecture?  
+**A:** **AWS Pricing Calculator** (calculator.aws) — free. Select services, configure parameters (Region, instance type, expected usage in hours/GB/requests), add them to the estimate, and share the estimate via URL. Unlike Cost Explorer (for costs already incurred). On the exam: "estimate costs before implementing" → Pricing Calculator.
 
 ---
 
-**P:** Qual é a diferença entre Pearson VUE e PSI para agendar o exame AWS?  
-**R:** Ambos são provedores de exame aprovados pela AWS. **Pearson VUE:** mais popular, mais centros no Brasil, opção online proctored (OnVUE). **PSI:** alternativa, menos centros, também tem online proctored. Para online proctored: precisa de webcam, microfone, ambiente quieto sem outras pessoas, nenhum objeto na mesa. Exame em PT-BR disponível (mas algumas questões técnicas ficam em inglês).
+**Q:** Where do you find the AWS service FAQs and how do you use them to study?  
+**A:** On each AWS service page: `aws.amazon.com/[service]/faqs/`. E.g.: `aws.amazon.com/s3/faqs/`, `aws.amazon.com/ec2/faqs/`. FAQs explain limits, edge cases, and specific behaviors that appear on the exam. Reading priority: EC2, S3, RDS, IAM, VPC, Lambda, DynamoDB — the services with the greatest weight on the exam.
 
 ---
 
-**P:** O que estudar na semana final antes do exame SAA-C03?  
-**R:** Última semana: **(1)** Revisar erros dos simulados (focar no que errou, não no que já sabe). **(2)** Cheatsheets por serviço (limites numéricos, comparativos). **(3)** Domain 3 (Security, 30%) — IAM conditions, encryption, network security. **(4)** Simulado completo (65q) para medir readiness. **(5)** Não estudar nada novo nos últimos 2 dias — revisão + descanso. Score 750+ nos simulados = pronto para o exame.
+**Q:** What is the difference between Pearson VUE and PSI for scheduling the AWS exam?  
+**A:** Both are exam providers approved by AWS. **Pearson VUE:** more popular, more test centers, online proctored option (OnVUE). **PSI:** alternative, fewer centers, also has online proctored. For online proctored: you need a webcam, microphone, a quiet environment with no other people, and no objects on the desk. The exam is available in several languages, including Portuguese (but some technical questions remain in English).
 
 ---
 
-**P:** Qual canal do YouTube tem os melhores resumos gratuitos de serviços AWS para o exame?  
-**R:** **(1) Be a Better Dev** — demos práticos e conceituais. **(2) Stephane Maarek** — snippets do curso. **(3) Digital Cloud Training (Neal Davis)** — tutorials detalhados. **(4) AWS Events** — re:Invent talks técnicos (avançado). **(5) TechWorld with Nana** — Docker/K8s complementares. Para PT-BR: pesquisar "SAA-C03 preparação" — comunidade brasileira crescente.
+**Q:** What should you study in the final week before the SAA-C03 exam?  
+**A:** Last week: **(1)** Review mistakes from practice exams (focus on what you got wrong, not what you already know). **(2)** Cheatsheets per service (numeric limits, comparisons). **(3)** Domain 3 (Security, 30%) — IAM conditions, encryption, network security. **(4)** A full practice exam (65q) to measure readiness. **(5)** Don't study anything new in the last 2 days — review + rest. Score 750+ on practice exams = ready for the exam.
 
 ---
 
-**P:** Para que serve o AWS Free Tier nos estudos práticos?  
-**R:** Praticar labs sem custo. Recursos Always Free essenciais: Lambda 1M req/mês, DynamoDB 25GB, CloudFront 1TB/mês, SNS 1M req, API Gateway 1M req/mês. 12-month free: EC2 t2/t3.micro 750h/mês, S3 5GB, RDS db.t2.micro 750h/mês. **SEMPRE:** configurar Budget Alert no Billing Console para alertar se custo > $1. Fazer cleanup após labs (parar/deletar recursos).
+**Q:** Which YouTube channel has the best free summaries of AWS services for the exam?  
+**A:** **(1) Be a Better Dev** — practical and conceptual demos. **(2) Stephane Maarek** — course snippets. **(3) Digital Cloud Training (Neal Davis)** — detailed tutorials. **(4) AWS Events** — technical re:Invent talks (advanced). **(5) TechWorld with Nana** — complementary Docker/K8s. For Brazilian Portuguese content: search "SAA-C03 preparação" — a growing Brazilian community.
 
 ---
 
-**P:** Como usar o AWS Skill Builder gratuitamente para preparação?  
-**R:** Criar conta free em skillbuilder.aws. Acessar: **(1)** "AWS Cloud Practitioner Essentials" (curso gratuito básico). **(2)** "Architecting on AWS" (conceitos). **(3)** "AWS Certified Solutions Architect - Associate" learning path (gratuito). **(4)** "Official Practice Question Set SAA-C03" (20 perguntas gratuitas). Assinatura paga ($29/mês) dá acesso a simulados completos e labs.
+**Q:** What is the AWS Free Tier for in hands-on study?  
+**A:** Practicing labs at no cost. Essential Always Free resources: Lambda 1M requests/month, DynamoDB 25GB, CloudFront 1TB/month, SNS 1M requests, API Gateway 1M requests/month. 12-month free: EC2 t2/t3.micro 750h/month, S3 5GB, RDS db.t2.micro 750h/month. **ALWAYS:** configure a Budget Alert in the Billing Console to warn you if cost > $1. Clean up after labs (stop/delete resources).
 
 ---
 
-**P:** O que é o AWS Certification Discord e como se beneficiar?  
-**R:** Comunidades online onde candidatos compartilham experiências de prova, recursos e dicas. AWS: join em servidores como "AWS Study Group", "r/AWSCertifications" (Reddit), "Discord AWS Brasil". Benefícios: dicas de atualização do exame, notificações quando questões mudaram, compartilhamento de recursos gratuitos, suporte de pessoas que passaram recentemente.
+**Q:** How do you use AWS Skill Builder for free to prepare?  
+**A:** Create a free account at skillbuilder.aws. Access: **(1)** "AWS Cloud Practitioner Essentials" (basic free course). **(2)** "Architecting on AWS" (concepts). **(3)** "AWS Certified Solutions Architect - Associate" learning path (free). **(4)** "Official Practice Question Set SAA-C03" (20 free questions). The paid subscription ($29/month) gives access to full practice exams and labs.
 
 ---
 
-**P:** Como configurar ambiente de estudo local para labs (AWS CLI + Terraform)?  
-**R:** **(1)** Instalar AWS CLI v2: `winget install Amazon.AWSCLI` (Windows) ou `brew install awscli` (Mac). **(2)** Configurar: `aws configure` (access key + secret + região + formato). **(3)** Instalar Terraform: `winget install Hashicorp.Terraform`. **(4)** Verificar: `aws sts get-caller-identity` retorna account info. Usar AWS Cloud9 como alternativa — ambiente no browser sem setup local.
+**Q:** What is the AWS Certification Discord and how do you benefit from it?  
+**A:** Online communities where candidates share exam experiences, resources, and tips. AWS: join servers like "AWS Study Group", "r/AWSCertifications" (Reddit), "Discord AWS Brasil". Benefits: exam update tips, notifications when questions have changed, sharing of free resources, support from people who passed recently.
 
 ---
 
-**P:** Qual livro é recomendado para complementar o estudo do SAA-C03?  
-**R:** **"AWS Certified Solutions Architect Study Guide" by Ben Piper and David Clinton** (Sybex/Wiley) — atualizado para SAA-C03, abordagem metódica, bom pré-exame complementar. **"AWS Cookbook" by John Culkin** — mais hands-on, receitas práticas. Livros são complementares (não substitutos) aos simulados. Prioridade: simulados > livros.
+**Q:** How do you set up a local study environment for labs (AWS CLI + Terraform)?  
+**A:** **(1)** Install AWS CLI v2: `winget install Amazon.AWSCLI` (Windows) or `brew install awscli` (Mac). **(2)** Configure: `aws configure` (access key + secret + Region + format). **(3)** Install Terraform: `winget install Hashicorp.Terraform`. **(4)** Verify: `aws sts get-caller-identity` returns account info. Use AWS Cloud9 as an alternative — an in-browser environment with no local setup.
 
 ---
 
-**P:** O que é o "Exam Readiness" da AWS e como interpretar?  
-**R:** AWS Skill Builder tem cursos "Exam Readiness: SAA-C03" que mapeiam domínios, explicam tipos de questão e estratégias de eliminação. Além disso: score de 800+ nos simulados do Tutorials Dojo em modo timed é geralmente considerado readiness suficiente. Abaixo de 720 (80% equivalente nos simulados): continuar estudando pontos fracos identificados.
+**Q:** Which book is recommended to complement SAA-C03 study?  
+**A:** **"AWS Certified Solutions Architect Study Guide" by Ben Piper and David Clinton** (Sybex/Wiley) — updated for SAA-C03, methodical approach, good complementary pre-exam read. **"AWS Cookbook" by John Culkin** — more hands-on, practical recipes. Books are complementary (not substitutes) to practice exams. Priority: practice exams > books.
 
 ---
 
-**P:** Onde ler sobre novos serviços e updates AWS que podem aparecer no exame?  
-**R:** **(1) AWS What's New:** aws.amazon.com/new — feed de updates. **(2) AWS Blog:** aws.amazon.com/blogs/aws — posts técnicos. **(3) re:Invent announcements:** YouTube/AWS Events. **(4) AWS Certification changelog:** a AWS notifica quando versões de exame mudam com 6 meses de antecedência. Foco: serviços que entraram no Exam Guide oficial. Não estudar serviços fora do escopo.
+**Q:** What is AWS "Exam Readiness" and how do you interpret it?  
+**A:** AWS Skill Builder has "Exam Readiness: SAA-C03" courses that map the domains, explain question types, and teach elimination strategies. Also: a score of 800+ on Tutorials Dojo practice exams in timed mode is generally considered sufficient readiness. Below 720 (80% equivalent on practice exams): keep studying the weak points you identified.
 
 ---
 
-**P:** Como criar um plano de estudos de 6 semanas para o SAA-C03?  
-**R:** **Semana 1:** Módulos fundamentais (EC2, S3, IAM, VPC). **Semana 2:** Databases + Networking avançado (RDS, DynamoDB, Route 53, CloudFront). **Semana 3:** Serverless + Decoupling (Lambda, API GW, SQS, SNS, EventBridge). **Semana 4:** Analytics + Migração + Well-Architected. **Semana 5:** Simulados completos (2-3 full exams) + revisar erros. **Semana 6:** Focus nos pontos fracos + simulado final + descanso.
+**Q:** Where do you read about new AWS services and updates that may appear on the exam?  
+**A:** **(1) AWS What's New:** aws.amazon.com/new — updates feed. **(2) AWS Blog:** aws.amazon.com/blogs/aws — technical posts. **(3) re:Invent announcements:** YouTube/AWS Events. **(4) AWS Certification changelog:** AWS announces exam version changes 6 months in advance. Focus: services that entered the official Exam Guide. Don't study out-of-scope services.
 
 ---
 
-**P:** Como usar os cheat sheets do Tutorials Dojo para revisão final?  
-**R:** Tutorialsdojo.com/aws-cheat-sheets/ — disponíveis por serviço, gratuitos. Formato: tabelas comparativas, limites numéricos importantes, diferenças entre serviços similares. Para revisão: imprimir ou salvar offline os cheat sheets dos serviços core (EC2, S3, RDS/Aurora, VPC, IAM, Lambda, DynamoDB). Revisar especialmente tabelas comparativas que o exame frequentemente testa (ex: SQS vs SNS vs EventBridge).
+**Q:** How do you create a 6-week study plan for the SAA-C03?  
+**A:** **Week 1:** Fundamental modules (EC2, S3, IAM, VPC). **Week 2:** Databases + advanced Networking (RDS, DynamoDB, Route 53, CloudFront). **Week 3:** Serverless + Decoupling (Lambda, API GW, SQS, SNS, EventBridge). **Week 4:** Analytics + Migration + Well-Architected. **Week 5:** Full practice exams (2-3 full exams) + review mistakes. **Week 6:** Focus on weak points + final practice exam + rest.
 
 ---
 
-**P:** Após obter a certificação SAA-C03, como mantê-la válida?  
-**R:** Validade: **3 anos**. Para recertificar: **(1)** Re-fazer o SAA-C03 antes do vencimento. **(2)** Obter uma certificação de nível superior (SAP-C02 Professional) — recertifica automaticamente o SAA. **(3)** Obter outra Associate ou specialty (não recertifica automaticamente). No perfil AWS Certification: pode baixar o certificado digital e badge Credly. Compartilhar no LinkedIn.
+**Q:** How do you use the Tutorials Dojo cheat sheets for final review?  
+**A:** Tutorialsdojo.com/aws-cheat-sheets/ — available per service, free. Format: comparison tables, important numeric limits, differences between similar services. For review: print or save offline the cheat sheets of the core services (EC2, S3, RDS/Aurora, VPC, IAM, Lambda, DynamoDB). Especially review the comparison tables that the exam frequently tests (e.g., SQS vs SNS vs EventBridge).
+
+---
+
+**Q:** After earning the SAA-C03 certification, how do you keep it valid?  
+**A:** Validity: **3 years**. To recertify: **(1)** Retake the SAA-C03 before it expires. **(2)** Earn a higher-level certification (SAP-C02 Professional) — automatically recertifies the SAA. **(3)** Earning another Associate or specialty (does not recertify automatically). In your AWS Certification profile: you can download the digital certificate and Credly badge. Share it on LinkedIn.

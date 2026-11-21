@@ -1,212 +1,212 @@
-# Casos de Uso Reais — Arquiteturas Multi-Serviço (Módulo 17)
+# Real-World Use Cases — Multi-Service Architectures (Module 17)
 
-## Caso 1 — Plataforma SaaS Multi-Tenant com Isolamento por Tier
+## Case 1 — Multi-Tenant SaaS Platform with Tier-Based Isolation
 
-**Contexto:** Empresa de software B2B oferece plataforma de gestão para clientes de 3 tamanhos: Free (milhares de clientes), Business (500 clientes), Enterprise (50 grandes contratos). Cada tier exige nível diferente de isolamento e garantia de performance.
+**Context:** A B2B software company offers a management platform to customers of 3 sizes: Free (thousands of customers), Business (500 customers), Enterprise (50 large contracts). Each tier requires a different level of isolation and performance guarantee.
 
-**Arquitetura Híbrida (Pool + Silo):**
+**Hybrid Architecture (Pool + Silo):**
 ```
-CAMADA DE ROTEAMENTO:
+ROUTING LAYER:
 Route 53 → ALB → API Gateway
 
-Lógica de Roteamento por Tenant:
-├── ENTERPRISE (silo): stack dedicada
-│     ALB → ECS dedicado → Aurora dedicado (sem compartilhamento)
-│     DDoS: Shield Advanced individual
+Per-Tenant Routing Logic:
+├── ENTERPRISE (silo): dedicated stack
+│     ALB → dedicated ECS → dedicated Aurora (no sharing)
+│     DDoS: individual Shield Advanced
 │     SLA: 99.99%
 │
-├── BUSINESS (bridge): infra compartilhada, DB separado
-│     ALB → ECS compartilhado → Aurora Schema por tenant
-│     Compute: shared, Storage: isolado
+├── BUSINESS (bridge): shared infra, separate DB
+│     ALB → shared ECS → Aurora Schema per tenant
+│     Compute: shared, Storage: isolated
 │     SLA: 99.9%
 │
-└── FREE (pool): tudo compartilhado
-      ALB → ECS compartilhado → DynamoDB (tenantId = partition key)
+└── FREE (pool): everything shared
+      ALB → shared ECS → DynamoDB (tenantId = partition key)
       SLA: 99%
 
-IDENTIFICAÇÃO DE TENANT:
+TENANT IDENTIFICATION:
 JWT token → API GW Authorizer (Lambda)
-Lambda extrai tenantId → injeta em header X-Tenant-ID
-ECS app usa X-Tenant-ID para rotear fila correta / DB correto
+Lambda extracts tenantId → injects into X-Tenant-ID header
+ECS app uses X-Tenant-ID to route to the correct queue / correct DB
 
-NOISY NEIGHBOR PROTECTION (camada Free):
-SQS por tenant-tier: Business tem fila separada de Free
+NOISY NEIGHBOR PROTECTION (Free tier):
+SQS per tenant-tier: Business has a queue separate from Free
 Lambda reserved concurrency: Business = 100, Free = 20
-DynamoDB: on-demand (escala por tenant sem afetar outros)
+DynamoDB: on-demand (scales per tenant without affecting others)
 ```
 
 ---
 
-## Caso 2 — Migração Strangler Fig de Monolito Java para Microsserviços
+## Case 2 — Strangler Fig Migration of a Java Monolith to Microservices
 
-**Contexto:** Sistema ERP legado (Java monolítico, 15 anos) precisa ser modernizado gradualmente. Não é possível reescrever tudo de uma vez — risco alto e custo proibitivo. Estratégia: extrair módulos um a um sem downtime.
+**Context:** A legacy ERP system (monolithic Java, 15 years old) needs to be modernized gradually. Rewriting everything at once is not possible — high risk and prohibitive cost. Strategy: extract modules one by one with no downtime.
 
-**Processo Strangler Fig:**
+**Strangler Fig Process:**
 ```
-ESTADO INICIAL:
-Tudo no monolito Java:
-CLI → Servidor Java → PostgreSQL Oracle
+INITIAL STATE:
+Everything in the Java monolith:
+CLI → Java Server → PostgreSQL Oracle
 
-FASE 1 — INSERIR PROXY (Strangler):
-CLI → API GW / ALB ← NOVO PONTO DE ENTRADA
-        ├── /api/estoque  → Monolito Java (legado)
-        ├── /api/clientes → Monolito Java (legado)
-        ├── /api/pedidos  → Monolito Java (legado)
-        └── /api/relatorio→ Monolito Java (legado)
+PHASE 1 — INSERT PROXY (Strangler):
+CLI → API GW / ALB ← NEW ENTRY POINT
+        ├── /api/estoque  → Java Monolith (legacy)
+        ├── /api/clientes → Java Monolith (legacy)
+        ├── /api/pedidos  → Java Monolith (legacy)
+        └── /api/relatorio→ Java Monolith (legacy)
 
-FASE 2 — EXTRAIR MÓDULO DE ESTOQUE:
-← Desenvolver microsserviço estoque em paralelo
-← Testes de integração com dados reais
-ALB Route: /api/estoque → NOVO Lambda + DynamoDB
-           (outros /api/* ainda vão para monolito)
+PHASE 2 — EXTRACT THE INVENTORY MODULE:
+← Develop the inventory microservice in parallel
+← Integration tests with real data
+ALB Route: /api/estoque → NEW Lambda + DynamoDB
+           (other /api/* still go to the monolith)
 
-FASE 3 — EXTRAIR MÓDULO DE PEDIDOS:
-/api/pedidos → NOVO ECS Service + Aurora PostgreSQL
-/api/estoque → Lambda + DynamoDB (já migrado)
-/api/clientes, /api/relatorio → Monolito ainda
+PHASE 3 — EXTRACT THE ORDERS MODULE:
+/api/pedidos → NEW ECS Service + Aurora PostgreSQL
+/api/estoque → Lambda + DynamoDB (already migrated)
+/api/clientes, /api/relatorio → Monolith still
 
-FASE FINAL — "MATAR" O MONOLITO:
-Quando último módulo extraído:
-ALB não tem mais rotas para monolito
-Monolito Java descomissionado
-100% microsserviços na AWS
+FINAL PHASE — "KILL" THE MONOLITH:
+When the last module is extracted:
+ALB has no more routes to the monolith
+Java monolith decommissioned
+100% microservices on AWS
 
-ANTI-PADRÃO EVITADO:
-❌ "Big Bang" — reescrever tudo antes de ir para produção
-✓ Incremental — cada extração validada em produção antes da próxima
+ANTI-PATTERN AVOIDED:
+❌ "Big Bang" — rewriting everything before going to production
+✓ Incremental — each extraction validated in production before the next
 ```
 
 ---
 
-## Caso 3 — Pipeline de Processamento de Pedidos com Saga Pattern
+## Case 3 — Order Processing Pipeline with the Saga Pattern
 
-**Contexto:** Marketplace online com 3 microsserviços independentes: Pedidos, Estoque e Pagamento. Quando um pedido é criado, os 3 devem ser consistentes — se o pagamento falha, o estoque deve ser liberado.
+**Context:** An online marketplace with 3 independent microservices: Orders, Inventory, and Payment. When an order is created, all 3 must be consistent — if payment fails, inventory must be released.
 
-**Saga Coreografada (Event-Driven):**
+**Choreographed Saga (Event-Driven):**
 ```
 HAPPY PATH:
-Pedido criado → SQS (PedidoCriado)
+Order created → SQS (OrderCreated)
                      │
               Lambda InventoryService
-              ├── Reserva estoque
-              └── SQS (EstoqueReservado)
+              ├── Reserves inventory
+              └── SQS (InventoryReserved)
                             │
                      Lambda PaymentService  
-                     ├── Cobra pagamento
-                     └── SQS (PagamentoAprovado)
+                     ├── Charges payment
+                     └── SQS (PaymentApproved)
                                     │
                              Lambda OrderService
-                             └── Confirma pedido (status = CONFIRMADO)
-                             └── SNS (PedidoConfirmado) → notifica usuário
+                             └── Confirms order (status = CONFIRMED)
+                             └── SNS (OrderConfirmed) → notifies user
 
-COMPENSAÇÃO (Rollback):
-PaymentService falha → SQS (PagamentoRejeitado)
+COMPENSATION (Rollback):
+PaymentService fails → SQS (PaymentRejected)
                               │
                        Lambda InventoryService
-                       └── Libera estoque (compensação)
-                       └── SQS (EstoqueLiberado)
+                       └── Releases inventory (compensation)
+                       └── SQS (InventoryReleased)
                                    │
                             Lambda OrderService
-                            └── Cancela pedido (status = CANCELADO)
-                            └── SNS → notifica usuário
+                            └── Cancels order (status = CANCELED)
+                            └── SNS → notifies user
 ```
 
-**Saga Orquestrada (Step Functions):**
+**Orchestrated Saga (Step Functions):**
 ```
 Step Functions Express Workflow:
-State 1: Task (ReservarEstoque) → retry 3x, catch → CancelarPedido
-State 2: Task (ProcessarPagamento) → retry 2x, catch → LiberarEstoque → CancelarPedido
-State 3: Task (ConfirmarPedido)
-State 4: Task (NotificarUsuario)
+State 1: Task (ReserveInventory) → retry 3x, catch → CancelOrder
+State 2: Task (ProcessPayment) → retry 2x, catch → ReleaseInventory → CancelOrder
+State 3: Task (ConfirmOrder)
+State 4: Task (NotifyUser)
 
-Compensação (Catch):
-LiberarEstoque → CancelarPedido → NotificarFalha
+Compensation (Catch):
+ReleaseInventory → CancelOrder → NotifyFailure
 
-Vantagem vs Coreografia:
-- Visibilidade completa do estado em cada step
-- Retry configurável por step
-- Fácil debug (X-Ray integrado)
+Advantage vs Choreography:
+- Full visibility of state at each step
+- Configurable retry per step
+- Easy debugging (X-Ray integrated)
 ```
 
 ---
 
-## Caso 4 — Event Sourcing para Sistema de Auditoria Financeira
+## Case 4 — Event Sourcing for a Financial Audit System
 
-**Contexto:** Banco de investimentos precisa de histórico completo e imutável de todas as mudanças em contas e portfólios. Regulação exige rastreabilidade de 10 anos + capacidade de "replay" para auditoria.
+**Context:** An investment bank needs a complete and immutable history of all changes to accounts and portfolios. Regulation requires 10-year traceability + the ability to "replay" for audits.
 
-**Arquitetura Event Sourcing:**
+**Event Sourcing Architecture:**
 ```
 WRITE MODEL:
 App → API GW → Lambda (command handler)
-                    │ NÃO atualiza estado diretamente
-                    │ GRAVA EVENTO imutável
+                    │ Does NOT update state directly
+                    │ WRITES an immutable EVENT
                     ▼
-              DynamoDB (event store — tabela de eventos)
-              ├── PK: aggregateId (ex: conta-123)
+              DynamoDB (event store — events table)
+              ├── PK: aggregateId (e.g.: account-123)
               ├── SK: version (1, 2, 3...)
-              ├── eventType: "SaldoDebitado", "SaldoCreditado"
-              ├── payload: {valor: 5000, moeda: "BRL"}
+              ├── eventType: "BalanceDebited", "BalanceCredited"
+              ├── payload: {amount: 5000, currency: "BRL"}
               └── timestamp: ISO 8601
               
 DynamoDB Streams → Lambda (projections updater)
-                        └── ElastiCache (saldo atual — leitura rápida)
-                        └── Athena/Redshift (relatórios analíticos)
+                        └── ElastiCache (current balance — fast reads)
+                        └── Athena/Redshift (analytical reports)
 
 READ MODEL (CQRS):
 App → API GW → Lambda (query handler)
-                    └── ElastiCache (leitura rápida do estado atual)
+                    └── ElastiCache (fast read of current state)
 
-REPLAY PARA AUDITORIA:
+REPLAY FOR AUDIT:
 Query: SELECT * FROM event_store WHERE accountId = 'conta-123' ORDER BY version
-      → Replay todos eventos → recalcular estado em qualquer ponto no tempo
+      → Replay all events → recompute state at any point in time
       
-S3 (event store backup, compactado por mês, Object Lock 10 anos)
+S3 (event store backup, compacted monthly, Object Lock 10 years)
 ```
 
 ---
 
-## Caso 5 — Plataforma de Transmissão Ao Vivo com IVS + Lambda
+## Case 5 — Live Streaming Platform with IVS + Lambda
 
-**Contexto:** Plataforma de ensino online quer oferecer aulas ao vivo com baixíssima latência (< 5 segundos), chat em tempo real, enquetes durante a transmissão, e gravação automática para replay posterior.
+**Context:** An online education platform wants to offer live classes with very low latency (< 5 seconds), real-time chat, polls during the broadcast, and automatic recording for later replay.
 
-**Arquitetura:**
+**Architecture:**
 ```
-TRANSMISSÃO:
-Professor → OBS/Encoder (RTMP) → Amazon IVS (Interactive Video Service)
+BROADCAST:
+Teacher → OBS/Encoder (RTMP) → Amazon IVS (Interactive Video Service)
                                         │
-                                  CloudFront CDN (entrega global)
+                                  CloudFront CDN (global delivery)
                                         │
-                                  Players dos alunos (< 5s latência)
+                                  Student players (< 5s latency)
 
-CHAT EM TEMPO REAL:
-Aluno → API GW WebSocket
+REAL-TIME CHAT:
+Student → API GW WebSocket
              ├── Lambda (onConnect) → DynamoDB (connectionIds)
              ├── Lambda (sendMessage) → DynamoDB + broadcast
-             └── Lambda (onDisconnect) → remove connectionId
+             └── Lambda (onDisconnect) → removes connectionId
              
-Broadcast para todos na sala:
+Broadcast to everyone in the room:
 Lambda → API GW Management API → POST /connections/{connectionId}
 
-ENQUETES:
-Professor → API REST → Lambda → DynamoDB (enquete + respostas)
-Evento IVS Timed Metadata → Player exibe enquete sincronizado com vídeo
+POLLS:
+Teacher → REST API → Lambda → DynamoDB (poll + answers)
+IVS Timed Metadata event → Player displays the poll synchronized with the video
 
-GRAVAÇÃO E REPLAY:
-IVS → S3 automático (gravação completa)
-     └── MediaConvert (transcodificação para múltiplas resoluções)
-            └── S3 (HLS adaptativo)
-                └── CloudFront (CDN para replay)
+RECORDING AND REPLAY:
+IVS → automatic S3 (full recording)
+     └── MediaConvert (transcoding to multiple resolutions)
+            └── S3 (adaptive HLS)
+                └── CloudFront (CDN for replay)
 
-MÉTRICAS:
+METRICS:
 IVS → CloudWatch (viewers, bitrate, buffering ratio)
-Custom: Lambda → CloudWatch Metrics (mensagens/min, respostas enquete)
+Custom: Lambda → CloudWatch Metrics (messages/min, poll answers)
 ```
 
 **IVS vs MediaLive:**
-| Critério | IVS | MediaLive |
+| Criterion | IVS | MediaLive |
 |---------|-----|-----------|
-| Latência | < 5s (ultra-low latency) | 15-30s (padrão) |
-| Configuração | Baixa (gerenciado) | Alta (muitos parâmetros) |
-| Interatividade | Nativa (timed metadata, chat) | Limitada |
-| Custo | Por hora + GB | Por hora (mais caro para escala) |
-| Quando usar | Lives interativas simples | Broadcasting broadcast TV |
+| Latency | < 5s (ultra-low latency) | 15-30s (standard) |
+| Configuration | Low (managed) | High (many parameters) |
+| Interactivity | Native (timed metadata, chat) | Limited |
+| Cost | Per hour + GB | Per hour (more expensive at scale) |
+| When to use | Simple interactive lives | Broadcast TV broadcasting |

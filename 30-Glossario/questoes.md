@@ -1,229 +1,229 @@
-# Questões — Módulo 20: Glossário
+# Questions — Module 20: Glossary
 
-> **Quiz de Definições** — Teste seu conhecimento dos termos AWS  
-> **Dificuldade**: Básica-Média
+> **Definitions Quiz** — Test your knowledge of AWS terms  
+> **Difficulty**: Basic-Medium
 
 ---
 
-**1.** O que é um ARN (Amazon Resource Name) e qual é seu formato?
+**1.** What is an ARN (Amazon Resource Name) and what is its format?
 
-- A) Identificador de região AWS. Formato: `aws:region:nome`
-- B) Identificador único de qualquer recurso AWS. Formato: `arn:aws:service:region:account-id:resource`
-- C) Nome automático atribuído a instâncias EC2. Formato: `ec2-ip-address.region.compute.internal`
-- D) Identificador de usuários IAM. Formato: `iam::user:nome`
+- A) AWS Region identifier. Format: `aws:region:nome`
+- B) Unique identifier of any AWS resource. Format: `arn:aws:service:region:account-id:resource`
+- C) Automatic name assigned to EC2 instances. Format: `ec2-ip-address.region.compute.internal`
+- D) IAM user identifier. Format: `iam::user:nome`
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — ARN identifica univocamente qualquer recurso AWS. Exemplo: `arn:aws:s3:::meu-bucket`, `arn:aws:ec2:us-east-1:123456:instance/i-xxx`, `arn:aws:iam::123456:role/minha-role`. Usado em IAM policies, resource policies e APIs para referenciar recursos específicos.
+**B** — An ARN uniquely identifies any AWS resource. Example: `arn:aws:s3:::meu-bucket`, `arn:aws:ec2:us-east-1:123456:instance/i-xxx`, `arn:aws:iam::123456:role/minha-role`. Used in IAM policies, resource policies, and APIs to reference specific resources.
 
 </details>
 
 ---
 
-**2.** Qual é a diferença entre RTO e RPO em estratégias de Disaster Recovery?
+**2.** What is the difference between RTO and RPO in Disaster Recovery strategies?
 
-- A) RTO = quanto dados podem ser perdidos; RPO = quanto tempo o sistema pode ficar offline
-- B) RTO = tempo máximo aceitável de downtime; RPO = quantidade máxima de dados que podem ser perdidos
-- C) RTO e RPO são sinônimos para "Recovery Time"
-- D) RTO é para bancos de dados; RPO é para aplicações
+- A) RTO = how much data can be lost; RPO = how long the system can be offline
+- B) RTO = maximum acceptable downtime; RPO = maximum amount of data that can be lost
+- C) RTO and RPO are synonyms for "Recovery Time"
+- D) RTO is for databases; RPO is for applications
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — RTO (Recovery Time Objective): quanto tempo posso levar para restaurar o serviço? → define a estratégia DR (menor RTO = estratégia mais cara). RPO (Recovery Point Objective): quanto de dados posso perder? → define a frequência de backup/replicação. Por exemplo: RTO 1h, RPO 15 min = max 1h offline + max 15 min de dados perdidos.
-
-</details>
-
----
-
-**3.** O que significa IOPS no contexto de armazenamento AWS?
-
-- A) Internet Operations Per Second — velocidade de download
-- B) Input/Output Operations Per Second — medida de performance de leitura/escrita de storage
-- C) Instance Operations Per Second — throughput de EC2
-- D) Infrastructure Operations Per Service — métrica de SLA
-
-<details><summary>Resposta</summary>
-
-**B** — IOPS = Input/Output Operations Per Second. Quanto mais IOPS, mais operações de leitura/escrita por segundo o storage suporta. EBS gp3 baseline = 3.000 IOPS; io2 Block Express = até 256.000 IOPS. Relevante para bancos de dados que precisam de muitas operações I/O por segundo.
+**B** — RTO (Recovery Time Objective): how long can it take me to restore the service? → defines the DR strategy (lower RTO = more expensive strategy). RPO (Recovery Point Objective): how much data can I lose? → defines the backup/replication frequency. For example: RTO 1h, RPO 15 min = max 1h offline + max 15 min of data lost.
 
 </details>
 
 ---
 
-**4.** Qual é a diferença entre um Security Group e uma NACL no VPC?
+**3.** What does IOPS mean in the context of AWS storage?
 
-- A) Security Group: nível de subnet (stateless); NACL: nível de instância (stateful)
-- B) Security Group: nível de instância/ENI (stateful, apenas Allow); NACL: nível de subnet (stateless, Allow e Deny)
-- C) São funcionalidades equivalentes; Security Group é o termo AWS e NACL é o padrão de mercado
-- D) NACL é para IPv4; Security Group é para IPv6
+- A) Internet Operations Per Second — download speed
+- B) Input/Output Operations Per Second — storage read/write performance measure
+- C) Instance Operations Per Second — EC2 throughput
+- D) Infrastructure Operations Per Service — SLA metric
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — SG: nível de ENI (instância), stateful (retorno automático permitido), regras apenas de ALLOW, referencia outros SGs. NACL: nível de subnet, stateless (deve permitir explicitamente outbound também), tem regras ALLOW e DENY numeradas avaliadas em ordem.
-
-</details>
-
----
-
-**5.** O que é WORM no contexto do S3 Object Lock?
-
-- A) Write Once Read Many — dados escritos não podem ser modificados ou deletados durante o período de retenção
-- B) Write Once Replicate Many — objetos são replicados automaticamente
-- C) Web Object Routing Mechanism — como objetos são roteados via CloudFront
-- D) Workload Object Retention Method — política de lifecycle do S3
-
-<details><summary>Resposta</summary>
-
-**A** — WORM = Write Once Read Many. S3 Object Lock Compliance mode: uma vez escrito, o objeto não pode ser deletado ou sobrescrito por ninguém (nem root account) durante o retention period. Ideal para: regulatórios financeiros, auditoria, compliance, evidência forense.
+**B** — IOPS = Input/Output Operations Per Second. The higher the IOPS, the more read/write operations per second the storage supports. EBS gp3 baseline = 3,000 IOPS; io2 Block Express = up to 256,000 IOPS. Relevant for databases that need many I/O operations per second.
 
 </details>
 
 ---
 
-**6.** O que é um VPC Endpoint e quais são os dois tipos?
+**4.** What is the difference between a Security Group and a NACL in a VPC?
 
-- A) Endpoint de DNS para resolver nomes em uma VPC. Tipos: Route 53 Inbound e Outbound
-- B) Conexão privada entre VPC e serviços AWS sem sair para internet. Tipos: Gateway (S3, DynamoDB) e Interface (PrivateLink para outros serviços)
-- C) IP público fixo para serviços dentro de uma VPC. Tipos: Elastic IP e NAT Gateway
-- D) Ponto de acesso para VPN. Tipos: Site-to-Site e Client VPN
+- A) Security Group: subnet level (stateless); NACL: instance level (stateful)
+- B) Security Group: instance/ENI level (stateful, Allow only); NACL: subnet level (stateless, Allow and Deny)
+- C) They are equivalent features; Security Group is the AWS term and NACL is the industry standard
+- D) NACL is for IPv4; Security Group is for IPv6
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — VPC Endpoint: acesso a serviços AWS sem internet (tráfego fica na rede privada AWS). Gateway Endpoint: gratuito, para S3 e DynamoDB, adicionado à route table. Interface Endpoint (PrivateLink): pago (~$0.01/hora + dados), cria ENI na VPC, suporta 150+ serviços AWS e serviços privados de terceiros.
-
-</details>
-
----
-
-**7.** O que significa "stateful" em um Security Group?
-
-- A) O Security Group guarda logs de todas as conexões
-- B) O retorno de uma conexão permitida é automaticamente permitido sem regra de saída explícita
-- C) O Security Group mantém histórico de todas as regras aplicadas
-- D) Apenas conexões com estado ESTABLISHED são permitidas
-
-<details><summary>Resposta</summary>
-
-**B** — Stateful: o Security Group rastreia o estado das conexões. Se você permite tráfego inbound na porta 443 (HTTPS), o tráfego de retorno (saída da resposta) é automaticamente permitido sem precisar de regra outbound. Diferente de NACL (stateless), onde você precisa de regras explícitas para inbound E outbound.
+**B** — SG: ENI (instance) level, stateful (return traffic automatically allowed), ALLOW rules only, can reference other SGs. NACL: subnet level, stateless (you must explicitly allow outbound too), has numbered ALLOW and DENY rules evaluated in order.
 
 </details>
 
 ---
 
-**8.** O que é DAX e para qual serviço ele é específico?
+**5.** What is WORM in the context of S3 Object Lock?
 
-- A) AWS Data Aggregation Exchange — ferramenta de consolidação multi-conta
-- B) DynamoDB Accelerator — cache in-memory específico para DynamoDB com latência de microssegundos
-- C) Direct Access eXchange — protocolo para Direct Connect
-- D) Data Analytics eXecutor — motor de análise serverless
+- A) Write Once Read Many — written data cannot be modified or deleted during the retention period
+- B) Write Once Replicate Many — objects are replicated automatically
+- C) Web Object Routing Mechanism — how objects are routed via CloudFront
+- D) Workload Object Retention Method — S3 lifecycle policy
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — DAX = DynamoDB Accelerator: cache in-memory gerenciado e compatível com a API DynamoDB. Sem mudança de código na aplicação (drop-in replacement). Leituras: de milissegundos para microssegundos. Ideal para: leituras muito frequentes dos mesmos itens (hot items), gaming leaderboards, sessões de usuário.
-
-</details>
-
----
-
-**9.** O que é um IAM Role e como difere de um IAM User?
-
-- A) Role é para serviços AWS; User é para humanos. Role não tem credenciais permanentes (usa credenciais temporárias do STS)
-- B) Role é mais segura que User porque tem mais permissões
-- C) User é mais moderno que Role e deve ser usado em novos projetos
-- D) Role e User são idênticos; a diferença é apenas no console
-
-<details><summary>Resposta</summary>
-
-**A** — IAM Role: identidade sem credenciais permanentes; assume-se temporariamente (STS AssumeRole → credenciais de curta duração). Para: serviços AWS (EC2, Lambda), usuários federados (SSO), cross-account access. IAM User: tem credenciais permanentes (password + access keys). Melhores práticas: usar Roles sempre que possível, evitar access keys para humans.
+**A** — WORM = Write Once Read Many. S3 Object Lock Compliance mode: once written, the object cannot be deleted or overwritten by anyone (not even the root account) during the retention period. Ideal for: financial regulations, auditing, compliance, forensic evidence.
 
 </details>
 
 ---
 
-**10.** O que é SPICE no Amazon QuickSight?
+**6.** What is a VPC Endpoint and what are the two types?
 
-- A) Security Protocol for Intelligence and Cloud Events — protocolo de segurança
-- B) Super-fast Parallel In-memory Calculation Engine — mecanismo de cache in-memory do QuickSight
+- A) DNS endpoint to resolve names in a VPC. Types: Route 53 Inbound and Outbound
+- B) Private connection between a VPC and AWS services without going out to the internet. Types: Gateway (S3, DynamoDB) and Interface (PrivateLink for other services)
+- C) Fixed public IP for services inside a VPC. Types: Elastic IP and NAT Gateway
+- D) Access point for VPN. Types: Site-to-Site and Client VPN
+
+<details><summary>Answer</summary>
+
+**B** — VPC Endpoint: access to AWS services without the internet (traffic stays on the AWS private network). Gateway Endpoint: free, for S3 and DynamoDB, added to the route table. Interface Endpoint (PrivateLink): paid (~$0.01/hour + data), creates an ENI in the VPC, supports 150+ AWS services and third-party private services.
+
+</details>
+
+---
+
+**7.** What does "stateful" mean in a Security Group?
+
+- A) The Security Group keeps logs of all connections
+- B) The return traffic of an allowed connection is automatically allowed without an explicit outbound rule
+- C) The Security Group keeps a history of all applied rules
+- D) Only connections in the ESTABLISHED state are allowed
+
+<details><summary>Answer</summary>
+
+**B** — Stateful: the Security Group tracks connection state. If you allow inbound traffic on port 443 (HTTPS), the return traffic (the response going out) is automatically allowed without needing an outbound rule. Unlike NACLs (stateless), where you need explicit rules for both inbound AND outbound.
+
+</details>
+
+---
+
+**8.** What is DAX and which service is it specific to?
+
+- A) AWS Data Aggregation Exchange — multi-account consolidation tool
+- B) DynamoDB Accelerator — in-memory cache specific to DynamoDB with microsecond latency
+- C) Direct Access eXchange — protocol for Direct Connect
+- D) Data Analytics eXecutor — serverless analytics engine
+
+<details><summary>Answer</summary>
+
+**B** — DAX = DynamoDB Accelerator: managed in-memory cache compatible with the DynamoDB API. No application code changes (drop-in replacement). Reads: from milliseconds to microseconds. Ideal for: very frequent reads of the same items (hot items), gaming leaderboards, user sessions.
+
+</details>
+
+---
+
+**9.** What is an IAM Role and how does it differ from an IAM User?
+
+- A) A Role is for AWS services; a User is for humans. A Role has no permanent credentials (uses temporary STS credentials)
+- B) A Role is more secure than a User because it has more permissions
+- C) A User is more modern than a Role and should be used in new projects
+- D) Role and User are identical; the difference is only in the console
+
+<details><summary>Answer</summary>
+
+**A** — IAM Role: an identity without permanent credentials; it is assumed temporarily (STS AssumeRole → short-lived credentials). For: AWS services (EC2, Lambda), federated users (SSO), cross-account access. IAM User: has permanent credentials (password + access keys). Best practices: use Roles whenever possible, avoid access keys for humans.
+
+</details>
+
+---
+
+**10.** What is SPICE in Amazon QuickSight?
+
+- A) Security Protocol for Intelligence and Cloud Events — security protocol
+- B) Super-fast Parallel In-memory Calculation Engine — QuickSight's in-memory caching engine
 - C) Standard Protocol for Inter-Cloud Exchange
 - D) Scalable Processing of Intelligent Content Engine
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — SPICE: cache in-memory do QuickSight. Dados importados no SPICE ficam em memória para dashboards ultra-rápidos (independente de queries ao banco ou S3 em real-time). Cada usuário QuickSight tem uma quota de SPICE (GB). Refresh agendado ou manual atualiza os dados do SPICE.
-
-</details>
-
----
-
-**11.** O que diferencia CRR de SRR no Amazon S3?
-
-- A) CRR = replicação automática entre regiões; SRR = replicação na mesma região. Ambos requerem versioning habilitado no bucket origem
-- B) CRR = backup de objetos grandes; SRR = backup de metadados
-- C) SRR é mais barato que CRR; CRR tem latência menor
-- D) CRR é para objetos < 5 GB; SRR para objetos maiores
-
-<details><summary>Resposta</summary>
-
-**A** — CRR (Cross-Region Replication): replica objetos para bucket em outra região (DR, compliance, latência global). SRR (Same-Region Replication): replica para bucket na mesma região (aggregação de logs, compliance de cópia, testes sem afetar produção). Ambos: versioning obrigatório, replicam apenas novos objetos (não retroativos), suportam filtro por prefixo/tag.
+**B** — SPICE: QuickSight's in-memory cache. Data imported into SPICE stays in memory for ultra-fast dashboards (independent of real-time queries to the database or S3). Each QuickSight user has a SPICE quota (GB). A scheduled or manual refresh updates the SPICE data.
 
 </details>
 
 ---
 
-**12.** O que significa "serverless" no contexto AWS?
+**11.** What differentiates CRR from SRR in Amazon S3?
 
-- A) A aplicação não usa servidores — roda diretamente no hardware
-- B) A AWS gerencia toda a infraestrutura de servidores; você só define o código/configuração e paga pelo uso real
-- C) Os servidores são vituais (como EC2) sem hardware dedicado
-- D) A aplicação não precisa de código — é configurada declarativamente
+- A) CRR = automatic replication between Regions; SRR = replication within the same Region. Both require versioning enabled on the source bucket
+- B) CRR = backup of large objects; SRR = backup of metadata
+- C) SRR is cheaper than CRR; CRR has lower latency
+- D) CRR is for objects < 5 GB; SRR for larger objects
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Serverless: sem provisionamento ou gerenciamento de servidores pelo usuário. A AWS gerencia: instâncias, patches, escalabilidade, HA. Você define apenas: código (Lambda), tabelas (DynamoDB), queries (Athena), configuração (S3). Paga pelo consumo real (invocações, GB processados, objetos). Exemplos: Lambda, Fargate, DynamoDB, S3, Athena, API Gateway.
-
-</details>
-
----
-
-**13.** O que é o padrão de arquitetura "fan-out" na AWS?
-
-- A) Escalar horizontalmente adicionando mais servidores
-- B) Enviar uma mensagem para múltiplos consumidores em paralelo usando SNS → múltiplas SQS queues
-- C) Distribuir tráfego entre múltiplas instâncias usando um Load Balancer
-- D) Replicar dados para múltiplas regiões
-
-<details><summary>Resposta</summary>
-
-**B** — Fan-out: uma mensagem publicada em um tópico SNS é entregue simultaneamente para múltiplos subscribers (SQS queues, Lambda functions, HTTP endpoints). Cada subscriber processa independentemente. Exemplo: uma order_created vai para: queue de email, queue de analytics, queue de fulfillment, queue de auditoria — tudo em paralelo.
+**A** — CRR (Cross-Region Replication): replicates objects to a bucket in another Region (DR, compliance, global latency). SRR (Same-Region Replication): replicates to a bucket in the same Region (log aggregation, compliance copies, testing without affecting production). Both: versioning required, replicate only new objects (not retroactive), support prefix/tag filtering.
 
 </details>
 
 ---
 
-**14.** O que é um Placement Group Cluster no EC2?
+**12.** What does "serverless" mean in the AWS context?
 
-- A) Grupo de instâncias distribuídas em diferentes racks para alta disponibilidade
-- B) Grupo de instâncias no mesmo rack físico/hardware para máxima performance de rede (baixa latência, alta largura de banda entre instâncias)
-- C) Grupo de instâncias reservadas antecipadamente
-- D) Conjunto de instâncias Spot com preço consistente
+- A) The application doesn't use servers — it runs directly on the hardware
+- B) AWS manages all of the server infrastructure; you only define the code/configuration and pay for actual usage
+- C) The servers are virtual (like EC2) with no dedicated hardware
+- D) The application needs no code — it is configured declaratively
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Cluster Placement Group: instâncias muito próximas fisicamente (mesmo rack/hardware). Resultado: latência de rede ultra-baixa e até 100 Gbps de throughput entre instâncias. Sacrifica disponibilidade (falha de rack afeta todas). Use para: HPC, aplicações MPI, computação intensiva, simulações. Contrast: Spread PG (máxima HA, instâncias em racks separados).
+**B** — Serverless: no server provisioning or management by the user. AWS manages: instances, patches, scalability, HA. You only define: code (Lambda), tables (DynamoDB), queries (Athena), configuration (S3). You pay for actual consumption (invocations, GB processed, objects). Examples: Lambda, Fargate, DynamoDB, S3, Athena, API Gateway.
 
 </details>
 
 ---
 
-**15.** O que é o AWS Shared Responsibility Model?
+**13.** What is the "fan-out" architecture pattern on AWS?
 
-- A) A AWS é responsável por toda a segurança da nuvem; o cliente não tem responsabilidades
-- B) A AWS é responsável pela segurança DA cloud (infraestrutura); o cliente é responsável pela segurança NA cloud (dados, IAM, configuração do OS, aplicação)
-- C) A responsabilidade é igual entre AWS e cliente em todas as áreas
-- D) O cliente é responsável pela segurança apenas em ambientes de produção
+- A) Scaling horizontally by adding more servers
+- B) Sending a message to multiple consumers in parallel using SNS → multiple SQS queues
+- C) Distributing traffic across multiple instances using a Load Balancer
+- D) Replicating data to multiple Regions
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — AWS: hardware, data centers, rede física, hipervisor, serviços gerenciados. Cliente: IAM (who can access), configuração de SG/NACL, criptografia de dados (em repouso e trânsito), patches do SO em EC2, código da aplicação, configurações de compliance. Em serviços gerenciados (RDS, Lambda), o cliente tem menos responsabilidades de infraestrutura.
+**B** — Fan-out: a message published to an SNS topic is delivered simultaneously to multiple subscribers (SQS queues, Lambda functions, HTTP endpoints). Each subscriber processes independently. Example: an order_created event goes to: email queue, analytics queue, fulfillment queue, audit queue — all in parallel.
+
+</details>
+
+---
+
+**14.** What is a Cluster Placement Group in EC2?
+
+- A) Group of instances spread across different racks for high availability
+- B) Group of instances on the same physical rack/hardware for maximum network performance (low latency, high bandwidth between instances)
+- C) Group of pre-reserved instances
+- D) Set of Spot instances with consistent pricing
+
+<details><summary>Answer</summary>
+
+**B** — Cluster Placement Group: instances physically very close together (same rack/hardware). Result: ultra-low network latency and up to 100 Gbps of throughput between instances. Sacrifices availability (a rack failure affects all of them). Use for: HPC, MPI applications, compute-intensive workloads, simulations. Contrast: Spread PG (maximum HA, instances on separate racks).
+
+</details>
+
+---
+
+**15.** What is the AWS Shared Responsibility Model?
+
+- A) AWS is responsible for all cloud security; the customer has no responsibilities
+- B) AWS is responsible for security OF the cloud (infrastructure); the customer is responsible for security IN the cloud (data, IAM, OS configuration, application)
+- C) Responsibility is equal between AWS and the customer in all areas
+- D) The customer is responsible for security only in production environments
+
+<details><summary>Answer</summary>
+
+**B** — AWS: hardware, data centers, physical network, hypervisor, managed services. Customer: IAM (who can access), SG/NACL configuration, data encryption (at rest and in transit), OS patches on EC2, application code, compliance settings. With managed services (RDS, Lambda), the customer has fewer infrastructure responsibilities.
 
 </details>

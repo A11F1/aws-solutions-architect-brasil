@@ -1,41 +1,41 @@
-# Casos de Uso — Módulo 06: Banco de Dados
+# Use Cases — Module 06: Databases
 
-## Caso 1: E-commerce com RDS Multi-AZ e Read Replicas
+## Case 1: E-commerce with RDS Multi-AZ and Read Replicas
 
-**Cenário:** E-commerce com picos de tráfego sazonais. Catálogo é lido 20x mais do que escrito. Necessidade de failover automático.
+**Scenario:** An e-commerce site with seasonal traffic spikes. The catalog is read 20x more than it is written. Automatic failover is required.
 
-**Arquitetura:**
+**Architecture:**
 ```
                 ┌─ RDS PostgreSQL Primary (us-east-1a)
-                │    ├── OLTP: pedidos, pagamentos
+                │    ├── OLTP: orders, payments
 ALB → App      ─┤    └── Multi-AZ Standby (us-east-1b) ← sync replica
 Servers        │
                 └─ RDS Read Replica x3 (us-east-1c)
-                     └── OLTP leitura: catálogo, pesquisa
+                     └── OLTP reads: catalog, search
 
-ElastiCache Redis ← Cache de sessão + catálogo mais buscado
+ElastiCache Redis ← Session cache + most-searched catalog items
 ```
 
-**Configurações-chave:**
-- Primary endpoint: escrita + leituras críticas (consistência forte)
-- Read Replica endpoint (Reader): leituras do catálogo (consistência eventual ok)
-- ElastiCache Redis: cache de 1 hora para páginas de produto
-- RDS Multi-AZ: standby em AZ diferente, failover ~1-2 min
+**Key settings:**
+- Primary endpoint: writes + critical reads (strong consistency)
+- Read Replica endpoint (Reader): catalog reads (eventual consistency is ok)
+- ElastiCache Redis: 1-hour cache for product pages
+- RDS Multi-AZ: standby in a different AZ, failover ~1-2 min
 
 ---
 
-## Caso 2: Aplicação Serverless com DynamoDB e DAX
+## Case 2: Serverless Application with DynamoDB and DAX
 
-**Cenário:** API de leaderboard em tempo real para jogo mobile com 1 milhão de usuários ativos simultâneos.
+**Scenario:** A real-time leaderboard API for a mobile game with 1 million concurrently active users.
 
-**Arquitetura:**
+**Architecture:**
 ```
 Mobile App → API Gateway → Lambda
                               ├── DynamoDB Table (Players)
                               │     ├── PK: player_id
                               │     └── GSI: score-index (PK: game_id, SK: score)
                               └── DAX Cluster (cache layer)
-                                    └── Latência < 1ms para top players
+                                    └── Latency < 1ms for top players
 ```
 
 **DynamoDB Design:**
@@ -43,52 +43,52 @@ Mobile App → API Gateway → Lambda
 Table: GameLeaderboard
   PK: game_id#season
   SK: player_id
-  GSI1: score-index (PK: game_id#season, SK: score) → top 100 por game
+  GSI1: score-index (PK: game_id#season, SK: score) → top 100 per game
 
-TTL: season_end_timestamp → apaga dados da temporada anterior automaticamente
+TTL: season_end_timestamp → automatically deletes data from the previous season
 ```
 
-**Por que DAX?** Lambda cold starts + 1M usuários → DynamoDB teria microsegundos mas DAX garante < 100µs para qualquer query. GSI permite `query` eficiente por ranking sem scan.
+**Why DAX?** Lambda cold starts + 1M users → DynamoDB would give milliseconds, but DAX guarantees < 100µs for any query. The GSI allows efficient `query` by ranking without a scan.
 
 ---
 
-## Caso 3: Aurora Global Database para Aplicação Multi-Regional
+## Case 3: Aurora Global Database for a Multi-Regional Application
 
-**Cenário:** SaaS global com usuários na América (us-east-1) e Europa (eu-west-1). Regulação europeia exige dados na Europa.
+**Scenario:** A global SaaS with users in the Americas (us-east-1) and Europe (eu-west-1). European regulation requires data to stay in Europe.
 
-**Arquitetura:**
+**Architecture:**
 ```
-América (us-east-1) — PRIMARY
+Americas (us-east-1) — PRIMARY
   └── Aurora PostgreSQL Cluster
         ├── Writer Instance
         ├── Reader Instance x2
-        └── US App Servers (escrita + leitura)
+        └── US App Servers (write + read)
 
-                    ↓ Replicação < 1 segundo (Global Database)
+                    ↓ Replication < 1 second (Global Database)
 
-Europa (eu-west-1) — SECONDARY
+Europe (eu-west-1) — SECONDARY
   └── Aurora PostgreSQL Cluster (read-only)
-        ├── Reader Instance x2 (leitura local GDPR)
-        └── EU App Servers (leitura apenas)
+        ├── Reader Instance x2 (local GDPR reads)
+        └── EU App Servers (read only)
 
 Failover:
-  Aurora Managed Planned Failover → promove EU a Primary em < 1 minuto
-  RPO < 1s | RTO < 1 minuto
+  Aurora Managed Planned Failover → promotes EU to Primary in < 1 minute
+  RPO < 1s | RTO < 1 minute
 ```
 
 ---
 
-## Caso 4: Pipeline de Análise com Redshift + Spectrum
+## Case 4: Analytics Pipeline with Redshift + Spectrum
 
-**Cenário:** Equipe de BI precisa cruzar dados de vendas históricos no DW com dados fresh de um data lake S3.
+**Scenario:** The BI team needs to join historical sales data in the DW with fresh data from an S3 data lake.
 
-**Arquitetura:**
+**Architecture:**
 ```
-Dados Históricos (DW)          Dados Frescos (Data Lake)
-  └── Redshift Cluster             └── S3 (Parquet, particionado por data)
-        └── tabela: vendas_hist           └── Glue Catalog (schema dos arquivos)
+Historical Data (DW)           Fresh Data (Data Lake)
+  └── Redshift Cluster             └── S3 (Parquet, partitioned by date)
+        └── table: vendas_hist           └── Glue Catalog (file schema)
 
-Query unificada (Redshift Spectrum):
+Unified query (Redshift Spectrum):
 SELECT h.regiao, f.produto, SUM(h.receita) + SUM(f.receita) as total
 FROM vendas_hist h
 JOIN spectrum.vendas_fresh f ON h.produto_id = f.produto_id  ← S3 via Spectrum
@@ -96,26 +96,26 @@ WHERE f.data >= CURRENT_DATE - 7
 GROUP BY 1, 2
 ```
 
-**Benefício:** Sem ETL diário para carregar dados S3 no DW. Joins em tempo real entre DW e Data Lake. Redshift MPP distribui o processamento do Spectrum entre os nodes.
+**Benefit:** No daily ETL to load S3 data into the DW. Real-time joins between the DW and the Data Lake. Redshift MPP distributes the Spectrum processing across the nodes.
 
 ---
 
-## Caso 5: Prevenção de Fraude com DynamoDB + ElastiCache
+## Case 5: Fraud Prevention with DynamoDB + ElastiCache
 
-**Cenário:** Sistema bancário precisa verificar se um cart payment está sendo feito de um IP ou dispositivo suspeito em < 10ms.
+**Scenario:** A banking system needs to check whether a card payment is being made from a suspicious IP or device in < 10ms.
 
-**Arquitetura:**
+**Architecture:**
 ```
-Pagamento → API
+Payment → API
   ├── ElastiCache Redis → Check: ip_blacklist, device_fingerprint (hits < 1ms)
   │         └── Cache Miss → DynamoDB → redis (write-through)
   │
   ├── DynamoDB: fraud_signals_table
   │     PK: signal_type (ip|device|account)
   │     SK: signal_value
-  │     Atributos: risk_score, last_seen, blocked_until (TTL)
+  │     Attributes: risk_score, last_seen, blocked_until (TTL)
   │
   └── EventBridge: "fraud_detected" → SNS → Email/Lambda → Block Account
 ```
 
-**Pattern usado:** Write-through cache (ao detectar novo sinal de fraude, escreve no Redis E DynamoDB simultaneamente). TTL no DynamoDB para expirar sinais antigos automaticamente. DAX poderia substituir Redis+DynamoDB se toda a lógica ficar no DynamoDB.
+**Pattern used:** Write-through cache (when a new fraud signal is detected, write to Redis AND DynamoDB simultaneously). TTL on DynamoDB to expire old signals automatically. DAX could replace Redis+DynamoDB if all the logic stays in DynamoDB.

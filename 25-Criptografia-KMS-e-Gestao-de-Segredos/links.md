@@ -1,4 +1,4 @@
-# Links Oficiais - Criptografia, KMS e Gestao de Segredos
+# Official Links - Encryption, KMS, and Secrets Management
 
 - AWS KMS: https://docs.aws.amazon.com/kms/
 - KMS key policies: https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html

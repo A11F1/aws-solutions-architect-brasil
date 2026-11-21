@@ -1,203 +1,203 @@
-# Casos de Uso Reais — Serverless, Lambda e API Gateway (Módulo 11)
+# Real-World Use Cases — Serverless, Lambda and API Gateway (Module 11)
 
-## Caso 1 — API REST Serverless para E-commerce
+## Case 1 — Serverless REST API for E-commerce
 
-**Contexto:** Startup de e-commerce precisa de uma API para catálogo de produtos e criação de pedidos. Espera picos de tráfego em datas comemorativas (Black Friday, Natal). Orçamento limitado — não quer pagar por capacidade ociosa.
+**Context:** An e-commerce startup needs an API for a product catalog and order creation. It expects traffic spikes on holidays and shopping events (Black Friday, Christmas). Limited budget — it doesn't want to pay for idle capacity.
 
-**Requisitos:**
-- Escalonamento automático sem intervenção manual
-- Custo proporcional ao uso (sem tráfego = sem custo)
-- Latência < 500ms para leitura de produtos
-- Autenticação JWT para rotas de pedidos
+**Requirements:**
+- Automatic scaling without manual intervention
+- Cost proportional to usage (no traffic = no cost)
+- Latency < 500ms for product reads
+- JWT authentication for order routes
 
-**Arquitetura:**
+**Architecture:**
 ```
-Cliente Mobile/Web
+Mobile/Web Client
        │
        ▼
-  CloudFront (cache GET /produtos)
+  CloudFront (cache GET /products)
        │
        ▼
  API Gateway (REST)
-  ├── GET /produtos     → Lambda (sem auth) → DynamoDB (catálogo)
-  ├── GET /produtos/{id}→ Lambda (sem auth) → DynamoDB
-  ├── POST /pedidos     → Lambda (JWT auth) → DynamoDB + SNS
-  └── GET /pedidos/{id} → Lambda (JWT auth) → DynamoDB
+  ├── GET /products     → Lambda (no auth) → DynamoDB (catalog)
+  ├── GET /products/{id}→ Lambda (no auth) → DynamoDB
+  ├── POST /orders      → Lambda (JWT auth) → DynamoDB + SNS
+  └── GET /orders/{id}  → Lambda (JWT auth) → DynamoDB
            │
-     Cognito Authorizer (valida JWT)
+     Cognito Authorizer (validates JWT)
            │
-     DynamoDB (pedidos, TTL em itens de sessão)
+     DynamoDB (orders, TTL on session items)
            │
-     SNS → SQS → Lambda (processar pagamento async)
+     SNS → SQS → Lambda (process payment async)
 ```
 
-**Decisões de Design:**
-| Decisão | Alternativa Descartada | Motivo |
+**Design Decisions:**
+| Decision | Discarded Alternative | Reason |
 |---------|----------------------|--------|
-| Lambda + DynamoDB | EC2 + RDS | Sem capacidade ociosa; DynamoDB escala horizontalmente |
-| Cognito Authorizer | Lambda Authorizer | Menor operação; Cognito gerencia rotação de JWTs |
-| CloudFront na frente | Só API GW | Cache de GETs reduz invocações Lambda |
-| SNS → SQS async | Lambda sync para pagamento | Desacopla; pagamento pode demorar sem timeout |
+| Lambda + DynamoDB | EC2 + RDS | No idle capacity; DynamoDB scales horizontally |
+| Cognito Authorizer | Lambda Authorizer | Less operational work; Cognito manages JWT rotation |
+| CloudFront in front | API GW only | Caching GETs reduces Lambda invocations |
+| SNS → SQS async | Sync Lambda for payment | Decouples; payment can take a long time without timeout |
 
-**Estimativa de Custo (1M req/mês):**
+**Cost Estimate (1M req/month):**
 - API Gateway: ~$3.50
-- Lambda: ~$0.20 (Free Tier cobre)
+- Lambda: ~$0.20 (Free Tier covers it)
 - DynamoDB On-Demand: ~$1.25
-- **Total: < $5/mês** vs EC2 t3.small ($13/mês ocioso)
+- **Total: < $5/month** vs EC2 t3.small ($13/month idle)
 
 ---
 
-## Caso 2 — Pipeline de Processamento de Imagens
+## Case 2 — Image Processing Pipeline
 
-**Contexto:** Plataforma de mídia social precisa redimensionar e aplicar filtros em imagens enviadas pelos usuários. Volume de 50.000 uploads/dia com picos de 500 uploads/minuto.
+**Context:** A social media platform needs to resize and apply filters to images uploaded by users. Volume of 50,000 uploads/day with peaks of 500 uploads/minute.
 
-**Requisitos:**
-- Processar imagens assincronamente (usuário não espera)
-- Garantir que nenhuma imagem seja perdida (at-least-once)
-- Múltiplas saídas: thumbnail 100px, médio 600px, original
-- Armazenar resultados em CDN global
+**Requirements:**
+- Process images asynchronously (the user doesn't wait)
+- Ensure no image is lost (at-least-once)
+- Multiple outputs: 100px thumbnail, 600px medium, original
+- Store results on a global CDN
 
-**Arquitetura:**
+**Architecture:**
 ```
-Usuário faz upload
+User uploads
        │
        ▼
-  S3 (bucket: uploads-originais)
+  S3 (bucket: original-uploads)
        │ S3 Event Notification
        ▼
-  SQS (buffer — garante at-least-once)
+  SQS (buffer — guarantees at-least-once)
        │
        ▼
   Lambda (processImage)
-  ├── Lê imagem do S3
-  ├── Resize com Pillow Layer
-  ├── Grava thumbnail/médio/original em S3 (bucket: processadas)
-  └── Atualiza DynamoDB (status = "processada")
+  ├── Reads image from S3
+  ├── Resize with Pillow Layer
+  ├── Writes thumbnail/medium/original to S3 (bucket: processed)
+  └── Updates DynamoDB (status = "processed")
        │
        ▼
-  CloudFront → S3 (bucket: processadas)
+  CloudFront → S3 (bucket: processed)
   
-  DLQ (SQS) → SNS → Email (alertas de falha)
+  DLQ (SQS) → SNS → Email (failure alerts)
   CloudWatch → Alarm → SNS (Lambda errors > 10)
 ```
 
-**Pontos de Atenção:**
-- Lambda Layer com biblioteca Pillow (máx 250 MB descomprimido)
-- Concorrência reservada para evitar throttling do S3
-- SQS visibility timeout > tempo máximo do Lambda (ex: Lambda 30s → timeout SQS 35s)
-- DLQ configurado com maxReceiveCount=3
+**Points of Attention:**
+- Lambda Layer with the Pillow library (max 250 MB unzipped)
+- Reserved concurrency to avoid S3 throttling
+- SQS visibility timeout > maximum Lambda time (e.g., Lambda 30s → SQS timeout 35s)
+- DLQ configured with maxReceiveCount=3
 
 ---
 
-## Caso 3 — Webhook Fanout com SNS → Lambda
+## Case 3 — Webhook Fanout with SNS → Lambda
 
-**Contexto:** Plataforma SaaS precisa notificar múltiplos sistemas quando um evento de negócio ocorre (ex: "cliente fechou contrato"): CRM, ERP, sistema de cobrança, e-mail marketing.
+**Context:** A SaaS platform needs to notify multiple systems when a business event occurs (e.g., "customer closed a contract"): CRM, ERP, billing system, email marketing.
 
-**Requisitos:**
-- Evento publicado 1 vez → múltiplos sistemas recebem
-- Falha em 1 sistema não afeta os outros
-- Cada sistema tem seu próprio ritmo de processamento
+**Requirements:**
+- Event published once → multiple systems receive it
+- Failure in one system doesn't affect the others
+- Each system has its own processing pace
 
-**Arquitetura:**
+**Architecture:**
 ```
-App (publica evento)
+App (publishes event)
        │
        ▼
-  SNS Tópico: contrato-fechado
-  ├── Assinante 1: SQS → Lambda (atualizar CRM)
-  ├── Assinante 2: SQS → Lambda (atualizar ERP)
-  ├── Assinante 3: SQS → Lambda (gerar cobrança)
-  └── Assinante 4: SQS → Lambda (disparar e-mail marketing)
+  SNS Topic: contract-closed
+  ├── Subscriber 1: SQS → Lambda (update CRM)
+  ├── Subscriber 2: SQS → Lambda (update ERP)
+  ├── Subscriber 3: SQS → Lambda (generate billing)
+  └── Subscriber 4: SQS → Lambda (trigger email marketing)
 
-  Cada SQS tem sua própria DLQ
-  Cada Lambda tem CloudWatch Log Group separado
+  Each SQS has its own DLQ
+  Each Lambda has a separate CloudWatch Log Group
 ```
 
-**Por que SQS entre SNS e Lambda (e não SNS → Lambda diretamente)?**
-- SQS garante persistência se Lambda falhar
-- SQS permite controle de concorrência (Lambda não fica sobrecarregado)
-- SQS permite DLQ por assinante (falha no CRM não contamina ERP)
-- SNS → Lambda diretamente: perda de evento se Lambda falha (sem retry nativo)
+**Why SQS between SNS and Lambda (and not SNS → Lambda directly)?**
+- SQS guarantees persistence if Lambda fails
+- SQS allows concurrency control (Lambda doesn't get overloaded)
+- SQS allows a DLQ per subscriber (a CRM failure doesn't contaminate the ERP)
+- SNS → Lambda directly: event loss if Lambda fails (no native retry)
 
 ---
 
-## Caso 4 — API GraphQL com AppSync + Lambda
+## Case 4 — GraphQL API with AppSync + Lambda
 
-**Contexto:** App mobile de rede social precisa de subscriptions em tempo real (notificações no feed), queries otimizadas, e resolvers customizados para lógica de negócio.
+**Context:** A social network mobile app needs real-time subscriptions (feed notifications), optimized queries, and custom resolvers for business logic.
 
-**Requisitos:**
-- Atualizações em tempo real (WebSocket nativo)
-- Resolvers diretos para DynamoDB (sem Lambda para CRUD simples)
-- Resolvers Lambda apenas para lógica complexa (recomendar amigos)
-- Autenticação com Cognito User Pool
+**Requirements:**
+- Real-time updates (native WebSocket)
+- Direct resolvers to DynamoDB (no Lambda for simple CRUD)
+- Lambda resolvers only for complex logic (recommend friends)
+- Authentication with a Cognito User Pool
 
-**Arquitetura:**
+**Architecture:**
 ```
-App Mobile
+Mobile App
     │ GraphQL (HTTP/WebSocket)
     ▼
 AWS AppSync
-    ├── Query getUserProfile → DynamoDB Resolver (direto)
-    ├── Query getFeed       → DynamoDB Resolver (direto)
+    ├── Query getUserProfile → DynamoDB Resolver (direct)
+    ├── Query getFeed       → DynamoDB Resolver (direct)
     ├── Mutation createPost → DynamoDB Resolver + Pipeline Resolver
     ├── Query recommendations → Lambda Resolver (ML logic)
-    └── Subscription onNewPost → WebSocket push automático
+    └── Subscription onNewPost → automatic WebSocket push
     
-Cognito User Pool (autenticação AppSync)
+Cognito User Pool (AppSync authentication)
 DynamoDB (users, posts, follows)
 Lambda (recommendation engine)
 ```
 
 **AppSync vs API Gateway:**
-| Critério | AppSync | API GW REST |
+| Criterion | AppSync | API GW REST |
 |---------|---------|------------|
-| Subscriptions real-time | Nativo WebSocket | Requer API GW WebSocket separado |
-| Query otimizada | GraphQL (1 request) | REST múltiplos endpoints |
-| Resolvers diretos a DB | DynamoDB, Aurora, Dynamo | Sempre via Lambda |
-| Complexidade | Maior setup inicial | Simples para REST puro |
+| Real-time subscriptions | Native WebSocket | Requires a separate API GW WebSocket |
+| Optimized queries | GraphQL (1 request) | REST multiple endpoints |
+| Direct resolvers to DB | DynamoDB, Aurora, Dynamo | Always via Lambda |
+| Complexity | Higher initial setup | Simple for pure REST |
 
 ---
 
-## Caso 5 — Processamento em Lote com Lambda e Step Functions
+## Case 5 — Batch Processing with Lambda and Step Functions
 
-**Contexto:** Empresa de análise financeira precisa processar 1 milhão de transações diárias até às 06h. Cada transação passa por 3 etapas sequenciais: validação, enriquecimento (consulta API externa), e cálculo de score.
+**Context:** A financial analytics company needs to process 1 million daily transactions by 6 AM. Each transaction goes through 3 sequential steps: validation, enrichment (external API lookup), and score calculation.
 
-**Requisitos:**
-- Processar tudo em < 4 horas
-- Retry automático em falha de etapa
-- Relatório final de transações rejeitadas
-- Visibilidade do progresso em tempo real
+**Requirements:**
+- Process everything in < 4 hours
+- Automatic retry on step failure
+- Final report of rejected transactions
+- Real-time visibility of progress
 
-**Arquitetura:**
+**Architecture:**
 ```
-EventBridge Scheduler (02:00 UTC diario)
+EventBridge Scheduler (02:00 UTC daily)
        │
        ▼
   Step Functions (Express Workflow)
   ┌─────────────────────────────────┐
-  │ Map State (processa em paralelo) │
-  │   ├── Lambda: Validar Transação  │
+  │ Map State (processes in parallel)│
+  │   ├── Lambda: Validate Transaction│
   │   │     (retry: 3x, backoff 2s)  │
-  │   ├── Lambda: Enriquecer Dados   │
+  │   ├── Lambda: Enrich Data        │
   │   │     (retry: 5x, backoff 10s) │
-  │   └── Lambda: Calcular Score     │
+  │   └── Lambda: Calculate Score    │
   │         (retry: 2x, backoff 1s)  │
   └─────────────────────────────────┘
        │
        ▼
-  DynamoDB (scores calculados)
-  S3 (relatório JSON de rejeitados)
-  SNS → Email (notificação conclusão)
-  CloudWatch Logs (detalhes de cada execução)
+  DynamoDB (calculated scores)
+  S3 (JSON report of rejected items)
+  SNS → Email (completion notification)
+  CloudWatch Logs (details of each execution)
 ```
 
-**Por que Step Functions e não SQS em cadeia?**
-- Step Functions: visibilidade de estado, retry configurável por etapa, Map State nativo para paralelismo
-- SQS em cadeia: funciona, mas sem visibilidade do estado do pipeline, retry difícil de configurar por etapa
-- Lambda timeout 15min: suficiente para 1 transação, Step Functions orquestra o lote
+**Why Step Functions and not chained SQS?**
+- Step Functions: state visibility, configurable retry per step, native Map State for parallelism
+- Chained SQS: works, but without visibility of the pipeline state, and retry is hard to configure per step
+- Lambda timeout 15min: enough for 1 transaction; Step Functions orchestrates the batch
 
-**Custo para 1M transações/dia:**
-- Step Functions Express: $1.00 por 1M execuções de estado
-- Lambda: ~$0.20 por 1M invocações
+**Cost for 1M transactions/day:**
+- Step Functions Express: $1.00 per 1M state executions
+- Lambda: ~$0.20 per 1M invocations
 - DynamoDB: ~$1.25 write
-- **Total: < $3/dia**
+- **Total: < $3/day**

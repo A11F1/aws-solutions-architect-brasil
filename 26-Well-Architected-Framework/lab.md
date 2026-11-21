@@ -1,52 +1,52 @@
-# Lab Prático — Well-Architected Framework: WAT + Trusted Advisor + Cost Explorer (Módulo 16)
+# Hands-On Lab — Well-Architected Framework: WAT + Trusted Advisor + Cost Explorer (Module 16)
 
-> **Região:** us-east-1 | **Custo estimado:** ~$0 (Well-Architected Tool, Trusted Advisor e Cost Explorer são gratuitos)  
-> **Pré-requisitos:** AWS CLI configurado, conta com acesso à console
-
----
-
-## Objetivo
-
-Usar as ferramentas nativas AWS para avaliar a arquitetura segundo o Well-Architected Framework, checar recomendações do Trusted Advisor e analisar custos com Cost Explorer.
+> **Region:** us-east-1 | **Estimated cost:** ~$0 (Well-Architected Tool, Trusted Advisor, and Cost Explorer are free)  
+> **Prerequisites:** AWS CLI configured, account with console access
 
 ---
 
-## Parte 1 — AWS Well-Architected Tool
+## Objective
+
+Use the native AWS tools to assess the architecture against the Well-Architected Framework, check Trusted Advisor recommendations, and analyze costs with Cost Explorer.
+
+---
+
+## Part 1 — AWS Well-Architected Tool
 
 ```bash
-# Listar lenses disponíveis
+# List available lenses
 aws wellarchitected list-lenses \
   --query 'LenseSummaries[*].[LensAlias, LensName]' \
   --output table
 
-# Criar um workload para avaliação
+# Create a workload for assessment
 WORKLOAD_ID=$(aws wellarchitected create-workload \
   --workload-name "Lab-Plataforma-Ecommerce" \
-  --description "Avaliação da plataforma de e-commerce para fim de lab" \
+  --description "E-commerce platform assessment for the end of the lab" \
   --environment PRODUCTION \
   --aws-regions "us-east-1" \
   --lenses "wellarchitected" \
   --review-owner "time-devops@empresa.com" \
   --query 'WorkloadId' --output text)
 
-echo "Workload criado: $WORKLOAD_ID"
+echo "Workload created: $WORKLOAD_ID"
 
-# Ver detalhes do workload
+# View workload details
 aws wellarchitected get-workload \
   --workload-id "$WORKLOAD_ID" \
   --query 'Workload.[WorkloadName, Environment, RiskCounts]' \
   --output table
 
-# Listar milestone (estado inicial)
+# List milestones (initial state)
 aws wellarchitected list-milestones \
   --workload-id "$WORKLOAD_ID"
 
-# Explorar perguntas por pilar
+# Explore questions by pillar
 PILLARS=("operationalExcellence" "security" "reliability" "performance" "costOptimization" "sustainability")
 
 for PILLAR in "${PILLARS[@]}"; do
   echo ""
-  echo "=== Pilar: $PILLAR ==="
+  echo "=== Pillar: $PILLAR ==="
   aws wellarchitected list-answers \
     --workload-id "$WORKLOAD_ID" \
     --lens-alias "wellarchitected" \
@@ -55,23 +55,23 @@ for PILLAR in "${PILLARS[@]}"; do
     --output table 2>/dev/null | head -30
 done
 
-# Responder uma pergunta (pilar de segurança — SEC 1)
+# Answer a question (security pillar — SEC 1)
 aws wellarchitected update-answer \
   --workload-id "$WORKLOAD_ID" \
   --lens-alias "wellarchitected" \
   --question-id "sec_securely_operate" \
   --selected-choices "sec_securely_operate_aws_account" "sec_securely_operate_multi_accounts" \
-  --notes "Usamos AWS Organizations com SCPs para governança centralizada"
+  --notes "We use AWS Organizations with SCPs for centralized governance"
 
-# Gerar milestone após responder perguntas
+# Create a milestone after answering questions
 MILESTONE_NUMBER=$(aws wellarchitected create-milestone \
   --workload-id "$WORKLOAD_ID" \
   --milestone-name "Sprint-Review-2025-Q1" \
   --query 'MilestoneNumber' --output text)
 
-echo "Milestone criado: Sprint-Review-2025-Q1 (Número: $MILESTONE_NUMBER)"
+echo "Milestone created: Sprint-Review-2025-Q1 (Number: $MILESTONE_NUMBER)"
 
-# Ver review do lens com riscos
+# View the lens review with risks
 aws wellarchitected get-lens-review \
   --workload-id "$WORKLOAD_ID" \
   --lens-alias "wellarchitected" \
@@ -81,34 +81,34 @@ aws wellarchitected get-lens-review \
 
 ---
 
-## Parte 2 — Trusted Advisor
+## Part 2 — Trusted Advisor
 
 ```bash
-# Listar todas as verificações disponíveis
+# List all available checks
 aws trustedadvisor list-checks \
   --query 'checks[*].[id, name, category, status]' \
   --output table 2>/dev/null | head -50
 
-# Verificações por categoria
+# Checks by category
 CATEGORIES=("cost_optimizing" "security" "fault_tolerance" "performance" "service_limits")
 
 for CAT in "${CATEGORIES[@]}"; do
   echo ""
-  echo "=== Categoria: $CAT ==="
+  echo "=== Category: $CAT ==="
   aws trustedadvisor list-checks \
     --query "checks[?category=='${CAT}'].[id, name]" \
     --output table 2>/dev/null | head -20
 done
 
-# Verificação de segurança — Security Groups portas abertas
-OPEN_PORTS_CHECK="HCP4007jHTy"  # ID do check de SGs com portas abertas
+# Security check — Security Groups with open ports
+OPEN_PORTS_CHECK="HCP4007jHTy"  # ID of the check for SGs with open ports
 
 aws trustedadvisor get-check-result \
   --check-id "$OPEN_PORTS_CHECK" \
   --query 'result.[status, timestamp, flaggedResources[*].[region, status]]' \
   --output json 2>/dev/null
 
-# Verificação de MFA na conta root
+# MFA check on the root account
 MFA_CHECK="7DAFEmoDos"
 
 aws trustedadvisor get-check-result \
@@ -116,7 +116,7 @@ aws trustedadvisor get-check-result \
   --query 'result.[status, checkId]' \
   --output json 2>/dev/null
 
-# Verificação de instâncias subutilizadas (Cost)
+# Underutilized instances check (Cost)
 UNDERUTIL_CHECK="Qch7DwouX1"
 
 aws trustedadvisor get-check-result \
@@ -124,11 +124,11 @@ aws trustedadvisor get-check-result \
   --query 'result.[status, flaggedResources]' \
   --output json 2>/dev/null
 
-# Refresh de verificações (forçar atualização)
+# Refresh checks (force an update)
 aws trustedadvisor refresh-check --check-id "$OPEN_PORTS_CHECK"
-echo "Check atualizado. Aguardar ~2-3 min para resultado."
+echo "Check refreshed. Wait ~2-3 min for the result."
 
-# Resumo de todos os resultados
+# Summary of all results
 aws trustedadvisor describe-checks-result-summary \
   --query 'result.[status, categorySpecificSummary]' \
   --output json 2>/dev/null
@@ -136,32 +136,32 @@ aws trustedadvisor describe-checks-result-summary \
 
 ---
 
-## Parte 3 — AWS Compute Optimizer
+## Part 3 — AWS Compute Optimizer
 
 ```bash
-# Verificar se o Compute Optimizer está habilitado
+# Check whether Compute Optimizer is enabled
 aws compute-optimizer get-enrollment-status \
   --query 'status' --output text
 
-# Habilitar se necessário
+# Enable it if necessary
 aws compute-optimizer update-enrollment-status --status Active
 
-# Aguardar 24h para gerar recomendações — listar o que está disponível
+# Wait 24h for recommendations to be generated — list what is available
 aws compute-optimizer get-ec2-instance-recommendations \
   --query 'instanceRecommendations[*].[instanceArn, finding, findingReasonCodes]' \
   --output table 2>/dev/null
 
-# Recomendações para Auto Scaling Groups
+# Recommendations for Auto Scaling Groups
 aws compute-optimizer get-auto-scaling-group-recommendations \
   --query 'autoScalingGroupRecommendations[*].[autoScalingGroupArn, finding]' \
   --output table 2>/dev/null
 
-# Recomendações para volumes EBS
+# Recommendations for EBS volumes
 aws compute-optimizer get-ebs-volume-recommendations \
   --query 'volumeRecommendations[*].[volumeArn, finding]' \
   --output table 2>/dev/null
 
-# Exportar recomendações para S3 (para análise massiva)
+# Export recommendations to S3 (for large-scale analysis)
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 REPORT_BUCKET="lab-compute-optimizer-${ACCOUNT_ID}"
 
@@ -174,10 +174,10 @@ aws compute-optimizer export-ec2-instance-recommendations \
 
 ---
 
-## Parte 4 — Cost Explorer
+## Part 4 — Cost Explorer
 
 ```bash
-# Custo total últimos 30 dias por serviço
+# Total cost over the last 30 days by service
 START=$(date -d "-30 days" +%Y-%m-%d 2>/dev/null || date -v-30d +%Y-%m-%d)
 END=$(date +%Y-%m-%d)
 
@@ -189,7 +189,7 @@ aws ce get-cost-and-usage \
   --query 'ResultsByTime[0].Groups[*].[Keys[0], Metrics.BlendedCost.Amount]' \
   --output table
 
-# Top 5 serviços mais caros
+# Top 5 most expensive services
 aws ce get-cost-and-usage \
   --time-period "Start=${START},End=${END}" \
   --granularity MONTHLY \
@@ -198,7 +198,7 @@ aws ce get-cost-and-usage \
   --query 'sort_by(ResultsByTime[0].Groups, &Metrics.BlendedCost.Amount)[-5:][*].[Keys[0], Metrics.BlendedCost.Amount]' \
   --output table
 
-# Custo por tag (exemplo: Environment)
+# Cost by tag (example: Environment)
 aws ce get-cost-and-usage \
   --time-period "Start=${START},End=${END}" \
   --granularity MONTHLY \
@@ -207,7 +207,7 @@ aws ce get-cost-and-usage \
   --query 'ResultsByTime[0].Groups[*].[Keys[0], Metrics.BlendedCost.Amount]' \
   --output table
 
-# Forecast para os próximos 30 dias
+# Forecast for the next 30 days
 FORECAST_START=$(date +%Y-%m-%d)
 FORECAST_END=$(date -d "+30 days" +%Y-%m-%d 2>/dev/null || date -v+30d +%Y-%m-%d)
 
@@ -218,7 +218,7 @@ aws ce get-cost-forecast \
   --query '[Total.Amount, Total.Unit]' \
   --output text
 
-# Custo diário (útil para detectar anomalias)
+# Daily cost (useful for detecting anomalies)
 aws ce get-cost-and-usage \
   --time-period "Start=${START},End=${END}" \
   --granularity DAILY \
@@ -229,15 +229,15 @@ aws ce get-cost-and-usage \
 
 ---
 
-## Parte 5 — Savings Plans Analysis
+## Part 5 — Savings Plans Analysis
 
 ```bash
-# Ver Savings Plans já adquiridos
+# View Savings Plans already purchased
 aws savingsplans describe-savings-plans \
   --query 'savingsPlans[*].[savingsPlanId, offeringId, state, commitment, end]' \
   --output table
 
-# Recomendações de Savings Plans
+# Savings Plans recommendations
 aws ce get-savings-plans-purchase-recommendation \
   --savings-plans-type COMPUTE_SP \
   --term-in-years ONE_YEAR \
@@ -246,18 +246,18 @@ aws ce get-savings-plans-purchase-recommendation \
   --query 'SavingsPlansPurchaseRecommendation.[SavingsPlansType, LookbackPeriodInDays, SavingsPlansPurchaseRecommendationDetails[0].EstimatedSavingsSavingsPlansEligibleCosts]' \
   --output json
 
-# Comparar On-Demand vs Savings Plans vs Reserved Instances
+# Compare On-Demand vs Savings Plans vs Reserved Instances
 echo ""
-echo "=== Comparativo de Modelos de Preço ==="
-echo "On-Demand: sem compromisso, preço cheio"
-echo "Compute Savings Plan 1yr No Upfront: ~17% desconto"
-echo "EC2 Savings Plan 1yr No Upfront: ~up to 40% desconto"
-echo "RI 1yr No Upfront: até 40% para tipo específico"
-echo "RI 1yr All Upfront: até 56% para tipo específico"
-echo "RI 3yr All Upfront: até 72% para tipo específico"
-echo "Spot Instances: até 90% desconto (interruptíveis)"
+echo "=== Pricing Model Comparison ==="
+echo "On-Demand: no commitment, full price"
+echo "Compute Savings Plan 1yr No Upfront: ~17% discount"
+echo "EC2 Savings Plan 1yr No Upfront: ~up to 40% discount"
+echo "RI 1yr No Upfront: up to 40% for a specific type"
+echo "RI 1yr All Upfront: up to 56% for a specific type"
+echo "RI 3yr All Upfront: up to 72% for a specific type"
+echo "Spot Instances: up to 90% discount (interruptible)"
 
-# Cost Anomaly Detection — criar monitor
+# Cost Anomaly Detection — create monitor
 aws ce create-anomaly-monitor \
   --anomaly-monitor '{
     "MonitorName": "lab-monitor-servico",
@@ -269,18 +269,18 @@ aws ce create-anomaly-monitor \
 
 ---
 
-## Parte 6 — IAM Access Analyzer (Pilar Segurança)
+## Part 6 — IAM Access Analyzer (Security Pillar)
 
 ```bash
-# Criar analisador no nível da conta
+# Create an account-level analyzer
 ANALYZER_ARN=$(aws accessanalyzer create-analyzer \
   --analyzer-name "lab-account-analyzer" \
   --type ACCOUNT \
   --query 'arn' --output text)
 
-echo "Analisador criado: $ANALYZER_ARN"
+echo "Analyzer created: $ANALYZER_ARN"
 
-# Aguardar análise (~1-2 min) e listar findings
+# Wait for the analysis (~1-2 min) and list findings
 sleep 60
 
 aws accessanalyzer list-findings \
@@ -288,7 +288,7 @@ aws accessanalyzer list-findings \
   --query 'findings[*].[id, resourceType, resource, status]' \
   --output table
 
-# Ver detalhes de um finding (se existir)
+# View details of a finding (if any exist)
 FIRST_FINDING=$(aws accessanalyzer list-findings \
   --analyzer-arn "$ANALYZER_ARN" \
   --query 'findings[0].id' --output text 2>/dev/null)
@@ -303,34 +303,34 @@ fi
 
 ---
 
-## Limpeza
+## Cleanup
 
 ```bash
-# Deletar workload do Well-Architected Tool
+# Delete the Well-Architected Tool workload
 aws wellarchitected delete-workload --workload-id "$WORKLOAD_ID"
 
-# Deletar analisador IAM Access Analyzer
+# Delete the IAM Access Analyzer analyzer
 aws accessanalyzer delete-analyzer --analyzer-name "lab-account-analyzer"
 
-# Deletar anomaly monitor
+# Delete the anomaly monitor
 MONITOR_ARN=$(aws ce list-cost-category-definitions --query 'CostCategoryReferences[0]' 2>/dev/null)
-# Listagem manual dos monitors:
+# Manual listing of monitors:
 aws ce get-anomaly-monitors --query 'AnomalyMonitors[*].[MonitorArn, MonitorName]' --output table
 
-# Limpar bucket Compute Optimizer
+# Clean up the Compute Optimizer bucket
 aws s3 rm "s3://${REPORT_BUCKET}" --recursive
 aws s3api delete-bucket --bucket "$REPORT_BUCKET" 2>/dev/null
 
-echo "Limpeza concluída. Well-Architected Tool, Access Analyzer deletados."
+echo "Cleanup complete. Well-Architected Tool and Access Analyzer deleted."
 ```
 
 ---
 
-## O Que Você Aprendeu
+## What You Learned
 
-- **WAT (Well-Architected Tool):** criar workloads, responder perguntas por pilar, gerar milestones, rastrear riscos HIGH/MEDIUM/NONE
-- **Trusted Advisor:** cheques automáticos em 5 categorias; refresh manual disponível via CLI
-- **Compute Optimizer:** recomendações de right-sizing baseadas em CloudWatch metrics (requer 14+ dias de dados)
-- **Cost Explorer:** análise por serviço, tag, granularidade diária/mensal, forecasting
-- **Savings Plans:** escolha entre COMPUTE_SP (mais flexível) e EC2_SP (mais barato para tipo fixo)
-- **IAM Access Analyzer:** detecta recursos com acesso externo não intencional (S3, SQS, Lambda, etc.)
+- **WAT (Well-Architected Tool):** create workloads, answer questions by pillar, generate milestones, track HIGH/MEDIUM/NONE risks
+- **Trusted Advisor:** automated checks in 5 categories; manual refresh available via CLI
+- **Compute Optimizer:** right-sizing recommendations based on CloudWatch metrics (requires 14+ days of data)
+- **Cost Explorer:** analysis by service, tag, daily/monthly granularity, forecasting
+- **Savings Plans:** choose between COMPUTE_SP (more flexible) and EC2_SP (cheaper for a fixed type)
+- **IAM Access Analyzer:** detects resources with unintended external access (S3, SQS, Lambda, etc.)

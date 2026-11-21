@@ -1,68 +1,68 @@
-# 22 Recuperacao de Desastres e Continuidade
+# 22 Disaster Recovery and Continuity
 
-## Objetivos do modulo
+## Module objectives
 
-- dominar RTO e RPO e mapear cada estrategia de DR ao requisito de negocio
-- diferenciar Backup and Restore, Pilot Light, Warm Standby e Multi-Site Active/Active
-- selecionar servicos AWS para continuidade: AWS Backup, Elastic Disaster Recovery, Route 53, Aurora Global Database, DynamoDB Global Tables e S3 CRR
-- responder questoes de prova equilibrando resiliencia, custo e complexidade operacional
+- master RTO and RPO and map each DR strategy to the business requirement
+- differentiate Backup and Restore, Pilot Light, Warm Standby, and Multi-Site Active/Active
+- select AWS services for continuity: AWS Backup, Elastic Disaster Recovery, Route 53, Aurora Global Database, DynamoDB Global Tables, and S3 CRR
+- answer exam questions balancing resilience, cost, and operational complexity
 
-## Conceitos fundamentais
+## Core concepts
 
-Recuperacao de desastres no SAA-C03 nao e apenas backup. A prova cobra desenho arquitetural que continue operando quando houver falha de AZ, regiao, servico gerenciado ou erro humano.
+Disaster recovery in the SAA-C03 is not just backup. The exam tests architectural design that keeps operating when there is an AZ, region, managed service, or human error failure.
 
-- RTO (Recovery Time Objective): tempo maximo aceitavel para restaurar o servico.
-- RPO (Recovery Point Objective): perda maxima aceitavel de dados em tempo.
+- RTO (Recovery Time Objective): maximum acceptable time to restore the service.
+- RPO (Recovery Point Objective): maximum acceptable data loss measured in time.
 
-Quanto menor o RTO e RPO, maior tende a ser o custo e a complexidade.
+The lower the RTO and RPO, the higher the cost and complexity tend to be.
 
-## Estrategias de DR
+## DR strategies
 
 1. Backup and Restore
-- custo mais baixo
-- restauracao mais lenta
-- RTO alto, RPO moderado/alto
-- ideal para workloads nao criticas
+- lowest cost
+- slowest restoration
+- high RTO, moderate/high RPO
+- ideal for non-critical workloads
 
 2. Pilot Light
-- componentes criticos minimos ficam ativos na regiao secundaria
-- aplicacao e capacidade escalam apenas no desastre
-- RTO medio, RPO baixo/medio
+- minimal critical components stay active in the secondary region
+- application and capacity scale only during the disaster
+- medium RTO, low/medium RPO
 
 3. Warm Standby
-- ambiente reduzido sempre ativo em outra regiao
-- rapido scale-up no desastre
-- RTO baixo, RPO baixo
+- scaled-down environment always active in another region
+- fast scale-up during the disaster
+- low RTO, low RPO
 
 4. Multi-Site Active/Active
-- duas regioes ativas atendendo trafego
-- failover quase imediato
-- RTO e RPO muito baixos
-- maior custo e operacao mais complexa
+- two active regions serving traffic
+- near-immediate failover
+- very low RTO and RPO
+- higher cost and more complex operation
 
-## Servicos e padroes mais cobrados
+## Most frequently tested services and patterns
 
-- Route 53 Failover + Health Checks para redirecionamento entre regioes.
-- AWS Elastic Disaster Recovery para replicacao continua de servidores e cutover rapido.
-- AWS Backup para politica central de backup e cofres cross-account.
-- S3 Versioning + CRR para objetos e resiliencia regional.
-- RDS/Aurora: snapshots, read replicas cross-region e Aurora Global Database.
-- DynamoDB: PITR e Global Tables para baixa latencia e continuidade.
-- EBS snapshots cross-region para restauracao de EC2.
+- Route 53 Failover + Health Checks for redirection between regions.
+- AWS Elastic Disaster Recovery for continuous server replication and fast cutover.
+- AWS Backup for central backup policy and cross-account vaults.
+- S3 Versioning + CRR for objects and regional resilience.
+- RDS/Aurora: snapshots, cross-region read replicas, and Aurora Global Database.
+- DynamoDB: PITR and Global Tables for low latency and continuity.
+- Cross-region EBS snapshots for EC2 restoration.
 
-## Dicas de exame
+## Exam tips
 
-- Multi-AZ nao resolve desastre regional; para isso a resposta precisa de multi-region.
-- Se o enunciado destaca "menor custo", Backup and Restore ou Pilot Light tende a vencer.
-- Se pede "minimo downtime", Warm Standby ou Active/Active geralmente e melhor.
-- Se diz "menor esforco operacional", prefira servicos gerenciados e automacao nativa.
-- Se pede preservar DNS durante failover, pense em Route 53 com health checks.
+- Multi-AZ does not solve a regional disaster; for that, the answer needs multi-region.
+- If the question highlights "lowest cost", Backup and Restore or Pilot Light tends to win.
+- If it asks for "minimum downtime", Warm Standby or Active/Active is usually better.
+- If it says "least operational effort", prefer managed services and native automation.
+- If it asks to preserve DNS during failover, think Route 53 with health checks.
 
-## Links relacionados
+## Related links
 
 - [Cheatsheet](./cheatsheet.md)
-- [Casos de uso](./casos-de-uso.md)
-- [Questoes](./questoes.md)
+- [Use cases](./casos-de-uso.md)
+- [Questions](./questoes.md)
 - [Flashcards](./flashcards.md)
 - [Lab](./lab.md)
-- [Links oficiais](./links.md)
+- [Official links](./links.md)

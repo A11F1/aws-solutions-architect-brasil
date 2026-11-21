@@ -1,177 +1,177 @@
-# Casos de Uso Reais — Well-Architected Framework (Módulo 16)
+# Real-World Use Cases — Well-Architected Framework (Module 16)
 
-## Caso 1 — Revisão Well-Architected de Startup em Crescimento
+## Case 1 — Well-Architected Review of a Growing Startup
 
-**Contexto:** Startup de healthtech com 150K usuários ativos cresceu de 5 para 150 funcionários em 2 anos. Arquitetura original foi feita rapidamente e nunca revisada. Investidores exigem relatório de maturidade técnica antes de novo round.
+**Context:** A healthtech startup with 150K active users grew from 5 to 150 employees in 2 years. The original architecture was built quickly and never reviewed. Investors require a technical maturity report before a new funding round.
 
-**Processo de Well-Architected Review:**
+**Well-Architected Review Process:**
 ```
 SETUP:
-AWS Well-Architected Tool (habilitado no console)
-├── Criar Workload: "Plataforma Healthtech Principal"
-├── Definir: owner, ambiente, tecnologias
-└── Convidar parceiro APN (opcional, para revisão facilitada)
+AWS Well-Architected Tool (enabled in the console)
+├── Create Workload: "Main Healthtech Platform"
+├── Define: owner, environment, technologies
+└── Invite APN partner (optional, for a facilitated review)
 
-REVISÃO POR PILAR (entrevistas com equipes):
+REVIEW BY PILLAR (interviews with teams):
 
-Pilar 1 — Excelência Operacional:
-├── Pergunta: "Você usa IaC para todos os recursos?"
-│   Resposta: "Não, muitos recursos criados manualmente no console"
-│   → HIGH RISK: Criar Terraform/CDK para todos os recursos
-└── Pergunta: "Você pratica runbooks para operações comuns?"
-    Resposta: "Temos apenas documentos Word desatualizados"
-    → MEDIUM RISK: Criar runbooks no SSM + playbooks
+Pillar 1 — Operational Excellence:
+├── Question: "Do you use IaC for all resources?"
+│   Answer: "No, many resources were created manually in the console"
+│   → HIGH RISK: Create Terraform/CDK for all resources
+└── Question: "Do you practice runbooks for common operations?"
+    Answer: "We only have outdated Word documents"
+    → MEDIUM RISK: Create runbooks in SSM + playbooks
 
-Pilar 2 — Segurança:
-├── "Credenciais root usadas regularmente?" → SIM → CRITICAL
-├── "MFA habilitado para todos os usuários?" → NÃO → HIGH
-└── "Dados de pacientes criptografados em repouso?" → PARCIALMENTE → HIGH
+Pillar 2 — Security:
+├── "Root credentials used regularly?" → YES → CRITICAL
+├── "MFA enabled for all users?" → NO → HIGH
+└── "Patient data encrypted at rest?" → PARTIALLY → HIGH
 
-Pilar 3 — Confiabilidade:
-├── "RDS tem Multi-AZ?" → NÃO → HIGH
-├── "Auto Scaling configurado?" → NÃO → HIGH
-└── "DR foi testado?" → NUNCA → HIGH
+Pillar 3 — Reliability:
+├── "Does RDS have Multi-AZ?" → NO → HIGH
+├── "Auto Scaling configured?" → NO → HIGH
+└── "Has DR been tested?" → NEVER → HIGH
 
-Pilar 4 — Performance:
-├── "Cache implementado?" → NÃO → MEDIUM
-└── "Métricas de latência p99 monitoradas?" → NÃO → MEDIUM
+Pillar 4 — Performance:
+├── "Caching implemented?" → NO → MEDIUM
+└── "p99 latency metrics monitored?" → NO → MEDIUM
 
-Pilar 5 — Otimização de Custo:
-├── "Instâncias ociosas?" → 40% com CPU < 5% → HIGH
-└── "Reserved Instances para workloads estáveis?" → NÃO → MEDIUM
+Pillar 5 — Cost Optimization:
+├── "Idle instances?" → 40% with CPU < 5% → HIGH
+└── "Reserved Instances for steady workloads?" → NO → MEDIUM
 
-Pilar 6 — Sustentabilidade:
-└── "Regiões escolhidas levam em conta % de energia renovável?" → NÃO → LOW
+Pillar 6 — Sustainability:
+└── "Do region choices consider % of renewable energy?" → NO → LOW
 ```
 
-**Plano de Remediação Priorizado:**
-| Prioridade | Item | Pilar | Esforço |
+**Prioritized Remediation Plan:**
+| Priority | Item | Pillar | Effort |
 |-----------|------|-------|---------|
-| CRÍTICO | Desativar uso root, habilitar MFA | Segurança | 1 dia |
-| CRÍTICO | Habilitar RDS Multi-AZ | Confiabilidade | 4h |
-| HIGH | Migrar recursos para IaC | Op. Excelência | 3 semanas |
-| HIGH | Criptografar dados PHI (KMS) | Segurança | 1 semana |
-| HIGH | Auto Scaling para EC2 | Confiabilidade | 2 dias |
-| MEDIUM | Implementar ElastiCache | Performance | 3 dias |
-| MEDIUM | Reserved Instances (1 ano) | Custo | 1 hora |
+| CRITICAL | Stop using root, enable MFA | Security | 1 day |
+| CRITICAL | Enable RDS Multi-AZ | Reliability | 4h |
+| HIGH | Migrate resources to IaC | Op. Excellence | 3 weeks |
+| HIGH | Encrypt PHI data (KMS) | Security | 1 week |
+| HIGH | Auto Scaling for EC2 | Reliability | 2 days |
+| MEDIUM | Implement ElastiCache | Performance | 3 days |
+| MEDIUM | Reserved Instances (1 year) | Cost | 1 hour |
 
 ---
 
-## Caso 2 — Implementação de DR Multi-Região
+## Case 2 — Multi-Region DR Implementation
 
-**Contexto:** Banco digital precisa garantir continuidade de operações mesmo em caso de falha completa de uma região AWS. Regulação exige RPO ≤ 15 minutos e RTO ≤ 1 hora.
+**Context:** A digital bank must guarantee business continuity even in the event of a complete failure of an AWS Region. Regulation requires RPO ≤ 15 minutes and RTO ≤ 1 hour.
 
-**Análise de Estratégias DR:**
+**DR Strategy Analysis:**
 
-| Estratégia | RPO | RTO | Custo/mês | Adequada? |
+| Strategy | RPO | RTO | Cost/month | Suitable? |
 |------------|-----|-----|-----------|----------|
-| Backup & Restore | Horas | 24h | $1K | ❌ RTO não atende |
-| Pilot Light | 15 min | 1-2h | $5K | ⚠️ RTO no limite |
+| Backup & Restore | Hours | 24h | $1K | ❌ RTO not met |
+| Pilot Light | 15 min | 1-2h | $5K | ⚠️ RTO at the limit |
 | Warm Standby | 5 min | 15 min | $25K | ✅ |
-| Active-Active | ~0 | ~0 | $60K | ✅ Overkill (custo) |
+| Active-Active | ~0 | ~0 | $60K | ✅ Overkill (cost) |
 
-**Arquitetura Warm Standby Escolhida:**
+**Chosen Warm Standby Architecture:**
 ```
-REGIÃO PRIMÁRIA (us-east-1):
+PRIMARY REGION (us-east-1):
 ALB → EC2 Auto Scaling (min:4, max:20)
          └── Aurora MySQL (multi-AZ, writer)
          └── ElastiCache Redis (cluster mode)
 Route 53 Health Check → ALB us-east-1
 
-REGIÃO SECUNDÁRIA (us-west-2) — Warm Standby:
-ALB → EC2 Auto Scaling (min:1, max:20) ← instâncias sempre ligadas
+SECONDARY REGION (us-west-2) — Warm Standby:
+ALB → EC2 Auto Scaling (min:1, max:20) ← instances always running
          └── Aurora Global Database (read replica us-west-2)
-         └── ElastiCache Redis (standby pequeno)
+         └── ElastiCache Redis (small standby)
 Route 53 Health Check → ALB us-west-2
 
-REPLICAÇÃO:
-Aurora Global Database → lag < 1s entre regiões
-S3 Cross-Region Replication (arquivos de usuário)
-DynamoDB Global Tables (dados de sessão)
+REPLICATION:
+Aurora Global Database → lag < 1s between regions
+S3 Cross-Region Replication (user files)
+DynamoDB Global Tables (session data)
 
-FAILOVER AUTOMÁTICO:
+AUTOMATIC FAILOVER:
 Route 53 Failover Policy:
-├── Primary: ALB us-east-1 (health check a cada 10s)
-└── Secondary: ALB us-west-2 (ativado automaticamente se primary falha)
+├── Primary: ALB us-east-1 (health check every 10s)
+└── Secondary: ALB us-west-2 (automatically activated if primary fails)
 
 Recovery Steps (RTO: 15-30 min):
-1. Route 53 detecta falha (30-60s)
-2. DNS propaga para us-west-2 (30-60s) 
+1. Route 53 detects the failure (30-60s)
+2. DNS propagates to us-west-2 (30-60s) 
 3. Aurora Global: promote secondary to writer (< 1 min)
-4. ASG us-west-2: scale out para capacidade completa (5-10 min)
-5. App totalmente restaurada (~15 min total)
+4. ASG us-west-2: scale out to full capacity (5-10 min)
+5. App fully restored (~15 min total)
 ```
 
 ---
 
-## Caso 3 — Otimização de Custo: De $80K para $35K/mês
+## Case 3 — Cost Optimization: From $80K to $35K/month
 
-**Contexto:** SaaS B2B com workload previsível (uso intenso 8h-18h, baixo à noite e fins de semana) estava pagando $80K/mês. Auditoria identificou oportunidades significativas.
+**Context:** A B2B SaaS with a predictable workload (heavy use 8am-6pm, low at night and on weekends) was paying $80K/month. An audit identified significant opportunities.
 
-**Análise Antes (problemas identificados):**
+**Before Analysis (problems identified):**
 ```
-INFRA ORIGINAL:
-50x EC2 m5.xlarge On-Demand (24/7): $5.400/mês
-5x RDS db.r5.2xlarge On-Demand: $6.000/mês
-10x NAT Gateways (redundância excessiva): $4.500/mês
-S3: 200 TB em Standard (dados raramente acessados depois de 30 dias): $4.600/mês
-EBS: 500 volumes gp2 não utilizados: $2.500/mês
-Data Transfer: $8.000/mês (processamento em múltiplas regiões)
-CloudFront não utilizado (tráfego direto para EC2): $0 → $8K potencial economia
+ORIGINAL INFRA:
+50x EC2 m5.xlarge On-Demand (24/7): $5,400/month
+5x RDS db.r5.2xlarge On-Demand: $6,000/month
+10x NAT Gateways (excessive redundancy): $4,500/month
+S3: 200 TB in Standard (data rarely accessed after 30 days): $4,600/month
+EBS: 500 unused gp2 volumes: $2,500/month
+Data Transfer: $8,000/month (processing across multiple regions)
+CloudFront not used (traffic directly to EC2): $0 → $8K potential savings
 ```
 
-**Plano de Otimização:**
+**Optimization Plan:**
 ```
-AÇÃO 1 — Reserved Instances EC2 (1 ano):
-Antes: 50 × m5.xlarge On-Demand = $10.800/mês
-Depois: 30 × m5.xlarge Reserved (1 ano, no upfront) = $4.800/mês
-        20 × m5.xlarge Spot (tarefas tolerantes a falha) = $1.200/mês
-Economia: $4.800/mês
+ACTION 1 — EC2 Reserved Instances (1 year):
+Before: 50 × m5.xlarge On-Demand = $10,800/month
+After: 30 × m5.xlarge Reserved (1 year, no upfront) = $4,800/month
+        20 × m5.xlarge Spot (fault-tolerant tasks) = $1,200/month
+Savings: $4,800/month
 
-AÇÃO 2 — Savings Plans RDS:
-Antes: 5 × db.r5.2xlarge On-Demand = $6.000/mês  
-Depois: Compute Savings Plans (1 ano) + right-size db.r5.xlarge = $2.800/mês
-Economia: $3.200/mês
+ACTION 2 — RDS Savings Plans:
+Before: 5 × db.r5.2xlarge On-Demand = $6,000/month  
+After: Compute Savings Plans (1 year) + right-size db.r5.xlarge = $2,800/month
+Savings: $3,200/month
 
-AÇÃO 3 — S3 Lifecycle Policies:
-Antes: 200 TB tudo em S3 Standard = $4.600/mês
-Depois:
-  0-30 dias: Standard ($0.023/GB) = $460/mês
-  30-90 dias: Standard-IA ($0.0125/GB) = $250/mês
-  > 90 dias: Glacier Flexible ($0.004/GB) = $820/mês
-Economia: $3.070/mês
+ACTION 3 — S3 Lifecycle Policies:
+Before: 200 TB all in S3 Standard = $4,600/month
+After:
+  0-30 days: Standard ($0.023/GB) = $460/month
+  30-90 days: Standard-IA ($0.0125/GB) = $250/month
+  > 90 days: Glacier Flexible ($0.004/GB) = $820/month
+Savings: $3,070/month
 
-AÇÃO 4 — Consolidar NAT Gateways:
-Antes: 10 NAT GWs × $0.045/h = $4.500/mês + dados
-Depois: 2 NAT GWs (1 por AZ de uso) = $900/mês
-Economia: $3.600/mês
+ACTION 4 — Consolidate NAT Gateways:
+Before: 10 NAT GWs × $0.045/h = $4,500/month + data
+After: 2 NAT GWs (1 per AZ in use) = $900/month
+Savings: $3,600/month
 
-AÇÃO 5 — Limpar EBS não utilizados:
-Antes: 500 volumes gp2 desnachados = $2.500/mês
-Depois: Automação Lambda + AWS Config rule = $0
-Economia: $2.500/mês
+ACTION 5 — Clean up unused EBS:
+Before: 500 detached gp2 volumes = $2,500/month
+After: Lambda automation + AWS Config rule = $0
+Savings: $2,500/month
 
-RESULTADO:
-Antes: $80.000/mês
-Depois: $35.000/mês
-Economia: $45.000/mês (56%)
+RESULT:
+Before: $80,000/month
+After: $35,000/month
+Savings: $45,000/month (56%)
 ```
 
 ---
 
-## Caso 4 — Arquitetura de Alta Disponibilidade para E-commerce Multi-AZ
+## Case 4 — High Availability Architecture for a Multi-AZ E-commerce Site
 
-**Contexto:** Varejista online espera $90 milhões em vendas durante Black Friday. Uma hora de downtime = ~$500K em receita perdida. Precisam de arquitetura tolerante a falhas.
+**Context:** An online retailer expects $90 million in sales during Black Friday. One hour of downtime = ~$500K in lost revenue. They need a fault-tolerant architecture.
 
-**Arquitetura Multi-AZ Resiliente:**
+**Resilient Multi-AZ Architecture:**
 ```
                     Route 53 (Health Checks)
                            │
-                    CloudFront (CDN global)
+                    CloudFront (global CDN)
                            │
                     WAF + Shield Advanced
                            │
-                    ALB (Multi-AZ automático)
+                    ALB (automatic Multi-AZ)
                     ├─────────────────────────┐
                     │                         │
               AZ us-east-1a             AZ us-east-1b
@@ -179,63 +179,63 @@ Economia: $45.000/mês (56%)
               (min:10, des:20, max:50)  (min:10, des:20, max:50)
                     │                         │
               ElastiCache Redis         ElastiCache Redis
-              (node cache AZ-a)         (node cache AZ-b)
+              (cache node AZ-a)         (cache node AZ-b)
                     │                         │
               Aurora MySQL             Aurora MySQL  
-              (Writer)                 (Reader — failover automático)
+              (Writer)                 (Reader — automatic failover)
 
-S3 + CloudFront (assets estáticos — imagens, CSS, JS)
-SQS → Lambda (processar pedidos async — desacopla do fluxo principal)
-EventBridge → Lambda (monitorar estoque em tempo real)
+S3 + CloudFront (static assets — images, CSS, JS)
+SQS → Lambda (process orders async — decouples from the main flow)
+EventBridge → Lambda (monitor inventory in real time)
 
 Auto Scaling Policies:
-├── Target Tracking: CPU 60% → escalar
+├── Target Tracking: CPU 60% → scale out
 ├── Step Scaling: SQS > 500 msgs → +5 EC2
-└── Schedule: 08h-24h na BF = min:20
+└── Schedule: 8am-midnight on BF = min:20
 
 Circuit Breaker Pattern:
-└── Se pagamento externo falha: aceitar pedido + processar async
-    → Melhor UX que erro 500
+└── If external payment fails: accept order + process async
+    → Better UX than a 500 error
 ```
 
 ---
 
-## Caso 5 — Sustentabilidade: Reduzindo Pegada de Carbono da Workload
+## Case 5 — Sustainability: Reducing the Workload's Carbon Footprint
 
-**Contexto:** Empresa de tecnologia com compromisso ESG precisa quantificar e reduzir emissões de carbono das workloads AWS. Meta: 30% de redução em 12 meses.
+**Context:** A technology company with an ESG commitment needs to quantify and reduce the carbon emissions of its AWS workloads. Goal: 30% reduction in 12 months.
 
-**Análise com Customer Carbon Footprint Tool:**
+**Analysis with Customer Carbon Footprint Tool:**
 ```
-DIAGNÓSTICO (AWS Console → Billing → Carbon Footprint):
-Região us-east-1: 45% das emissões (datacenter coal-heavy)
-Instâncias ociosas (CPU < 5%): 30% do parque
+DIAGNOSIS (AWS Console → Billing → Carbon Footprint):
+Region us-east-1: 45% of emissions (coal-heavy datacenter)
+Idle instances (CPU < 5%): 30% of the fleet
 On-Demand vs Serverless: 70% EC2, 30% serverless
 
-AÇÕES DE SUSTENTABILIDADE:
+SUSTAINABILITY ACTIONS:
 
-1. Migrar workloads para regiões com mais energia renovável:
-   us-east-1 (43% renovável) → eu-west-1 Irlanda (96% renovável)
-   us-east-1 → us-west-2 Oregon (62% renovável)
-   Impacto: redução direta na intensidade de carbono
+1. Migrate workloads to regions with more renewable energy:
+   us-east-1 (43% renewable) → eu-west-1 Ireland (96% renewable)
+   us-east-1 → us-west-2 Oregon (62% renewable)
+   Impact: direct reduction in carbon intensity
 
-2. Serverless > EC2 (recursos usados apenas quando necessário):
-   API Gateway + Lambda: zero consumo quando sem tráfego
-   EC2 24/7: consome mesmo ocioso
+2. Serverless > EC2 (resources used only when needed):
+   API Gateway + Lambda: zero consumption when there is no traffic
+   EC2 24/7: consumes even when idle
    
-3. Graviton3 no lugar de x86:
-   Graviton3 (40% mais eficiente energeticamente que x86)
-   c7g vs c6i: mesmo custo, menor emissão
+3. Graviton3 instead of x86:
+   Graviton3 (40% more energy efficient than x86)
+   c7g vs c6i: same cost, lower emissions
 
-4. Auto Scaling agressivo (scale to zero onde possível):
-   Schedule: desligar dev/staging à noite e fins de semana
-   70% das instâncias dev ocioso 16h/dia = wastage desnecessário
+4. Aggressive Auto Scaling (scale to zero where possible):
+   Schedule: shut down dev/staging at night and on weekends
+   70% of dev instances idle 16h/day = unnecessary waste
 
-5. S3 Intelligent-Tiering (menos reprocessamento de dados frios):
-   Dados frios em Glacier = menor energia de storage ativo
+5. S3 Intelligent-Tiering (less reprocessing of cold data):
+   Cold data in Glacier = lower active storage energy
 
-RESULTADO ESTIMADO:
-Antes: 100 toneladas CO2e/ano
-Depois: 65 toneladas CO2e/ano
-Redução: 35% (supera meta de 30%)
-ROI Financeiro: -$15K/mês em custos operacionais (Graviton é mais barato)
+ESTIMATED RESULT:
+Before: 100 tonnes CO2e/year
+After: 65 tonnes CO2e/year
+Reduction: 35% (exceeds the 30% goal)
+Financial ROI: -$15K/month in operating costs (Graviton is cheaper)
 ```

@@ -1,92 +1,92 @@
-# Cheatsheet — Módulo 06: Banco de Dados
+# Cheatsheet — Module 06: Databases
 
-## Comparativo RDS Multi-AZ vs Read Replica
+## RDS Multi-AZ vs Read Replica Comparison
 
 | | Multi-AZ | Read Replica |
 |---|---|---|
-| Propósito | Alta disponibilidade / DR | Escalabilidade de leitura |
-| Replicação | Síncrona | Assíncrona |
-| RPO | ~0 (sem perda de dados) | Pequeno lag possível |
-| RTO | ~1-2 minutos (DNS flip) | Manual (promoção a standalone) |
-| Pode receber leituras? | NÃO (standby apenas) | SIM (apenas leitura) |
-| Cross-region? | Não (mesma região) | Sim (até 5 por DB) |
-| Failover | Automático | Manual |
+| Purpose | High availability / DR | Read scalability |
+| Replication | Synchronous | Asynchronous |
+| RPO | ~0 (no data loss) | Small lag possible |
+| RTO | ~1-2 minutes (DNS flip) | Manual (promotion to standalone) |
+| Can serve reads? | NO (standby only) | YES (read-only) |
+| Cross-region? | No (same Region) | Yes (up to 5 per DB) |
+| Failover | Automatic | Manual |
 
 ## Aurora vs RDS
 
 | | Aurora | RDS |
 |---|---|---|
-| Cópias | 6 (em 3 AZs) | 2 (Multi-AZ: primário + standby) |
-| Write quorum | 4/6 | 1 (primary síncrona para standby) |
-| Read Replicas | Até 15 | Até 5 |
-| Failover RR | ~30 segundos | Promote manual |
-| Global Database | Sim (< 1s lag) | Não (apenas DX/VPN manual) |
-| Serverless | v2 (0,5-128 ACU) | Não (exceto Aurora) |
-| Performance | 3x MySQL / 5x PostgreSQL | Padrão |
+| Copies | 6 (across 3 AZs) | 2 (Multi-AZ: primary + standby) |
+| Write quorum | 4/6 | 1 (primary synchronous to standby) |
+| Read Replicas | Up to 15 | Up to 5 |
+| RR failover | ~30 seconds | Manual promote |
+| Global Database | Yes (< 1s lag) | No (manual DX/VPN only) |
+| Serverless | v2 (0.5-128 ACU) | No (except Aurora) |
+| Performance | 3x MySQL / 5x PostgreSQL | Standard |
 
-## DynamoDB — Valores-Chave
+## DynamoDB — Key Values
 
-| Parâmetro | Valor |
+| Parameter | Value |
 |---|---|
-| 1 RCU (Eventually Consistent) | 2 reads de 4 KB/s |
-| 1 RCU (Strongly Consistent) | 1 read de 4 KB/s |
-| 1 WCU | 1 write de 1 KB/s |
-| DAX latência | Microssegundos |
-| TTL | Gratuito; deleção eventual dentro de 48h |
-| Streams retenção | 24 horas |
-| Global Tables | Replicação multi-região ativa |
+| 1 RCU (Eventually Consistent) | 2 reads of 4 KB/s |
+| 1 RCU (Strongly Consistent) | 1 read of 4 KB/s |
+| 1 WCU | 1 write of 1 KB/s |
+| DAX latency | Microseconds |
+| TTL | Free; eventual deletion within 48h |
+| Streams retention | 24 hours |
+| Global Tables | Active multi-region replication |
 
 ## DynamoDB Indexes
 
 | | LSI | GSI |
 |---|---|---|
-| Quando criar | Apenas na criação da tabela | Qualquer momento |
-| Partition Key | Mesma da tabela | Diferente |
-| Sort Key | Diferente da tabela | Qualquer atributo |
-| Throughput | Compartilha com a tabela | Independente |
-| Consistência | Strong ou Eventually | Apenas Eventually |
+| When to create | Only at table creation | Any time |
+| Partition Key | Same as the table | Different |
+| Sort Key | Different from the table | Any attribute |
+| Throughput | Shared with the table | Independent |
+| Consistency | Strong or Eventually | Eventually only |
 
 ## ElastiCache Redis vs Memcached
 
 | | Redis | Memcached |
 |---|---|---|
-| Persistência | Sim (RDB, AOF) | Não |
-| Replicação | Sim (Replica) | Não |
-| Multi-AZ | Sim | Não |
-| Cluster Mode | Sim (sharding) | Sim (multi-thread) |
-| Estruturas | String, Hash, List, Set, Sorted Set, Geo, Streams | String apenas |
-| Pub/Sub | Sim | Não |
-| Caso de uso | Sessions, leaderboards, cache rico, queues | Cache simples, alta velocidade multi-thread |
+| Persistence | Yes (RDB, AOF) | No |
+| Replication | Yes (Replica) | No |
+| Multi-AZ | Yes | No |
+| Cluster Mode | Yes (sharding) | Yes (multi-thread) |
+| Structures | String, Hash, List, Set, Sorted Set, Geo, Streams | String only |
+| Pub/Sub | Yes | No |
+| Use case | Sessions, leaderboards, rich cache, queues | Simple cache, high-speed multi-thread |
 
 ## Caching Patterns
 
-| Pattern | Cache Miss | Cache Hit | Prós | Contras |
+| Pattern | Cache Miss | Cache Hit | Pros | Cons |
 |---|---|---|---|---|
-| Lazy Loading | Busca DB → escreve cache | Retorna cache | Só armazena o necessário | 3 round-trips no miss; dados podem ficar stale |
-| Write-Through | Escreve DB + cache | Retorna cache | Dados sempre frescos | Write penalty; caches de dados nunca lidos |
-| Write-Behind | Escreve cache → async DB | Retorna cache | Menor latência de write | Risco de perda se cache falhar antes de persistir |
+| Lazy Loading | Fetch DB → write cache | Returns cache | Only stores what is needed | 3 round trips on a miss; data can become stale |
+| Write-Through | Write DB + cache | Returns cache | Data always fresh | Write penalty; caches data that is never read |
+| Write-Behind | Write cache → async DB | Returns cache | Lowest write latency | Risk of loss if the cache fails before persisting |
 
-## Escolha de Banco de Dados
+## Choosing a Database
 
-| Necessidade | Banco |
+| Need | Database |
 |---|---|
-| Relacional OLTP (latência baixa) | RDS MySQL/PostgreSQL/Aurora |
-| Relacional OLTP (alta performance) | Aurora |
-| Relacional OLAP / Data Warehouse | Redshift |
-| NoSQL key-value / documentos | DynamoDB |
-| Cache in-memory | ElastiCache Redis |
-| Grafos | Amazon Neptune |
-| Documentos (MongoDB) | Amazon DocumentDB |
+| Relational OLTP (low latency) | RDS MySQL/PostgreSQL/Aurora |
+| Relational OLTP (high performance) | Aurora |
+| Relational OLAP / Data Warehouse | Redshift |
+| NoSQL key-value / documents | DynamoDB |
+| In-memory cache | ElastiCache Redis |
+| Graphs | Amazon Neptune |
+| Documents (MongoDB) | Amazon DocumentDB |
 | Time series (IoT, metrics) | Amazon Timestream |
-| Ledger imutável | Amazon QLDB |
-| Cassandra gerenciado | Amazon Keyspaces |
+| Immutable ledger | Amazon QLDB |
+| Managed Cassandra | Amazon Keyspaces |
 
-## Dicas Rápidas de Prova
-- RDS Multi-AZ endpoint não muda após failover (mesmo DNS CNAME)
-- Aurora: 2 endpoints principais — Cluster Endpoint (write) + Reader Endpoint (read LB)
-- DynamoDB Global Tables requer On-Demand ou ativa replicação via replica write capacity
-- Redshift Spectrum: query dados S3 diretamente do Redshift sem COPY
-- RDS Proxy: obrigatório quando Lambda acessa RDS (connection pooling, IAM auth, Secrets Manager)
-- ElastiCache Redis Cluster Mode: distribui keyspace em múltiplos shards → maior capacity e write throughput
-- Aurora Serverless v2: escala em ~1 segundo (não requer reinicialização como v1)
-- PITR RDS retention: 1-35 dias; Aurora: até 35 dias
+## Quick Exam Tips
+- The RDS Multi-AZ endpoint does not change after failover (same DNS CNAME)
+- Aurora: 2 main endpoints — Cluster Endpoint (write) + Reader Endpoint (read LB)
+- DynamoDB Global Tables requires On-Demand, or active replication via replica write capacity
+- Redshift Spectrum: query S3 data directly from Redshift without COPY
+- RDS Proxy: required when Lambda accesses RDS (connection pooling, IAM auth, Secrets Manager)
+- ElastiCache Redis Cluster Mode: distributes the keyspace across multiple shards → higher capacity and write throughput
+- Aurora Serverless v2: scales in ~1 second (does not require a restart like v1)
+- PITR RDS retention: 1-35 days; Aurora: up to 35 days

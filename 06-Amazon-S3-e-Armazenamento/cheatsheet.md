@@ -1,74 +1,74 @@
-# Cheatsheet — Módulo 05: Amazon S3 e Armazenamento
+# Cheatsheet — Module 05: Amazon S3 and Storage
 
-## Classes de Armazenamento S3
+## S3 Storage Classes
 
-| Classe | Disponibilidade | AZs | Retrieval Fee | Min. Duração | Uso Principal |
+| Class | Availability | AZs | Retrieval Fee | Min. Duration | Main Use |
 |---|---|---|---|---|---|
-| S3 Standard | 99,99% | ≥ 3 | Nenhuma | Nenhuma | Dados frequentemente acessados |
-| S3 Intelligent-Tiering | 99,9% | ≥ 3 | Nenhuma | Nenhuma | Padrão de acesso imprevisível |
-| S3 Standard-IA | 99,9% | ≥ 3 | Por GB | 30 dias | Acesso infrequente, recuperação rápida |
-| S3 One Zone-IA | 99,5% | 1 | Por GB | 30 dias | Dados reproduzíveis, baixo custo |
-| S3 Glacier Instant | 99,9% | ≥ 3 | Por GB | 90 dias | Arquivos raramente acessados, recuperação ms |
-| S3 Glacier Flexible | 99,99% | ≥ 3 | Por GB | 90 dias | Arquivos, recuperação minutos/horas |
-| S3 Glacier Deep Archive | 99,99% | ≥ 3 | Por GB | 180 dias | Long-term backup, recuperação horas |
+| S3 Standard | 99.99% | ≥ 3 | None | None | Frequently accessed data |
+| S3 Intelligent-Tiering | 99.9% | ≥ 3 | None | None | Unpredictable access pattern |
+| S3 Standard-IA | 99.9% | ≥ 3 | Per GB | 30 days | Infrequent access, fast retrieval |
+| S3 One Zone-IA | 99.5% | 1 | Per GB | 30 days | Reproducible data, low cost |
+| S3 Glacier Instant | 99.9% | ≥ 3 | Per GB | 90 days | Rarely accessed archives, ms retrieval |
+| S3 Glacier Flexible | 99.99% | ≥ 3 | Per GB | 90 days | Archives, minutes/hours retrieval |
+| S3 Glacier Deep Archive | 99.99% | ≥ 3 | Per GB | 180 days | Long-term backup, hours retrieval |
 
-## Tipos de Encriptação S3
+## S3 Encryption Types
 
-| Tipo | Gerencia Chave | Gerencia Encriptação | Casos |
+| Type | Manages Key | Manages Encryption | Cases |
 |---|---|---|---|
-| SSE-S3 | AWS | AWS | Menor overhead operacional |
-| SSE-KMS | AWS KMS (CMK opcional) | AWS | Audit trail, controle de acesso à chave |
-| SSE-C | Cliente | AWS | Cliente quer total controle da chave |
-| CSE | Cliente | Cliente | Compliance que exige encriptação cliente-side |
+| SSE-S3 | AWS | AWS | Lowest operational overhead |
+| SSE-KMS | AWS KMS (CMK optional) | AWS | Audit trail, key access control |
+| SSE-C | Customer | AWS | Customer wants full control of the key |
+| CSE | Customer | Customer | Compliance requiring client-side encryption |
 
-## Replicação S3
+## S3 Replication
 
 | | CRR | SRR |
 |---|---|---|
-| Regiões | Regiões diferentes | Mesma região |
-| Requisito | Versionamento em AMBOS | Versionamento em AMBOS |
-| Objetos existentes | Não replicados (usar S3 Batch) | Não replicados |
-| Delete replicated | Opcional com delete marker sync | Opcional |
+| Regions | Different Regions | Same Region |
+| Requirement | Versioning on BOTH | Versioning on BOTH |
+| Existing objects | Not replicated (use S3 Batch) | Not replicated |
+| Delete replicated | Optional with delete marker sync | Optional |
 
-## Performance por Prefixo
-- **3.500 PUT/COPY/POST/DELETE** por segundo por prefixo
-- **5.500 GET/HEAD** por segundo por prefixo
-- Multipart Upload: obrigatório > **5 GB**, recomendado > **100 MB**
-- S3 Transfer Acceleration: usa edge CloudFront → backbone AWS → S3
+## Performance per Prefix
+- **3,500 PUT/COPY/POST/DELETE** per second per prefix
+- **5,500 GET/HEAD** per second per prefix
+- Multipart Upload: required > **5 GB**, recommended > **100 MB**
+- S3 Transfer Acceleration: uses CloudFront edge → AWS backbone → S3
 
 ## Object Lock
-| Modo | Quem pode remover | Período |
+| Mode | Who can remove | Period |
 |---|---|---|
-| Governance | Usuários com `s3:BypassGovernanceRetention` | Configurável |
-| Compliance | NINGUÉM (nem root) | Configurável, irrevogável |
-| Legal Hold | Qualquer um com `s3:PutObjectLegalHold` | Sem data de expiração |
+| Governance | Users with `s3:BypassGovernanceRetention` | Configurable |
+| Compliance | NO ONE (not even root) | Configurable, irrevocable |
+| Legal Hold | Anyone with `s3:PutObjectLegalHold` | No expiration date |
 
-## Outros Serviços de Armazenamento
+## Other Storage Services
 
-| Serviço | Protocolo | Multi-AZ | OS | Caso de Uso |
+| Service | Protocol | Multi-AZ | OS | Use Case |
 |---|---|---|---|---|
-| EBS | Block (iSCSI) | Não (zonal) | Win/Linux | Volume único para EC2 |
-| EFS | NFS v4 | Sim | Linux | Compartilhado entre N EC2 |
-| FSx for Windows | SMB/NTFS | Sim | Windows | AD, DFS |
-| FSx for Lustre | Lustre | Sim | Linux | HPC, ML, big data |
-| FSx for ONTAP | NFS/SMB/iSCSI | Sim | Win/Linux | Migração NetApp |
-| FSx for OpenZFS | NFS | Sim | Linux | Migração ZFS/POSIX |
+| EBS | Block (iSCSI) | No (zonal) | Win/Linux | Single volume for EC2 |
+| EFS | NFS v4 | Yes | Linux | Shared across N EC2 |
+| FSx for Windows | SMB/NTFS | Yes | Windows | AD, DFS |
+| FSx for Lustre | Lustre | Yes | Linux | HPC, ML, big data |
+| FSx for ONTAP | NFS/SMB/iSCSI | Yes | Win/Linux | NetApp migration |
+| FSx for OpenZFS | NFS | Yes | Linux | ZFS/POSIX migration |
 
 ## Storage Gateway
 
-| Tipo | Protocolo | Onde Persiste |
+| Type | Protocol | Where Data Persists |
 |---|---|---|
-| File Gateway | NFS/SMB | S3 (com cache local) |
-| Volume Cached | iSCSI | S3 (com cache local) |
-| Volume Stored | iSCSI | On-premises (backup async para S3) |
+| File Gateway | NFS/SMB | S3 (with local cache) |
+| Volume Cached | iSCSI | S3 (with local cache) |
+| Volume Stored | iSCSI | On-premises (async backup to S3) |
 | Tape Gateway | iSCSI VTL | S3 / S3 Glacier |
 
-## Dicas Rápidas de Prova
-- Versionamento = **pré-requisito** para CRR, SRR e Object Lock
-- Bucket Policy vs ACL: prefira Bucket Policy (ACL é legado)
-- Block Public Access: 4 configurações independentes; aplica na conta E no bucket
-- CORS: necessário para browser JavaScript fazer requests cross-origin para S3
-- Pre-signed URL: gerada com credenciais do criador, expira em tempo configurável
-- S3 Inventory: liste objetos do bucket de forma assíncrona (diárias/semanais) — alternativa ao LIST API
-- S3 Select: SQL simples sobre objetos S3 (até 50% menos dados transferidos)
-- DataSync: migração de dados on-prem → AWS ou entre serviços AWS (suporta NFS, SMB, HDFS, S3, EFS, FSx)
+## Quick Exam Tips
+- Versioning = **prerequisite** for CRR, SRR, and Object Lock
+- Bucket Policy vs ACL: prefer Bucket Policy (ACL is legacy)
+- Block Public Access: 4 independent settings; applies at the account AND bucket level
+- CORS: required for browser JavaScript to make cross-origin requests to S3
+- Pre-signed URL: generated with the creator's credentials, expires after a configurable time
+- S3 Inventory: lists bucket objects asynchronously (daily/weekly) — alternative to the LIST API
+- S3 Select: simple SQL over S3 objects (up to 50% less data transferred)
+- DataSync: data migration on-prem → AWS or between AWS services (supports NFS, SMB, HDFS, S3, EFS, FSx)

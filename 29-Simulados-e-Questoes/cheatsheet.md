@@ -1,181 +1,181 @@
-# Cheatsheet — Simulados e Questões (Módulo 19)
+# Cheatsheet — Practice Exams and Questions (Module 19)
 
-## Estrutura do Exame SAA-C03
+## SAA-C03 Exam Structure
 
-| Domínio | Peso | Tópicos-Chave |
+| Domain | Weight | Key Topics |
 |---------|------|---------------|
-| **1 — Design de Arquiteturas Seguras** | 30% | IAM, KMS, SCPs, VPC, WAF, Shield, Cognito |
-| **2 — Design de Arquiteturas Resilientes** | 26% | Multi-AZ, Multi-Region, Auto Scaling, DR, SQS, SNS |
-| **3 — Design de Arquiteturas de Alto Desempenho** | 24% | ElastiCache, CloudFront, Kinesis, RDS Read Replicas, DynamoDB |
-| **4 — Design de Arquiteturas Otimizadas em Custo** | 20% | Savings Plans, Reserved, Spot, S3 tiers, Trusted Advisor |
+| **1 — Design Secure Architectures** | 30% | IAM, KMS, SCPs, VPC, WAF, Shield, Cognito |
+| **2 — Design Resilient Architectures** | 26% | Multi-AZ, Multi-Region, Auto Scaling, DR, SQS, SNS |
+| **3 — Design High-Performing Architectures** | 24% | ElastiCache, CloudFront, Kinesis, RDS Read Replicas, DynamoDB |
+| **4 — Design Cost-Optimized Architectures** | 20% | Savings Plans, Reserved, Spot, S3 tiers, Trusted Advisor |
 
-- **Questões:** 65 (50 marcadas + 15 não marcadas / experimentais)
-- **Duração:** 130 minutos (~2 min/questão)
-- **Aprovação:** 720/1000 (escala 100–1000)
-- **Formato:** múltipla escolha (1 resposta) + múltipla resposta (2–3 respostas)
-- **Idioma disponível:** Inglês, Japonês, Coreano, Português simplificado, etc.
+- **Questions:** 65 (50 scored + 15 unscored / experimental)
+- **Duration:** 130 minutes (~2 min/question)
+- **Passing score:** 720/1000 (scale 100–1000)
+- **Format:** multiple choice (1 answer) + multiple response (2–3 answers)
+- **Available languages:** English, Japanese, Korean, Simplified Chinese, Portuguese, etc.
 
 ---
 
-## Estratégia de Tempo
+## Time Strategy
 
-| Fase | Tempo | Ação |
+| Phase | Time | Action |
 |------|-------|------|
-| **1ª passagem** | ~70 min | Responder questões que sabe. Marcar dúvidas. |
-| **2ª passagem** | ~40 min | Revisar marcadas. Eliminar e escolher. |
-| **Buffer** | ~20 min | Questões difíceis / revisão final |
+| **1st pass** | ~70 min | Answer the questions you know. Flag doubts. |
+| **2nd pass** | ~40 min | Review flagged ones. Eliminate and choose. |
+| **Buffer** | ~20 min | Difficult questions / final review |
 | **Total** | 130 min | |
 
-> **Regra:** Nunca deixar questão em branco. Adivinhação inteligente é melhor que zero.
+> **Rule:** Never leave a question blank. An educated guess is better than zero.
 
 ---
 
-## Matriz de Decisão de Serviços
+## Service Decision Matrix
 
-### Computação
-| Critério | Lambda | ECS/Fargate | EC2 |
+### Compute
+| Criterion | Lambda | ECS/Fargate | EC2 |
 |---------|--------|-------------|-----|
-| Duração máxima | 15 min | ilimitado | ilimitado |
-| Gerenciamento SO | zero | zero | você |
-| Cold start | sim | sim (menor) | não |
-| Estado local | não | sim (efêmero) | sim |
-| Custo base | por req | por vCPU/mem/h | por h |
-| Quando usar | event-driven, curto | containers, long-running | controle total, licenças |
+| Maximum duration | 15 min | unlimited | unlimited |
+| OS management | none | none | you |
+| Cold start | yes | yes (smaller) | no |
+| Local state | no | yes (ephemeral) | yes |
+| Base cost | per request | per vCPU/mem/h | per h |
+| When to use | event-driven, short | containers, long-running | full control, licenses |
 
-### Banco de Dados
-| Critério | DynamoDB | RDS / Aurora | ElastiCache |
+### Database
+| Criterion | DynamoDB | RDS / Aurora | ElastiCache |
 |---------|---------|--------------|-------------|
-| Modelo | NoSQL (KV/Doc) | SQL relacional | In-memory |
-| Escalabilidade | horizontal automática | vertical + read replicas | em cluster |
-| Latência | single-digit ms | ms–s | sub-ms |
-| Transações | sim (limited) | ACID completo | não |
-| Quando usar | escala massiva, KV | dados relacionais | cache L1, sessão |
+| Model | NoSQL (KV/Doc) | Relational SQL | In-memory |
+| Scalability | automatic horizontal | vertical + read replicas | clustered |
+| Latency | single-digit ms | ms–s | sub-ms |
+| Transactions | yes (limited) | full ACID | no |
+| When to use | massive scale, KV | relational data | L1 cache, session |
 
-### Armazenamento de Objetos (S3)
-| Classe | Acesso | Custo relativo | Minimum Storage |
+### Object Storage (S3)
+| Class | Access | Relative Cost | Minimum Storage |
 |--------|--------|----------------|-----------------|
-| Standard | Frequente | Alto | — |
-| Intelligent-Tiering | Variável (auto-move) | Médio + fee monitoramento | — |
-| Standard-IA | Infrequente | Médio-baixo | 30 dias |
-| One Zone-IA | Infrequente, 1 AZ | Baixo | 30 dias |
-| Glacier Instant | Arquivo, acesso rápido | Muito baixo | 90 dias |
-| Glacier Flexible | Arquivo, 1–5h retrieval | Ultra baixo | 90 dias |
-| Glacier Deep Archive | Arquivo longo prazo, 12h | Mínimo | 180 dias |
+| Standard | Frequent | High | — |
+| Intelligent-Tiering | Variable (auto-moves) | Medium + monitoring fee | — |
+| Standard-IA | Infrequent | Medium-low | 30 days |
+| One Zone-IA | Infrequent, 1 AZ | Low | 30 days |
+| Glacier Instant | Archive, fast access | Very low | 90 days |
+| Glacier Flexible | Archive, 1–5h retrieval | Ultra low | 90 days |
+| Glacier Deep Archive | Long-term archive, 12h | Minimum | 180 days |
 
 ---
 
-## Valores Numéricos Críticos para Memorizar
+## Critical Numeric Values to Memorize
 
-| Serviço | Valor | O que é |
+| Service | Value | What it is |
 |---------|-------|---------|
-| **Lambda** | 15 min | Timeout máximo |
-| **Lambda** | 10 GB | Memória máxima |
+| **Lambda** | 15 min | Maximum timeout |
+| **Lambda** | 10 GB | Maximum memory |
 | **Lambda** | 512 MB → 10 GB | /tmp storage |
-| **SQS Standard** | 14 dias | Retenção máxima |
-| **SQS FIFO** | 300/s (3.000 com batching) | Throughput máximo |
-| **SQS** | 256 KB | Tamanho máximo mensagem |
-| **SNS** | 256 KB | Tamanho máximo mensagem |
-| **S3** | 11 noves (99.999999999%) | Durabilidade |
-| **S3** | 5 TB | Tamanho máximo objeto |
-| **S3 Multipart** | > 100 MB recomendado | Quando usar multipart upload |
-| **DynamoDB** | 400 KB | Tamanho máximo item |
-| **DynamoDB** | single-digit ms | Latência típica |
-| **Kinesis KDS** | 1 MB/s ou 1.000 rec/s | Por shard (ingestion) |
-| **Kinesis KDS** | 2 MB/s | Por shard (leitura) |
-| **Kinesis KDS** | 7 dias | Retenção padrão (max 365) |
-| **API Gateway** | 29 segundos | Timeout máximo integração |
-| **CloudFront** | 1 ano | TTL máximo |
-| **RDS** | 35 dias | Backup automático máximo |
-| **Aurora** | 6 cópias em 3 AZs | Replicação storage |
-| **EBS GP3** | 16.000 IOPS | Máximo |
-| **EBS io2** | 64.000 IOPS | Máximo (io2 Block Express: 256K) |
-| **EFS** | Ilimitado (elástico) | Capacidade |
-| **VPC** | /16 | Maior CIDR permitido |
-| **VPC** | /28 | Menor CIDR permitido |
-| **Subnets reservadas** | 5 IPs | AWS reserva primeiros 4 + último |
-| **IAM** | 5.000 usuários | Limite padrão por conta |
-| **CloudTrail** | 90 dias | Retenção padrão (Event History) |
+| **SQS Standard** | 14 days | Maximum retention |
+| **SQS FIFO** | 300/s (3,000 with batching) | Maximum throughput |
+| **SQS** | 256 KB | Maximum message size |
+| **SNS** | 256 KB | Maximum message size |
+| **S3** | 11 nines (99.999999999%) | Durability |
+| **S3** | 5 TB | Maximum object size |
+| **S3 Multipart** | > 100 MB recommended | When to use multipart upload |
+| **DynamoDB** | 400 KB | Maximum item size |
+| **DynamoDB** | single-digit ms | Typical latency |
+| **Kinesis KDS** | 1 MB/s or 1,000 rec/s | Per shard (ingestion) |
+| **Kinesis KDS** | 2 MB/s | Per shard (read) |
+| **Kinesis KDS** | 7 days | Default retention (max 365) |
+| **API Gateway** | 29 seconds | Maximum integration timeout |
+| **CloudFront** | 1 year | Maximum TTL |
+| **RDS** | 35 days | Maximum automated backup |
+| **Aurora** | 6 copies across 3 AZs | Storage replication |
+| **EBS GP3** | 16,000 IOPS | Maximum |
+| **EBS io2** | 64,000 IOPS | Maximum (io2 Block Express: 256K) |
+| **EFS** | Unlimited (elastic) | Capacity |
+| **VPC** | /16 | Largest CIDR allowed |
+| **VPC** | /28 | Smallest CIDR allowed |
+| **Reserved subnet IPs** | 5 IPs | AWS reserves the first 4 + the last |
+| **IAM** | 5,000 users | Default limit per account |
+| **CloudTrail** | 90 days | Default retention (Event History) |
 
 ---
 
-## Estratégias de Eliminação
+## Elimination Strategies
 
-### Dicas para Eliminar Respostas Erradas
+### Tips for Eliminating Wrong Answers
 
-1. **Palavras-gatilho negativas:**
-   - "manualmente" → quase sempre errado (AWS = automação)
-   - "requer downtime" → geralmente errado para HA
-   - "compartilhar credenciais root" → sempre errado
+1. **Negative trigger words:**
+   - "manually" → almost always wrong (AWS = automation)
+   - "requires downtime" → usually wrong for HA
+   - "share root credentials" → always wrong
 
-2. **Palavras que apontam resposta correta:**
-   - "menor mudança operacional" → serviço gerenciado
-   - "menor custo" → checar Spot, Reserved, serverless, S3-IA
-   - "maior disponibilidade" → Multi-AZ, Auto Scaling
-   - "mínimo de código" → serviço managed/fully-managed
+2. **Words that point to the correct answer:**
+   - "least operational overhead" → managed service
+   - "lowest cost" → check Spot, Reserved, serverless, S3-IA
+   - "highest availability" → Multi-AZ, Auto Scaling
+   - "minimal code" → managed/fully-managed service
 
-3. **Armadilhas comuns:**
-   - **Multi-AZ vs Read Replica:** Multi-AZ = disponibilidade/failover, Read Replica = performance/leitura
-   - **SQS vs SNS:** SQS = fila (1 consumidor por msg default), SNS = pub/sub (N consumidores)
-   - **S3 Standard-IA vs Glacier:** IA = acesso esporádico mas rápido, Glacier = arquivo
-   - **Security Group vs NACL:** SG = stateful (retorno automático), NACL = stateless (regra explícita)
+3. **Common traps:**
+   - **Multi-AZ vs Read Replica:** Multi-AZ = availability/failover, Read Replica = performance/reads
+   - **SQS vs SNS:** SQS = queue (1 consumer per msg by default), SNS = pub/sub (N consumers)
+   - **S3 Standard-IA vs Glacier:** IA = infrequent but fast access, Glacier = archive
+   - **Security Group vs NACL:** SG = stateful (automatic return traffic), NACL = stateless (explicit rule)
 
 ---
 
-## Padrões de Identificação Rápida de Serviço
+## Quick Service Identification Patterns
 
-| Palavra-chave | Serviço Provável |
+| Keyword | Probable Service |
 |--------------|-----------------|
-| "sem servidor" / "serverless" | Lambda, Fargate, Aurora Serverless, DynamoDB |
+| "serverless" | Lambda, Fargate, Aurora Serverless, DynamoDB |
 | "event-driven" | Lambda + EventBridge / SQS / SNS |
-| "streaming em tempo real" | Kinesis Data Streams |
-| "transformação/entrega streaming" | Kinesis Data Firehose |
-| "fila desacoplada" | SQS |
+| "real-time streaming" | Kinesis Data Streams |
+| "streaming transformation/delivery" | Kinesis Data Firehose |
+| "decoupled queue" | SQS |
 | "pub/sub" / "broadcast" | SNS |
-| "workflow / orquestração" | Step Functions |
-| "CDN / conteúdo estático" | CloudFront |
-| "DNS / roteamento global" | Route 53 |
-| "balanceamento de carga HTTP/HTTPS" | ALB |
-| "balanceamento TCP/UDP extrema performance" | NLB |
-| "autenticação usuários" | Cognito |
-| "permissões entre contas" | IAM Roles + STS |
-| "secrets / senhas rotacionáveis" | Secrets Manager |
-| "parâmetros de configuração" | SSM Parameter Store |
-| "criptografia de chaves gerenciadas" | KMS |
-| "proteção DDoS layer 7" | WAF + Shield |
-| "análise logs SQL" | Athena |
-| "ETL big data" | Glue |
+| "workflow / orchestration" | Step Functions |
+| "CDN / static content" | CloudFront |
+| "DNS / global routing" | Route 53 |
+| "HTTP/HTTPS load balancing" | ALB |
+| "extreme-performance TCP/UDP load balancing" | NLB |
+| "user authentication" | Cognito |
+| "cross-account permissions" | IAM Roles + STS |
+| "secrets / rotatable passwords" | Secrets Manager |
+| "configuration parameters" | SSM Parameter Store |
+| "managed encryption keys" | KMS |
+| "layer 7 DDoS protection" | WAF + Shield |
+| "SQL log analysis" | Athena |
+| "big data ETL" | Glue |
 | "data warehouse" | Redshift |
-| "ML pré-treinado (NLP/visão)" | Rekognition / Comprehend / Textract |
-| "ML treinamento customizado" | SageMaker |
+| "pre-trained ML (NLP/vision)" | Rekognition / Comprehend / Textract |
+| "custom ML training" | SageMaker |
 
 ---
 
-## Políticas de Roteamento Route 53
+## Route 53 Routing Policies
 
-| Política | Quando Usar | Pergunta-Chave |
+| Policy | When to Use | Key Question |
 |---------|-------------|----------------|
-| **Simple** | 1 recurso, sem lógica | Básico |
-| **Weighted** | A/B testing, deploy gradual | "% do tráfego" |
-| **Latency** | Menor latência por região | "melhor performance global" |
-| **Failover** | DR ativo-passivo | "failover automático" |
-| **Geolocation** | Conteúdo por país/continente | "leis locais / localização" |
-| **Geoproximity** | Desviar tráfego por bias | "ajuste fino de roteamento" |
-| **Multivalue Answer** | Health check + múltiplos IPs | "disponibilidade simples multi-IP" |
+| **Simple** | 1 resource, no logic | Basic |
+| **Weighted** | A/B testing, gradual deployment | "% of traffic" |
+| **Latency** | Lowest latency per region | "best global performance" |
+| **Failover** | Active-passive DR | "automatic failover" |
+| **Geolocation** | Content by country/continent | "local laws / location" |
+| **Geoproximity** | Shift traffic using bias | "fine-tuned routing" |
+| **Multivalue Answer** | Health check + multiple IPs | "simple multi-IP availability" |
 
 ---
 
-## Dicas de Prova
+## Exam Tips
 
-| Pista na Questão | Resposta Esperada |
+| Clue in the Question | Expected Answer |
 |-----------------|------------------|
-| "resposta imediata, 65 questões, 130 min" | ~2 min por questão |
-| "aprovação mínima SAA-C03" | 720/1000 |
-| "maior peso do exame" | Domínio 1 — Arquiteturas Seguras (30%) |
-| "Multi-AZ RDS — qual benefício?" | Failover automático (HA), não performance |
-| "Read Replica RDS — qual benefício?" | Escalar leituras (não failover) |
-| "S3 durabilidade?" | 11 noves (99.999999999%) |
-| "Lambda timeout máximo?" | 15 minutos |
-| "SQS retenção máxima?" | 14 dias |
-| "questão pede mínimo custo + acesso raro a arquivos" | S3 Glacier Deep Archive |
-| "questão pede mínimo custo + acesso imprevisível" | S3 Intelligent-Tiering |
-| "VPC subnets: quantos IPs AWS reserva?" | 5 (primeiros 4 + último) |
+| "immediate answer, 65 questions, 130 min" | ~2 min per question |
+| "minimum passing score SAA-C03" | 720/1000 |
+| "highest exam weight" | Domain 1 — Secure Architectures (30%) |
+| "Multi-AZ RDS — what benefit?" | Automatic failover (HA), not performance |
+| "RDS Read Replica — what benefit?" | Scale reads (not failover) |
+| "S3 durability?" | 11 nines (99.999999999%) |
+| "Lambda maximum timeout?" | 15 minutes |
+| "SQS maximum retention?" | 14 days |
+| "question asks for lowest cost + rare file access" | S3 Glacier Deep Archive |
+| "question asks for lowest cost + unpredictable access" | S3 Intelligent-Tiering |
+| "VPC subnets: how many IPs does AWS reserve?" | 5 (first 4 + the last) |

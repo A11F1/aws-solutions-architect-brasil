@@ -1,129 +1,129 @@
-# 04 Alta Disponibilidade e Escalabilidade
+# 04 High Availability and Scalability
 
-## 📋 Índice
-- [Objetivos do Módulo](#-objetivos-do-módulo)
-- [Conceitos Fundamentais](#-conceitos-fundamentais)
-- [Arquitetura e Componentes](#-arquitetura-e-componentes)
-- [Configurações Importantes para o Exame](#-configurações-importantes-para-o-exame)
-- [Comparativo de Serviços](#-comparativo-de-serviços)
-- [Dicas e Armadilhas do Exame](#-dicas-e-armadilhas-do-exame)
-- [Para o Exame](#-para-o-exame)
-- [Links Relacionados](#-links-relacionados)
+## 📋 Table of Contents
+- [Module Objectives](#-module-objectives)
+- [Core Concepts](#-core-concepts)
+- [Architecture and Components](#-architecture-and-components)
+- [Important Settings for the Exam](#-important-settings-for-the-exam)
+- [Service Comparison](#-service-comparison)
+- [Exam Tips and Pitfalls](#-exam-tips-and-pitfalls)
+- [For the Exam](#-for-the-exam)
+- [Related Links](#-related-links)
 
-## 🎯 Objetivos do Módulo
+## 🎯 Module Objectives
 
-Ao terminar este módulo, você deve conseguir:
+By the end of this module, you should be able to:
 
-- selecionar o tipo correto de ELB (ALB, NLB, GWLB) a partir do protocolo e requisito do cenário
-- diferenciar as políticas de scaling do ASG e aplicá-las ao perfil de tráfego da questão
-- descrever o papel dos Lifecycle Hooks em operações de deploy e warm-up de instâncias
-- explicar cross-zone load balancing e seu impacto em custo e distribuição
-- configurar health checks corretos para um ambiente com ELB e ASG
+- select the correct ELB type (ALB, NLB, GWLB) based on the scenario's protocol and requirement
+- differentiate ASG scaling policies and apply them to the traffic profile of the question
+- describe the role of Lifecycle Hooks in deployment and instance warm-up operations
+- explain cross-zone load balancing and its impact on cost and distribution
+- configure correct health checks for an environment with ELB and ASG
 
-## 📚 Conceitos Fundamentais
+## 📚 Core Concepts
 
 ### Elastic Load Balancing
 
-O ELB é um serviço gerenciado de distribuição de tráfego que disponibiliza um único ponto de entrada com alta disponibilidade automática. Existem quatro tipos, e o exame cobra fortemente as diferenças entre eles.
+ELB is a managed traffic distribution service that provides a single entry point with automatic high availability. There are four types, and the exam heavily tests the differences between them.
 
 #### ALB — Application Load Balancer
 
-Opera na camada 7 (HTTP/HTTPS). É o load balancer mais funcional para aplicações modernas. Suporte a HTTP, HTTPS, HTTP/2 e gRPC. O roteamento é baseado em regras configuráveis: path-based (prefix ou exact match na URL), host-based (virtual hosting por hostname), query string, HTTP headers e IP de origem.
+Operates at layer 7 (HTTP/HTTPS). It is the most feature-rich load balancer for modern applications. Supports HTTP, HTTPS, HTTP/2 and gRPC. Routing is based on configurable rules: path-based (prefix or exact match on the URL), host-based (virtual hosting by hostname), query string, HTTP headers and source IP.
 
-**Target Groups**: o ALB distribui tráfego para target groups, que podem ser EC2 instances, ECS tasks, Lambda functions ou IPs (incluindo on-premises via Direct Connect/VPN). Cada regra de roteamento aponta para um target group. Um listener pode ter várias regras com prioridade, e a regra padrão (default action) atende o tráfego não coberto.
+**Target Groups**: the ALB distributes traffic to target groups, which can be EC2 instances, ECS tasks, Lambda functions or IPs (including on-premises via Direct Connect/VPN). Each routing rule points to a target group. A listener can have several rules with priorities, and the default rule (default action) handles traffic not covered.
 
-**Weighted Target Groups**: suporta distribuição ponderada de tráfego entre dois target groups. Útil para canary releases e blue/green deployments: envie 95% ao grupo antigo e 5% ao novo gradualmente.
+**Weighted Target Groups**: supports weighted traffic distribution between two target groups. Useful for canary releases and blue/green deployments: gradually send 95% to the old group and 5% to the new one.
 
-**Connection termination**: o ALB termina a conexão SSL/TLS e se comunica com os targets numa nova conexão (com ou sem HTTPS). O header `X-Forwarded-For` carrega o IP original do cliente. Se precisar do IP real no backend, configure o X-Forwarded-For ou use o Proxy Protocol no ALB.
+**Connection termination**: the ALB terminates the SSL/TLS connection and communicates with the targets over a new connection (with or without HTTPS). The `X-Forwarded-For` header carries the client's original IP. If you need the real IP on the backend, configure X-Forwarded-For or use Proxy Protocol on the ALB.
 
-**Sticky sessions (Session Affinity)**: o ALB pode enviar requests de um mesmo cliente sempre para o mesmo target. O cookie pode ser gerado pelo ALB (AWSALB) ou pelo target (cookie de aplicação). Útil quando o estado de sessão está na memória do servidor — mas a prática recomendada é externalizar sessões num cache como ElastiCache.
+**Sticky sessions (Session Affinity)**: the ALB can always send requests from the same client to the same target. The cookie can be generated by the ALB (AWSALB) or by the target (application cookie). Useful when session state is in server memory — but the recommended practice is to externalize sessions to a cache such as ElastiCache.
 
-**Lambda como target**: o ALB pode invocar Lambda diretamente. Isso permite expor um Lambda como endpoint HTTP sem API Gateway.
+**Lambda as a target**: the ALB can invoke Lambda directly. This allows exposing a Lambda as an HTTP endpoint without API Gateway.
 
 #### NLB — Network Load Balancer
 
-Opera na camada 4 (TCP, UDP, TLS). É extremamente eficiente: dezenas de milhões de requests por segundo com latência de milissegundos uniconexão. Principal característica: **IP estático por AZ**. Pode ter um Elastic IP por AZ, o que é essencial para clientes que precisam de allowlist de IP no firewall.
+Operates at layer 4 (TCP, UDP, TLS). It is extremely efficient: tens of millions of requests per second with millisecond-level per-connection latency. Key feature: **static IP per AZ**. It can have one Elastic IP per AZ, which is essential for clients that need IP allowlisting on their firewall.
 
-**Preserve source IP**: ao contrário do ALB, o NLB preserva o IP de origem por padrão no target. Isso é importante em cenários de compliance e firewalling.
+**Preserve source IP**: unlike the ALB, the NLB preserves the source IP by default on the target. This is important in compliance and firewalling scenarios.
 
-**TLS Offload**: o NLB pode terminar TLS e usar certificados ACM, se desejado. Se não terminar, passa tráfego TCP puro para o target.
+**TLS Offload**: the NLB can terminate TLS and use ACM certificates, if desired. If it does not terminate, it passes raw TCP traffic to the target.
 
-**PrivateLink**: NLBs são a base do AWS PrivateLink. Para expor um serviço para outras contas ou VPCs de forma privada, cria-se um NLB e um VPC Endpoint Service.
+**PrivateLink**: NLBs are the foundation of AWS PrivateLink. To expose a service privately to other accounts or VPCs, you create an NLB and a VPC Endpoint Service.
 
-**Static IP para firewall allowlist**: se a questão menciona "cliente precisa fazer allowlist de IPs no firewall corporativo" ou "IP fixo por AZ", a resposta é NLB.
+**Static IP for firewall allowlist**: if the question mentions "client needs to allowlist IPs on the corporate firewall" or "fixed IP per AZ", the answer is NLB.
 
 #### GWLB — Gateway Load Balancer
 
-Opera na camada 3 (IP) usando o protocolo GENEVE (encapsulamento de pacotes). Funciona como ponto de inserção de appliances virtuais de segurança (firewalls, IDS/IPS, DPI) no caminho do tráfego sem que a aplicação perceba. O tráfego é desviado para o GWLB → appliance → retorna ao GWLB → segue ao destino.
+Operates at layer 3 (IP) using the GENEVE protocol (packet encapsulation). It works as an insertion point for virtual security appliances (firewalls, IDS/IPS, DPI) in the traffic path without the application noticing. Traffic is diverted to the GWLB → appliance → returns to the GWLB → continues to the destination.
 
-Configuração típica: tráfego entra via Internet Gateway, é interceptado por GWLB (usando VPC routing), processado pelos appliances no GWLB endpoint no Target Group, e depois roteado para o destino final. Permite escalar appliances horizontalmente com o ASG.
+Typical setup: traffic enters via Internet Gateway, is intercepted by the GWLB (using VPC routing), processed by the appliances in the GWLB endpoint's Target Group, and then routed to the final destination. Allows scaling appliances horizontally with the ASG.
 
-**Quando aparece no exame**: cenário que menciona inspeção de tráfego com dispositivos de segurança de terceiros (appliances, firewalls next-gen como Palo Alto ou Fortinet) ou centralização de segurança em uma conta de segurança dedicada.
+**When it appears on the exam**: a scenario that mentions traffic inspection with third-party security devices (appliances, next-gen firewalls such as Palo Alto or Fortinet) or centralizing security in a dedicated security account.
 
 #### CLB — Classic Load Balancer
 
-Legado. Opera em camadas 4 e 7 de forma limitada. O exame pode mencioná-lo em contexto histórico, mas nunca como resposta correta para novos desenhos.
+Legacy. Operates at layers 4 and 7 in a limited way. The exam may mention it in a historical context, but never as a correct answer for new designs.
 
 #### Cross-Zone Load Balancing
 
-Por padrão, cada nó do ELB distribui tráfego apenas para as instâncias na sua AZ. Com cross-zone habilitado, cada nó do ELB distribui uniformemente para todos os targets em todas as AZs. ALB habilita por padrão sem custo extra. NLB desabilita por padrão; quando habilitado, cobra pela transferência inter-AZ. O GWLB também desabilita por padrão.
+By default, each ELB node distributes traffic only to the instances in its own AZ. With cross-zone enabled, each ELB node distributes evenly to all targets across all AZs. ALB enables it by default at no extra cost. NLB disables it by default; when enabled, it charges for inter-AZ transfer. GWLB also disables it by default.
 
-**Connection Draining (Deregistration Delay)**: período durante o qual o ELB para de enviar novas conexões para um target que está sendo removido, mas mantém as conexões ativas até o timeout. O padrão é 300 segundos. Para instâncias que têm muitas conexões de longa duração, ajuste esse valor.
+**Connection Draining (Deregistration Delay)**: period during which the ELB stops sending new connections to a target being removed, but keeps active connections until the timeout. The default is 300 seconds. For instances that have many long-lived connections, adjust this value.
 
 ### Auto Scaling Groups
 
-O ASG gerencia uma frota de instâncias EC2, garantindo que a capacidade desejada seja mantida. Está intimamente ligado ao ELB: as instâncias do ASG são regularmente registradas e desregistradas nos target groups.
+The ASG manages a fleet of EC2 instances, ensuring that the desired capacity is maintained. It is closely tied to the ELB: ASG instances are regularly registered and deregistered in target groups.
 
 #### Launch Templates vs Launch Configurations
 
-**Launch Configurations**: legadas, imutáveis. Para fazer qualquer mudança, é necessário criar uma nova. Não suportam múltiplos tipos de instância, Spot + On-Demand mixados, nem ARM. Devem ser evitadas em novos projetos.
+**Launch Configurations**: legacy, immutable. To make any change, you must create a new one. They do not support multiple instance types, mixed Spot + On-Demand, or ARM. They should be avoided in new projects.
 
-**Launch Templates**: suporte a versionamento, múltiplos tipos de instância, mistura de Spot e On-Demand, famílias de instância via $Latest e $Default, e herança de templates base. São a resposta preferida no exame quando a questão menciona diversificação de tipos ou flexibilidade de Spot.
+**Launch Templates**: support versioning, multiple instance types, mixing Spot and On-Demand, instance families via $Latest and $Default, and inheritance from base templates. They are the preferred answer on the exam when the question mentions type diversification or Spot flexibility.
 
-#### Políticas de Scaling
+#### Scaling Policies
 
-**Target Tracking Scaling**: define uma métrica-alvo (como CPUUtilization = 60% ou RequestCountPerTarget = 1000) e o ASG ajusta automaticamente a capacidade para manter essa métrica no nível definido. É a política mais simples e eficiente para workloads com crescimento proporcional. O ASG cria e gerencia automaticamente os CloudWatch Alarms.
+**Target Tracking Scaling**: defines a target metric (such as CPUUtilization = 60% or RequestCountPerTarget = 1000) and the ASG automatically adjusts capacity to keep that metric at the defined level. It is the simplest and most efficient policy for workloads with proportional growth. The ASG automatically creates and manages the CloudWatch Alarms.
 
-**Step Scaling**: define faixas de alarme com ações diferentes. Exemplo: se CPU > 60%, adicione 1 instância; se CPU > 80%, adicione 3; se CPU < 30%, remova 1. Permite resposta escalonada a variações de intensidade diferentes. Requer criação manual dos alarmes do CloudWatch.
+**Step Scaling**: defines alarm ranges with different actions. Example: if CPU > 60%, add 1 instance; if CPU > 80%, add 3; if CPU < 30%, remove 1. Allows a tiered response to variations of different intensity. Requires manual creation of the CloudWatch alarms.
 
-**Scheduled Scaling**: ajusta a capacidade em horários pré-definidos. Útil para padrões de tráfego previsíveis: aumento às 8h, redução às 20h, pico às sextas. Pode coexistir com outras políticas.
+**Scheduled Scaling**: adjusts capacity at pre-defined times. Useful for predictable traffic patterns: increase at 8 AM, decrease at 8 PM, peak on Fridays. Can coexist with other policies.
 
-**Predictive Scaling**: usa machine learning para analisar o histórico de tráfego e provisionar capacidade antecipadamente. Vantagem sobre Target Tracking: já está pronto antes do pico chegar, em vez de reagir depois. Funciona melhor com histórico de pelo menos 14 dias. Para o exame, é a resposta ao cenário "evitar atraso de scale-out antes do pico diário".
+**Predictive Scaling**: uses machine learning to analyze traffic history and provision capacity in advance. Advantage over Target Tracking: it is already ready before the peak arrives, instead of reacting afterwards. Works best with at least 14 days of history. For the exam, it is the answer to the scenario "avoid scale-out delay before the daily peak".
 
 #### Lifecycle Hooks
 
-Lifecycle Hooks permitem executar ação personalizada durante as transições de estado de uma instância antes que ela complete a transição.
+Lifecycle Hooks let you run a custom action during an instance's state transitions before it completes the transition.
 
-**EC2_INSTANCE_LAUNCHING (Pending:Wait)**: a instância foi iniciada, mas ainda não está InService. Nesse período, você pode executar scripts de aquecimento, instalar agentes de monitoramento, registrar em sistemas externos. Ao terminar, chama `CompleteLifecycleAction(CONTINUE)` ou deixa o heartbeat timeout expirar.
+**EC2_INSTANCE_LAUNCHING (Pending:Wait)**: the instance has been launched, but is not yet InService. During this period, you can run warm-up scripts, install monitoring agents, and register with external systems. When finished, call `CompleteLifecycleAction(CONTINUE)` or let the heartbeat timeout expire.
 
-**EC2_INSTANCE_TERMINATING (Terminating:Wait)**: a instância vai ser terminada. Antes da remoção, pode-se coletar logs, fazer backup do estado, deregistrar de IPAM externo. Ao terminar, chama `CompleteLifecycleAction(CONTINUE)` ou `ABANDON`.
+**EC2_INSTANCE_TERMINATING (Terminating:Wait)**: the instance is about to be terminated. Before removal, you can collect logs, back up state, and deregister from an external IPAM. When finished, call `CompleteLifecycleAction(CONTINUE)` or `ABANDON`.
 
-A notificação do lifecycle hook pode ser enviada para SNS, SQS ou EventBridge, que então dispara Lambda para execução da automação.
+The lifecycle hook notification can be sent to SNS, SQS or EventBridge, which then triggers Lambda to run the automation.
 
 #### Health Checks
 
-O ASG determina se uma instância está saudável via dois tipos de health check:
+The ASG determines whether an instance is healthy via two types of health check:
 
-**EC2 health check** (padrão): baseia-se no status do hardware e rede da instância reportado pela AWS. Se a instância está em qualquer estado diferente de "running" ou tem impaired instance check, o ASG a substitui.
+**EC2 health check** (default): based on the instance's hardware and network status as reported by AWS. If the instance is in any state other than "running" or has an impaired instance check, the ASG replaces it.
 
-**ELB health check**: baseia-se nos health checks configurados no target group (GET numa URL específica, código de resposta esperado). Se a instância retorna resposta inesperada ao ALB, é marcada como unhealthy. O ASG com ELB health check habilitado substitui instâncias que falham no health check do ELB — muito mais completo que apenas o status EC2.
+**ELB health check**: based on the health checks configured on the target group (GET on a specific URL, expected response code). If the instance returns an unexpected response to the ALB, it is marked unhealthy. An ASG with ELB health check enabled replaces instances that fail the ELB health check — much more thorough than just the EC2 status.
 
-**Recomendação**: sempre habilite ELB health check no ASG quando há Load Balancer. Uma instância que está "running" mas com aplicação travada passa no EC2 health check mas falha no ELB health check.
+**Recommendation**: always enable ELB health check on the ASG when there is a Load Balancer. An instance that is "running" but has a hung application passes the EC2 health check but fails the ELB health check.
 
-### Warm-Up e Cooldown
+### Warm-Up and Cooldown
 
-**Instance Warmup**: período após scale-out durante o qual a nova instância contribui gradualmente para as métricas de scaling. Evita que o ASG continue adicionando instâncias enquanto as novas ainda estão inicializando. Suporte no Target Tracking.
+**Instance Warmup**: period after scale-out during which the new instance gradually contributes to the scaling metrics. Prevents the ASG from continuing to add instances while the new ones are still initializing. Supported in Target Tracking.
 
-**Cooldown do ASG**: período de espera após qualquer atividade de scaling antes de iniciar outra. Evita oscilações rápidas. Para step scaling, o cooldown é separado por ação de scale-out e scale-in.
+**ASG Cooldown**: waiting period after any scaling activity before starting another. Prevents rapid oscillations. For step scaling, the cooldown is separate for scale-out and scale-in actions.
 
 ### Termination Policy
 
-O ASG segue uma lógica de seleção para terminar instâncias no scale-in: primeiro seleciona a AZ com mais instâncias, depois dentro dessa AZ escolhe com base na política configurada (default: instância mais antiga pelo launch template/config, depois a próxima a ser cobrada na hora). Políticas customizadas disponíveis: OldestInstance, NewestInstance, OldestLaunchTemplate, ClosestToNextInstanceHour e AllocationStrategy.
+The ASG follows a selection logic to terminate instances on scale-in: first it selects the AZ with the most instances, then within that AZ it chooses based on the configured policy (default: oldest instance by launch template/config, then the one closest to the next billing hour). Available custom policies: OldestInstance, NewestInstance, OldestLaunchTemplate, ClosestToNextInstanceHour and AllocationStrategy.
 
-## 🏗️ Arquitetura e Componentes
+## 🏗️ Architecture and Components
 
 ```text
-Internet / Clientes
+Internet / Clients
        │
        ▼
   ┌──────────────────────────────────────────────────┐
@@ -131,7 +131,7 @@ Internet / Clientes
   │   ALB (HTTP/gRPC) | NLB (TCP/UDP) | GWLB (IP)   │
   │   Listeners → Rules → Target Groups              │
   └──────────────┬───────────────────────────────────┘
-                 │  registra / desregistra
+                 │  registers / deregisters
                  ▼
   ┌──────────────────────────────────────────────────┐
   │         Auto Scaling Group                       │
@@ -142,7 +142,7 @@ Internet / Clientes
   │  └──────────┘  └──────────┘  └──────────┘       │
   │                                                  │
   │  Scaling Policies: Target | Step | Scheduled     │
-  │  Predictive: provisiona antes do pico            │
+  │  Predictive: provisions before the peak          │
   │  Lifecycle Hooks: Pending:Wait / Terminating:Wait│
   └──────────────────────────────────────────────────┘
                  │
@@ -153,68 +153,68 @@ Internet / Clientes
          SNS / Lambda / EventBridge
 ```
 
-## ⚙️ Configurações Importantes para o Exame
+## ⚙️ Important Settings for the Exam
 
-| Item | Valor padrão / máximo | Observação |
+| Item | Default / maximum value | Note |
 |---|---|---|
-| Connection Draining (deregistration delay) | 300 segundos | Ajuste para conexões longas |
-| ALB idle timeout | 60 segundos | Conexão fecha se inativa |
-| NLB IP estático | 1 por AZ | Principal diferencial vs ALB |
-| ASG min/desired/max capacity | 0/0/0 por padrão | Configurar conforme workload |
-| ASG default cooldown | 300 segundos | Reduzir para scaling mais agile |
-| Lifecycle Hook heartbeat timeout | 3.600 segundos | Ajustável conforme operação |
-| ELB health check interval padrão | 30 segundos | Configurável por target group |
-| Healthy threshold | 5 checks | Consecutivos para marcar healthy |
-| Unhealthy threshold | 2 checks | Consecutivos para marcar unhealthy |
+| Connection Draining (deregistration delay) | 300 seconds | Adjust for long connections |
+| ALB idle timeout | 60 seconds | Connection closes if idle |
+| NLB static IP | 1 per AZ | Main differentiator vs ALB |
+| ASG min/desired/max capacity | 0/0/0 by default | Configure according to workload |
+| ASG default cooldown | 300 seconds | Reduce for more agile scaling |
+| Lifecycle Hook heartbeat timeout | 3,600 seconds | Adjustable per operation |
+| Default ELB health check interval | 30 seconds | Configurable per target group |
+| Healthy threshold | 5 checks | Consecutive to mark healthy |
+| Unhealthy threshold | 2 checks | Consecutive to mark unhealthy |
 
-## 🔄 Comparativo de Serviços
+## 🔄 Service Comparison
 
-| Característica | ALB | NLB | GWLB |
+| Characteristic | ALB | NLB | GWLB |
 |---|---|---|---|
-| Camada OSI | 7 (HTTP) | 4 (TCP/UDP) | 3 (IP) |
-| Protocolos | HTTP, HTTPS, gRPC | TCP, UDP, TLS | GENEVE |
-| IP estático por AZ | ❌ (DNS) | ✅ (Elastic IP) | ✅ |
-| Preserve source IP | Via X-Forwarded-For | ✅ Nativo | ✅ |
+| OSI layer | 7 (HTTP) | 4 (TCP/UDP) | 3 (IP) |
+| Protocols | HTTP, HTTPS, gRPC | TCP, UDP, TLS | GENEVE |
+| Static IP per AZ | ❌ (DNS) | ✅ (Elastic IP) | ✅ |
+| Preserve source IP | Via X-Forwarded-For | ✅ Native | ✅ |
 | Path/host based routing | ✅ | ❌ | ❌ |
-| Lambda como target | ✅ | ❌ | ❌ |
-| PrivateLink | ❌ | ✅ (base) | ✅ |
-| Inspecção de tráfego com appliances | ❌ | ❌ | ✅ |
-| Cross-zone padrão | ✅ (sem custo) | ❌ (cobra inter-AZ) | ❌ |
+| Lambda as target | ✅ | ❌ | ❌ |
+| PrivateLink | ❌ | ✅ (foundation) | ✅ |
+| Traffic inspection with appliances | ❌ | ❌ | ✅ |
+| Cross-zone default | ✅ (no cost) | ❌ (charges inter-AZ) | ❌ |
 
-| Política de Scaling | Quando usar | Vantagem |
+| Scaling Policy | When to use | Advantage |
 |---|---|---|
-| Target Tracking | Workload proporcional e contínuo | Simples, auto-managed alarms |
-| Step Scaling | Resposta diferenciada por intensidade | Controle fino por faixa |
-| Scheduled | Padrão de tráfego previsível | Evita lag no scale-out |
-| Predictive | Picos recorrentes e previsíveis | Provisiona antes do pico |
+| Target Tracking | Proportional, continuous workload | Simple, auto-managed alarms |
+| Step Scaling | Differentiated response by intensity | Fine control per range |
+| Scheduled | Predictable traffic pattern | Avoids scale-out lag |
+| Predictive | Recurring, predictable peaks | Provisions before the peak |
 
-## 💡 Dicas e Armadilhas do Exame
+## 💡 Exam Tips and Pitfalls
 
-- ALB tem IP dinâmico (DNS). Se o cliente precisa de IP fixo no firewall, a resposta é NLB com Elastic IP.
-- GWLB não distribui tráfego de aplicação — ele inspeciona e encaminha. Confundir com ALB é uma armadilha.
-- ASG com apenas EC2 health check vai manter instâncias com aplicação travada, pois a instância está "running". Habilite ELB health check.
-- Target Tracking cria alarmes CloudWatch automaticamente. Não apague esses alarmes — são gerenciados pelo serviço.
-- Launch Configuration é legado e imutável. Em qualquer questão nova, Launch Template é a resposta preferida.
-- Lifecycle Hook no scale-out serve para warmup antes de entrar em serviço; no scale-in, para drenagem de estado antes de encerrar.
-- Cross-zone balancing no NLB tem custo de transferência inter-AZ. Se a questão menciona custo, avalie se cross-zone está necessariamente habilitado.
-- Predictive Scaling requer histórico de 14 dias para funcionar bem. Para novos environments, Target Tracking or Scheduled é mais adequado.
+- ALB has a dynamic IP (DNS). If the client needs a fixed IP on the firewall, the answer is NLB with Elastic IP.
+- GWLB does not distribute application traffic — it inspects and forwards. Confusing it with ALB is a trap.
+- An ASG with only EC2 health check will keep instances with a hung application, because the instance is "running". Enable ELB health check.
+- Target Tracking creates CloudWatch alarms automatically. Do not delete these alarms — they are managed by the service.
+- Launch Configuration is legacy and immutable. In any new question, Launch Template is the preferred answer.
+- A Lifecycle Hook on scale-out is for warm-up before entering service; on scale-in, for draining state before shutting down.
+- Cross-zone balancing on NLB has an inter-AZ transfer cost. If the question mentions cost, evaluate whether cross-zone is necessarily enabled.
+- Predictive Scaling requires 14 days of history to work well. For new environments, Target Tracking or Scheduled is more suitable.
 
-## 💡 Para o Exame
+## 💡 For the Exam
 
-- HTTP/gRPC, path routing, Lambda target → ALB. TCP/UDP, IP fixo, PrivateLink → NLB. Appliance de segurança de terceiro → GWLB.
-- Pico previsível = Scheduled + Predictive. Workload proporcional = Target Tracking. Resposta escalonada = Step Scaling.
-- Sempre habilite ELB health check no ASG em produção.
-- Launch Template supera Launch Configuration em todos os cenários novos.
-- Lifecycle Hooks = automação antes de entrar em serviço ou antes de sair.
+- HTTP/gRPC, path routing, Lambda target → ALB. TCP/UDP, fixed IP, PrivateLink → NLB. Third-party security appliance → GWLB.
+- Predictable peak = Scheduled + Predictive. Proportional workload = Target Tracking. Tiered response = Step Scaling.
+- Always enable ELB health check on the ASG in production.
+- Launch Template beats Launch Configuration in all new scenarios.
+- Lifecycle Hooks = automation before entering service or before leaving.
 
-## 📎 Links Relacionados
+## 📎 Related Links
 
-- [Questões do módulo](./questoes.md)
-- [Flashcards do módulo](./flashcards.md)
-- [Cheatsheet do módulo](./cheatsheet.md)
-- [Casos de uso do módulo](./casos-de-uso.md)
-- [Lab prático do módulo](./lab.md)
-- [Links oficiais](./links.md)
-- [Módulo 03: Computação EC2](../03-Computacao-EC2/)
-- [Módulo 07: VPC e Redes](../07-VPC-e-Redes/)
-- [Módulo 08: DNS, Route 53 e CloudFront](../08-DNS-Route53-e-CloudFront/)
+- [Module questions](./questoes.md)
+- [Module flashcards](./flashcards.md)
+- [Module cheatsheet](./cheatsheet.md)
+- [Module use cases](./casos-de-uso.md)
+- [Module hands-on lab](./lab.md)
+- [Official links](./links.md)
+- [Module 03: EC2 Compute](../04-Computacao-EC2/)
+- [Module 07: VPC and Networking](../08-VPC-e-Redes/)
+- [Module 08: DNS, Route 53 and CloudFront](../13-DNS-Route53-e-CloudFront/)

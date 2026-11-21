@@ -1,9 +1,9 @@
-# Módulo 12 — Dados e Analytics
+# Module 12 — Data and Analytics
 
-## Visão Geral do Ecossistema de Analytics AWS
+## AWS Analytics Ecosystem Overview
 
 ```
-Ingestão → Armazenamento → Processamento → Análise → Visualização
+Ingestion → Storage → Processing → Analysis → Visualization
   Kinesis    S3 (Data Lake)   EMR / Glue     Athena    QuickSight
   MSK        Redshift DW      Spark          OpenSearch BI tools
   DataSync   OpenSearch       Lambda         Redshift
@@ -13,149 +13,149 @@ Ingestão → Armazenamento → Processamento → Análise → Visualização
 
 ## Amazon Athena
 
-SQL serverless sobre dados no S3:
+Serverless SQL over data in S3:
 
-- **Pay-per-query**: $5 por TB de dados escaneados
-- Sem infraestrutura para gerenciar; lê formatos: Parquet, ORC, Avro, JSON, CSV
-- Usa **Glue Data Catalog** como metastore
-- Suporta particionamento → **crucial para reduzir custo** (evita full table scan)
-- **Federated Query**: consulta outras fontes de dados via Lambda connectors (DynamoDB, RDS, Redshift, CloudWatch)
-- **Athena for Apache Spark**: notebooks interativos com Spark (sem cluster EMR)
+- **Pay-per-query**: $5 per TB of data scanned
+- No infrastructure to manage; reads formats: Parquet, ORC, Avro, JSON, CSV
+- Uses **Glue Data Catalog** as its metastore
+- Supports partitioning → **crucial for reducing cost** (avoids a full table scan)
+- **Federated Query**: queries other data sources via Lambda connectors (DynamoDB, RDS, Redshift, CloudWatch)
+- **Athena for Apache Spark**: interactive Spark notebooks (no EMR cluster)
 
-### Otimizações para Reduzir Custo e Latência
+### Optimizations to Reduce Cost and Latency
 
 ```sql
--- Particionamento (particiona por data → scan apenas partições relevantes)
-MSCK REPAIR TABLE vendas; -- atualiza partições no Glue Catalog
+-- Partitioning (partition by date → scan only relevant partitions)
+MSCK REPAIR TABLE vendas; -- updates partitions in the Glue Catalog
 
--- Colunar (Parquet/ORC escaneiam apenas colunas necessárias)
+-- Columnar (Parquet/ORC scan only the required columns)
 SELECT amount FROM vendas WHERE year=2024 AND month=01
--- Só escaneia coluna 'amount' nas partições de jan/2024 → 99% menos dados
+-- Only scans the 'amount' column in the Jan/2024 partitions → 99% less data
 ```
 
 ---
 
 ## AWS Glue
 
-ETL serverless e catálogo de dados:
+Serverless ETL and data catalog:
 
-| Componente | Função |
+| Component | Function |
 |---|---|
-| **Glue Data Catalog** | Metastore central: tabelas, schemas, localização S3 |
-| **Crawlers** | Descobre e registra schemas automaticamente (S3, RDS, DynamoDB, etc.) |
-| **ETL Jobs** | Python/Scala Spark jobs gerenciados (escala automática de DPUs) |
-| **Glue Studio** | Interface visual para ETL jobs |
-| **DataBrew** | Preparação de dados visual (limpeza, normalização) sem código |
-| **Glue Streaming** | ETL de streaming em tempo real (Kinesis, Kafka, S3) |
-| **Workflow** | Orquestração de jobs ETL com triggers e dependências |
+| **Glue Data Catalog** | Central metastore: tables, schemas, S3 location |
+| **Crawlers** | Automatically discover and register schemas (S3, RDS, DynamoDB, etc.) |
+| **ETL Jobs** | Managed Python/Scala Spark jobs (automatic DPU scaling) |
+| **Glue Studio** | Visual interface for ETL jobs |
+| **DataBrew** | Visual data preparation (cleaning, normalization) without code |
+| **Glue Streaming** | Real-time streaming ETL (Kinesis, Kafka, S3) |
+| **Workflow** | Orchestration of ETL jobs with triggers and dependencies |
 
-**DPU (Data Processing Unit)**: 4 vCPUs + 16 GB RAM. Jobs cobrados por DPU-hora.
+**DPU (Data Processing Unit)**: 4 vCPUs + 16 GB RAM. Jobs are billed per DPU-hour.
 
 ---
 
 ## Amazon EMR (Elastic MapReduce)
 
-Cluster gerenciado para big data com Apache Hadoop, Spark, Hive, Presto, HBase:
+Managed cluster for big data with Apache Hadoop, Spark, Hive, Presto, HBase:
 
-| Modo | Descrição |
+| Mode | Description |
 |---|---|
-| **EMR on EC2** | Cluster de instâncias EC2 (Master + Core + Task nodes) |
-| **EMR on EKS** | Spark/Presto rodando como pods Kubernetes no EKS |
-| **EMR Serverless** | Submete jobs sem gerenciar cluster (auto-scale de workers) |
+| **EMR on EC2** | Cluster of EC2 instances (Master + Core + Task nodes) |
+| **EMR on EKS** | Spark/Presto running as Kubernetes pods on EKS |
+| **EMR Serverless** | Submit jobs without managing a cluster (auto-scaling workers) |
 
 **Storage options:**
-- **HDFS** (in-cluster, efêmero): máximo throughput para processamento
-- **EMRFS → S3**: storage persistente; dados sobrevivem ao término do cluster
+- **HDFS** (in-cluster, ephemeral): maximum throughput for processing
+- **EMRFS → S3**: persistent storage; data survives cluster termination
 
 **Nodes:**
-- **Master** (Primary): coordena o cluster (NameNode, YARN ResourceManager)
-- **Core**: armazena dados HDFS + processa
-- **Task**: apenas processa (sem HDFS); ideal para Spot instances
+- **Master** (Primary): coordinates the cluster (NameNode, YARN ResourceManager)
+- **Core**: stores HDFS data + processes
+- **Task**: processes only (no HDFS); ideal for Spot instances
 
 ---
 
 ## Amazon OpenSearch Service
 
-Search + analytics engine baseado em Elasticsearch/OpenSearch:
-- **Search**: full-text search, autocompletion, faceted search para aplicações
+Search + analytics engine based on Elasticsearch/OpenSearch:
+- **Search**: full-text search, autocompletion, faceted search for applications
 - **Log Analytics**: CloudWatch Logs/Kinesis Firehose → OpenSearch → Kibana/Dashboards
-- **Real-time Analytics**: indexação quase em tempo real para dashboards BI
+- **Real-time Analytics**: near real-time indexing for BI dashboards
 
 | Deployment | Nodes | HA |
 |---|---|---|
-| Multi-AZ | Réplicas shards em diferentes AZs | SIM (2-3 AZs) |
-| Dedicated Master | Nós master separados dos data nodes | Recomendado para prod |
-| UltraWarm | Tier de storage mais barato para dados "mornos" | Read-only; S3-backed |
-| Cold Storage | Armazena índices em S3, carrega quando necessário | Ainda mais barato |
+| Multi-AZ | Shard replicas in different AZs | YES (2-3 AZs) |
+| Dedicated Master | Master nodes separate from data nodes | Recommended for prod |
+| UltraWarm | Cheaper storage tier for "warm" data | Read-only; S3-backed |
+| Cold Storage | Stores indexes in S3, loads when needed | Even cheaper |
 
 ---
 
 ## Amazon MSK (Managed Streaming for Apache Kafka)
 
-Kafka gerenciado na AWS:
-- Cria e gerencia clusters Kafka (broker nodes, zookeeper)
-- Compatível com APIs Kafka nativas (producers/consumers existentes têm zero mudanças)
-- **MSK Connect** (Kafka Connect gerenciado): conectores source/sink para S3, RDS, OpenSearch, etc.
-- **MSK Serverless**: capacidade automática, sem gerenciar brokers
-- Retenção de dados configurável; integra com IAM e VPC
-- **Quando usar MSK vs Kinesis?** MSK: migração de Kafka existente; ecossistema Kafka (connectors, streams); compliance. Kinesis: AWS-native mais simples, sem Kafka expertise necessária.
+Managed Kafka on AWS:
+- Creates and manages Kafka clusters (broker nodes, zookeeper)
+- Compatible with native Kafka APIs (existing producers/consumers need zero changes)
+- **MSK Connect** (managed Kafka Connect): source/sink connectors for S3, RDS, OpenSearch, etc.
+- **MSK Serverless**: automatic capacity, no brokers to manage
+- Configurable data retention; integrates with IAM and VPC
+- **When to use MSK vs Kinesis?** MSK: migrating existing Kafka; Kafka ecosystem (connectors, streams); compliance. Kinesis: simpler AWS-native option, no Kafka expertise required.
 
 ---
 
 ## Amazon Redshift
 
-Data Warehouse OLAP com MPP (Massively Parallel Processing):
+OLAP Data Warehouse with MPP (Massively Parallel Processing):
 - Clusters: 1 Leader Node + 1-128 Compute Nodes
-- **Columnar storage**: cada coluna armazenada separadamente → compressão + scan eficiente
-- **Distribution styles**: EVEN, KEY, ALL (para tabelas dimensão pequenas)
+- **Columnar storage**: each column stored separately → compression + efficient scans
+- **Distribution styles**: EVEN, KEY, ALL (for small dimension tables)
 
-| Feature | Descrição |
+| Feature | Description |
 |---|---|
-| Redshift Spectrum | Query S3 como tabelas externas sem COPY |
-| Materialized Views | Pré-computação incremental de queries complexas |
-| Concurrency Scaling | Auto-adiciona cluster capacity para picos de queries simultâneas |
-| AQUA | Hardware-accelerated cache (apenas ra3 nodes) |
-| Redshift Serverless | Capacidade automática por query (paga por RPU-hour) |
-| Data Sharing | Leitura de dados entre clusters sem copiar (mesmo ou cross-account) |
+| Redshift Spectrum | Query S3 as external tables without COPY |
+| Materialized Views | Incremental pre-computation of complex queries |
+| Concurrency Scaling | Automatically adds cluster capacity for bursts of simultaneous queries |
+| AQUA | Hardware-accelerated cache (ra3 nodes only) |
+| Redshift Serverless | Automatic capacity per query (pay per RPU-hour) |
+| Data Sharing | Read data across clusters without copying (same or cross-account) |
 
 ---
 
 ## Amazon QuickSight
 
-BI serverless e dashboards:
-- Conecta a: S3 (Athena), Redshift, RDS, OpenSearch, third-party (Salesforce, etc.)
-- **SPICE** (Super-fast Parallel In-memory Calculation Engine): cache in-memory para dashboards ultra-rápidos
-- **Embedding**: dashboards embarcados em aplicações web com row-level security por usuário
-- **ML Insights**: anomaly detection automática, forecasting, narrativas em linguagem natural
-- Pagamento por usuário/sessão (sem cluster para provisionar)
+Serverless BI and dashboards:
+- Connects to: S3 (Athena), Redshift, RDS, OpenSearch, third-party (Salesforce, etc.)
+- **SPICE** (Super-fast Parallel In-memory Calculation Engine): in-memory cache for ultra-fast dashboards
+- **Embedding**: dashboards embedded in web applications with per-user row-level security
+- **ML Insights**: automatic anomaly detection, forecasting, natural-language narratives
+- Pay per user/session (no cluster to provision)
 
 ---
 
 ## AWS Lake Formation
 
-Governança e segurança do Data Lake sobre S3 + Glue Catalog:
-- **Fine-grained access control**: permissões por banco/tabela/coluna/row (cell-level security)
-- **Blueprint**: automatiza criação de data lake a partir de uma fonte de dados
-- **DataFilters**: compartilhar apenas subsets de tabelas entre contas
-- **Tagged-based access control (LF-TBAC)**: tags em recursos e identidades para controle de acesso
+Data Lake governance and security on top of S3 + Glue Catalog:
+- **Fine-grained access control**: permissions per database/table/column/row (cell-level security)
+- **Blueprint**: automates data lake creation from a data source
+- **DataFilters**: share only subsets of tables across accounts
+- **Tag-based access control (LF-TBAC)**: tags on resources and identities for access control
 
 ---
 
-## Pipeline Analytics Típico
+## Typical Analytics Pipeline
 
 ```
-Dados Brutos (on-prem, RDs, APIs)
+Raw Data (on-prem, RDS, APIs)
   ├── Kinesis Data Firehose → S3 (raw layer)
-  ├── DMS → S3 (migração RDS/Oracle)
-  └── DataSync → S3 (arquivos on-prem)
+  ├── DMS → S3 (RDS/Oracle migration)
+  └── DataSync → S3 (on-prem files)
 
 S3 (raw/bronze)
   └── Glue Crawlers → Glue Catalog
         └── Glue ETL Jobs (Spark)
-              └── S3 (processed/silver/gold - Parquet particionado)
-                    ├── Athena (queries ad-hoc, pay-per-scan)
-                    ├── Redshift Spectrum (DW queries misturadas)
-                    └── QuickSight (dashboards BI via SPICE)
+              └── S3 (processed/silver/gold - partitioned Parquet)
+                    ├── Athena (ad-hoc queries, pay-per-scan)
+                    ├── Redshift Spectrum (mixed DW queries)
+                    └── QuickSight (BI dashboards via SPICE)
 
 Streaming:
   Kinesis/Kafka → Glue Streaming / Flink (Kinesis Analytics) → OpenSearch (real-time dash)
@@ -163,15 +163,15 @@ Streaming:
 
 ---
 
-## Dicas de Prova
+## Exam Tips
 
-- Athena: **Parquet + particionamento** = combinação padrão para minimizar custo
-- Glue Catalog é compartilhado entre Athena, Redshift Spectrum, EMR — metastore único
-- **EMR node types**: Master (coordena), Core (HDFS + compute), Task (compute only = Spot ideal)
-- MSK não tem retenção máxima; Kinesis tem 365 dias de retenção máxima
-- Redshift cluster vs Redshift Serverless: cluster para carga previsível; serverless para carga variável ou intermitente
-- OpenSearch: NOT serverless (em cloud) — você gerencia nodes e replication; usa compute instances
+- Athena: **Parquet + partitioning** = the standard combination to minimize cost
+- The Glue Catalog is shared across Athena, Redshift Spectrum, EMR — a single metastore
+- **EMR node types**: Master (coordinates), Core (HDFS + compute), Task (compute only = ideal for Spot)
+- MSK has no maximum retention; Kinesis has a maximum retention of 365 days
+- Redshift cluster vs Redshift Serverless: cluster for predictable load; serverless for variable or intermittent load
+- OpenSearch: NOT serverless (in the standard cloud offering) — you manage nodes and replication; it uses compute instances
 - Lake Formation FGA overrides IAM policies for Glue Catalog permissions
-- AQUA (Redshift): hardware acceleration para aggregate queries; disponível apenas em ra3 nodes
-- QuickSight SPICE: dados importados, cache in-memory; refresh configurável (schedule ou manual)
-- Athena Federated Query usa Lambda Data Source Connectors → executa queries em fontes não-S3
+- AQUA (Redshift): hardware acceleration for aggregate queries; available only on ra3 nodes
+- QuickSight SPICE: imported data, in-memory cache; configurable refresh (scheduled or manual)
+- Athena Federated Query uses Lambda Data Source Connectors → runs queries on non-S3 sources

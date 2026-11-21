@@ -1,105 +1,105 @@
-# Casos de Uso — Módulo 05: Amazon S3 e Armazenamento
+# Use Cases — Module 05: Amazon S3 and Storage
 
-## Caso 1: Hospedagem de Site Estático com CloudFront e Segurança
+## Case 1: Static Website Hosting with CloudFront and Security
 
-**Cenário:** Empresa quer hospedar um site estático (React SPA) com baixa latência global, bucket S3 privado e HTTPS.
+**Scenario:** A company wants to host a static website (React SPA) with low global latency, a private S3 bucket, and HTTPS.
 
-**Arquitetura:**
+**Architecture:**
 ```
-Usuário (Global)
+User (Global)
   └── Route 53 (Alias → CloudFront)
         └── CloudFront Distribution
-              └── S3 Bucket (PRIVADO - Block Public Access ON)
+              └── S3 Bucket (PRIVATE - Block Public Access ON)
                     └── Origin Access Control (OAC) → Bucket Policy
 ```
 
-**Configurações-chave:**
-- S3: Block Public Access = ON; Versioning = ON para rollback
-- CloudFront: OAC habilitado; Viewer Protocol Policy = HTTPS Only
-- Bucket Policy: `Allow cloudfront.amazonaws.com com condition aws:SourceArn = distribution ARN`
-- ACM Certificate: us-east-1 (obrigatório para CloudFront)
+**Key settings:**
+- S3: Block Public Access = ON; Versioning = ON for rollback
+- CloudFront: OAC enabled; Viewer Protocol Policy = HTTPS Only
+- Bucket Policy: `Allow cloudfront.amazonaws.com with condition aws:SourceArn = distribution ARN`
+- ACM Certificate: us-east-1 (required for CloudFront)
 - Route 53: Alias record `www.empresa.com` → CloudFront distribution
 
-**Por que este design?** S3 privado + OAC impede acesso direto ao bucket; CloudFront é o único caminho de acesso. CloudFront faz caching global → menor latência. HTTPS enforçado em todas as camadas.
+**Why this design?** A private S3 bucket + OAC prevents direct access to the bucket; CloudFront is the only access path. CloudFront provides global caching → lower latency. HTTPS is enforced at every layer.
 
 ---
 
-## Caso 2: Backup Automatizado com Lifecycle e Glacier
+## Case 2: Automated Backup with Lifecycle and Glacier
 
-**Cenário:** Empresa financeira armazena relatórios mensais por 7 anos. Acesso nos primeiros 90 dias é frequente; depois, raramente acessado.
+**Scenario:** A financial company stores monthly reports for 7 years. Access in the first 90 days is frequent; afterward, it is rarely accessed.
 
 **Lifecycle Policy:**
 ```
-S3 Standard → (90 dias) → S3 Standard-IA → (180 dias) → S3 Glacier Instant Retrieval
-           → (365 dias) → S3 Glacier Deep Archive → (7 anos) → Expire
+S3 Standard → (90 days) → S3 Standard-IA → (180 days) → S3 Glacier Instant Retrieval
+           → (365 days) → S3 Glacier Deep Archive → (7 years) → Expire
 ```
 
-**Object Lock configurado:**
-- Modo Compliance com retention de 2.555 dias (7 anos)
-- Legal Hold adicional para documentos em auditoria
+**Object Lock configured:**
+- Compliance mode with a retention of 2,555 days (7 years)
+- Additional Legal Hold for documents under audit
 
-**Por que este design?** Lifecycle reduz custo progressivamente conforme o dado "envelhece". Object Lock Compliance garante conformidade regulatória sem possibilidade de apagamento prematuro.
+**Why this design?** Lifecycle progressively reduces cost as the data "ages". Object Lock Compliance guarantees regulatory compliance with no possibility of premature deletion.
 
 ---
 
-## Caso 3: Data Lake Multi-Região com Replicação
+## Case 3: Multi-Region Data Lake with Replication
 
-**Cenário:** Empresa global precisa de dados disponíveis em us-east-1 (processamento) e ap-southeast-1 (conformidade de dados na Ásia).
+**Scenario:** A global company needs data available in us-east-1 (processing) and ap-southeast-1 (data compliance in Asia).
 
-**Arquitetura:**
+**Architecture:**
 ```
-Produção (us-east-1)             Leitura/Conformidade (ap-southeast-1)
+Production (us-east-1)           Read/Compliance (ap-southeast-1)
   └── S3 Bucket [Primary]   →CRR→  S3 Bucket [Replica]
         ├── S3 Event Notification       └── S3 Inventory (compliance)
         │     └── SQS → Lambda (ETL)
-        └── S3 Inventory (CSV diário)
+        └── S3 Inventory (daily CSV)
 ```
 
-**Configurações:**
-- Versioning: ON em ambos os buckets
-- CRR: replicação de todos os objetos (ou por prefix `data/raw/`)
-- Encryption: SSE-KMS com different CMKs por região
-- Access Points: um por equipe de dados com prefix isolation
+**Settings:**
+- Versioning: ON on both buckets
+- CRR: replication of all objects (or by prefix `data/raw/`)
+- Encryption: SSE-KMS with different CMKs per Region
+- Access Points: one per data team with prefix isolation
 
 ---
 
-## Caso 4: Upload Direto do Browser com Pre-signed URL
+## Case 4: Direct Browser Upload with Pre-signed URL
 
-**Cenário:** Plataforma de fotos permite usuários fazerem upload de imagens direto para S3 sem passar pelo servidor da aplicação.
+**Scenario:** A photo platform lets users upload images directly to S3 without going through the application server.
 
-**Fluxo:**
+**Flow:**
 ```
 1. Browser → API Gateway → Lambda
-              └── Lambda gera pre-signed URL (PutObject, TTL 15min)
-2. Browser → PUT diretamente para S3 usando pre-signed URL
-3. S3 Event Notification → SQS → Lambda (processamento da imagem)
-4. Lambda → escreve thumbnail em outro bucket
+              └── Lambda generates pre-signed URL (PutObject, TTL 15min)
+2. Browser → PUT directly to S3 using the pre-signed URL
+3. S3 Event Notification → SQS → Lambda (image processing)
+4. Lambda → writes thumbnail to another bucket
 ```
 
-**Configurações:**
-- CORS no bucket S3: AllowedOrigins = `https://app.empresa.com`, AllowedMethods = PUT
-- Bucket Policy: permite apenas requests com a presigned URL signature
-- CloudFront na frente para servir imagens processadas (GET)
+**Settings:**
+- CORS on the S3 bucket: AllowedOrigins = `https://app.empresa.com`, AllowedMethods = PUT
+- Bucket Policy: allows only requests with the pre-signed URL signature
+- CloudFront in front to serve processed images (GET)
 
 ---
 
-## Caso 5: Migração para AWS com Storage Gateway e DataSync
+## Case 5: Migration to AWS with Storage Gateway and DataSync
 
-**Cenário:** Data center corporativo com servidores Windows acessando shares de arquivo. Empresa quer migrar para S3 gradualmente.
+**Scenario:** A corporate data center with Windows servers accessing file shares. The company wants to migrate to S3 gradually.
 
-**Migração em Fases:**
+**Phased Migration:**
 ```
-FASE 1 (Convivência):
+PHASE 1 (Coexistence):
   Windows Servers → File Gateway (NFS/SMB) → S3 Bucket
-  [File Gateway fica on-prem; dados primários no S3; cache local]
+  [File Gateway stays on-prem; primary data in S3; local cache]
 
-FASE 2 (Migração em Massa):
+PHASE 2 (Bulk Migration):
   DataSync Agent (on-prem) → AWS DataSync → S3 Bucket
-  [Migração de dados históricos com verificação de integridade]
+  [Historical data migration with integrity verification]
 
-FASE 3 (Pós-migração):
+PHASE 3 (Post-migration):
   Windows Servers → Amazon FSx for Windows (AWS) via Direct Connect
-  [File system gerenciado na AWS com AD integration]
+  [Managed file system on AWS with AD integration]
 ```
 
-**Por que Storage Gateway primeiro?** Permite convivência gradual enquanto equipes se adaptam, sem big-bang cutover. DataSync para migração em massa dos dados existentes.
+**Why Storage Gateway first?** It allows gradual coexistence while teams adapt, without a big-bang cutover. DataSync handles the bulk migration of existing data.

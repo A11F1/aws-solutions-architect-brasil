@@ -1,4 +1,4 @@
-# Links Oficiais - Redes Avancadas e Conectividade Hibrida
+# Official Links - Advanced Networking and Hybrid Connectivity
 
 - Amazon VPC Peering: https://docs.aws.amazon.com/vpc/latest/peering/
 - AWS Transit Gateway: https://docs.aws.amazon.com/vpc/latest/tgw/

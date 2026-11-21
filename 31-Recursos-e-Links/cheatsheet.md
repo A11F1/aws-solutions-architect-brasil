@@ -1,158 +1,158 @@
-# Cheatsheet — Recursos e Links (Módulo 21)
+# Cheatsheet — Resources and Links (Module 21)
 
-## Recursos Primários — Referência Rápida
+## Primary Resources — Quick Reference
 
-| Recurso | URL | Tipo | Custo |
+| Resource | URL | Type | Cost |
 |---------|-----|------|-------|
-| **AWS Certification** | aws.amazon.com/certification | Registro exame + badges | Pago (exame) |
-| **AWS Skill Builder** | skillbuilder.aws | Cursos oficiais + labs | Free + Individual ($299/ano) |
-| **AWS Documentation** | docs.aws.amazon.com | Docs completos | Gratuito |
-| **AWS Architecture Center** | aws.amazon.com/architecture | Well-Architected, referências | Gratuito |
-| **AWS Pricing Calculator** | calculator.aws | Estimativas de custo | Gratuito |
-| **Tutorials Dojo** | tutorialsdojo.com | Simulados (melhor 3rd-party) | Pago ($15-20) |
-| **Stephane Maarek (Udemy)** | udemy.com | Curso SAA-C03 mais popular | Pago (R$27-50 promoção) |
-| **Adrian Cantrill** | learn.cantrill.io | Curso aprofundado | Pago ($40) |
-| **Exam Topics (prática)** | examtopics.com | Questões discutidas community | Gratuito (limitado) |
-| **AWS FAQs** | aws.amazon.com/faqs | Detalhes técnicos por serviço | Gratuito |
-| **AWS Whitepapers** | aws.amazon.com/whitepapers | Well-Architected, segurança | Gratuito |
-| **Pearson VUE** | pearsonvue.com/aws | Agendar exame (presencial/online) | — |
-| **PSI Online** | psiexams.com | Agendar exame online | — |
+| **AWS Certification** | aws.amazon.com/certification | Exam registration + badges | Paid (exam) |
+| **AWS Skill Builder** | skillbuilder.aws | Official courses + labs | Free + Individual ($299/year) |
+| **AWS Documentation** | docs.aws.amazon.com | Complete docs | Free |
+| **AWS Architecture Center** | aws.amazon.com/architecture | Well-Architected, references | Free |
+| **AWS Pricing Calculator** | calculator.aws | Cost estimates | Free |
+| **Tutorials Dojo** | tutorialsdojo.com | Practice exams (best 3rd-party) | Paid ($15-20) |
+| **Stephane Maarek (Udemy)** | udemy.com | Most popular SAA-C03 course | Paid (R$27-50 on sale) |
+| **Adrian Cantrill** | learn.cantrill.io | In-depth course | Paid ($40) |
+| **Exam Topics (practice)** | examtopics.com | Community-discussed questions | Free (limited) |
+| **AWS FAQs** | aws.amazon.com/faqs | Technical details per service | Free |
+| **AWS Whitepapers** | aws.amazon.com/whitepapers | Well-Architected, security | Free |
+| **Pearson VUE** | pearsonvue.com/aws | Schedule the exam (in person/online) | — |
+| **PSI Online** | psiexams.com | Schedule the exam online | — |
 
 ---
 
-## Whitepapers Prioritários para SAA-C03
+## Priority Whitepapers for SAA-C03
 
-| Whitepaper | Por Que Ler |
+| Whitepaper | Why Read It |
 |-----------|-------------|
-| AWS Well-Architected Framework | 6 pilares = base das questões dominantes |
-| AWS Security Best Practices | Domínio 1 (30% do exame) |
-| Architecting for the Cloud: Best Practices | Padrões gerais de arquitetura |
-| AWS Storage Services Overview | Comparação detalhada de armazenamento |
-| Overview of Amazon Web Services | Introdução ampla para contexto geral |
-| Disaster Recovery Options in the Cloud | Estratégias DR (Backup/Pilot/Warm/Active) |
+| AWS Well-Architected Framework | 6 pillars = basis of the dominant questions |
+| AWS Security Best Practices | Domain 1 (30% of the exam) |
+| Architecting for the Cloud: Best Practices | General architecture patterns |
+| AWS Storage Services Overview | Detailed storage comparison |
+| Overview of Amazon Web Services | Broad introduction for general context |
+| Disaster Recovery Options in the Cloud | DR strategies (Backup/Pilot/Warm/Active) |
 
 ---
 
-## Plano de Estudos — 6 Semanas
+## Study Plan — 6 Weeks
 
-| Semana | Foco | Módulos | Meta |
+| Week | Focus | Modules | Goal |
 |--------|------|---------|------|
-| **1** | Fundamentos e Computação | 01–04 (cloud concepts + EC2 + Auto Scaling + Storage) | Base sólida |
-| **2** | Rede + Banco de Dados | 05–07 (VPC + RDS + DynamoDB) | Arquitetura de rede |
-| **3** | Integração + Segurança | 08–10 (S3 + IAM + SQS/SNS/Lambda) | Desacoplamento e acesso |
-| **4** | Avançado + Analytics | 11–14 (Serverless + Dados + ML + Monitoramento) | Serviços modernos |
-| **5** | Revisão + Simulados | 15–19 (Migração + Well-Arch + Casos + Labs + Simulados) | Consolidação |
-| **6** | Revisão final + Exam | Cheatsheets + flashcards + 2 simulados completos | Score ≥ 80% |
+| **1** | Fundamentals and Compute | 01–04 (cloud concepts + EC2 + Auto Scaling + Storage) | Solid foundation |
+| **2** | Networking + Databases | 05–07 (VPC + RDS + DynamoDB) | Network architecture |
+| **3** | Integration + Security | 08–10 (S3 + IAM + SQS/SNS/Lambda) | Decoupling and access |
+| **4** | Advanced + Analytics | 11–14 (Serverless + Data + ML + Monitoring) | Modern services |
+| **5** | Review + Practice Exams | 15–19 (Migration + Well-Arch + Use Cases + Labs + Practice Exams) | Consolidation |
+| **6** | Final review + Exam | Cheatsheets + flashcards + 2 full practice exams | Score ≥ 80% |
 
 ---
 
-## Processo de Registro no Exame
+## Exam Registration Process
 
 ```
-1. Criar conta em aws.amazon.com/certification
-2. Selecionar "Schedule New Exam"
-3. Escolher: Pearson VUE (presencial ou online) ou PSI (online)
-4. Identificar local (presencial) ou verificar requisitos técnicos (online)
-5. Pagar: ~$300 USD (com 50% voucher = ~$150)
-6. Receber confirmation email com instruções
-7. Verificar: ID válido (passaporte/CNH) + câmera + ambiente limpo
-8. Resultado: em até 5 dias úteis por email
+1. Create an account at aws.amazon.com/certification
+2. Select "Schedule New Exam"
+3. Choose: Pearson VUE (in person or online) or PSI (online)
+4. Pick a location (in person) or check technical requirements (online)
+5. Pay: ~$300 USD (with 50% voucher = ~$150)
+6. Receive a confirmation email with instructions
+7. Verify: valid ID (passport/driver's license) + camera + clean environment
+8. Result: within 5 business days by email
 ```
 
 ---
 
-## Validade e Recertificação
+## Validity and Recertification
 
-| Item | Detalhe |
+| Item | Detail |
 |------|---------|
-| **Validade** | 3 anos |
-| **Recertificação** | Passar no mesmo exame (nova versão) OU exame de nível superior |
-| **Recertificação SAA** | Tirar SAP (Professional) renova automaticamente SAA |
-| **Desconto recertificação** | 50% de desconto no voucher |
-| **Digital Badge** | Credly — compartilhável no LinkedIn |
+| **Validity** | 3 years |
+| **Recertification** | Pass the same exam (new version) OR a higher-level exam |
+| **SAA Recertification** | Passing SAP (Professional) automatically renews SAA |
+| **Recertification discount** | 50% voucher discount |
+| **Digital Badge** | Credly — shareable on LinkedIn |
 | **Transcript** | aws.amazon.com/certification → Manage → Transcript |
 
 ---
 
-## Dicas para Semana Final de Estudos
+## Tips for the Final Week of Study
 
-| Dia | Ação |
+| Day | Action |
 |-----|------|
-| **D-7** | Simulado completo 65 questões. Anotar áreas fracas. |
-| **D-6** | Revisar flashcards das áreas fracas identificadas |
-| **D-5** | Rever cheatsheets: limites numéricos + padrões de serviço |
-| **D-4** | Segundo simulado completo. Meta: > 80% |
-| **D-3** | Revisar questões erradas dos simulados |
-| **D-2** | Apenas flashcards leves. Nada novo. Dormir bem. |
-| **D-1** | Verificar logística: ID, hora, local/software. Descanso. |
-| **Dia D** | Acordar cedo, comer bem, chegar 30min antes (presencial) |
+| **D-7** | Full 65-question practice exam. Note weak areas. |
+| **D-6** | Review flashcards for the identified weak areas |
+| **D-5** | Review cheatsheets: numeric limits + service patterns |
+| **D-4** | Second full practice exam. Goal: > 80% |
+| **D-3** | Review wrong answers from the practice exams |
+| **D-2** | Light flashcards only. Nothing new. Sleep well. |
+| **D-1** | Check logistics: ID, time, location/software. Rest. |
+| **Exam day** | Wake up early, eat well, arrive 30min early (in person) |
 
 ---
 
-## Estratégia Dentro do Exame
+## In-Exam Strategy
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  65 QUESTÕES — 130 MINUTOS                                  │
+│  65 QUESTIONS — 130 MINUTES                                 │
 │                                                             │
-│  1ª PASSAGEM (~70 min):                                     │
-│    • Leia TODA a questão antes das opções                   │
-│    • Identifique palavras-chave (latência, custo, HA, etc.) │
-│    • Responda as que sabe imediatamente                     │
-│    • MARQUE as dúvidas (não gaste >2min em 1 questão)       │
+│  1ST PASS (~70 min):                                        │
+│    • Read the WHOLE question before the options             │
+│    • Identify keywords (latency, cost, HA, etc.)            │
+│    • Answer the ones you know right away                    │
+│    • FLAG the doubtful ones (don't spend >2min on 1 question)│
 │                                                             │
-│  2ª PASSAGEM (~40 min):                                     │
-│    • Volte às marcadas                                      │
-│    • Elimine 2 opções claramente erradas                    │
-│    • Escolha entre as 2 restantes pela lógica de serviço    │
+│  2ND PASS (~40 min):                                        │
+│    • Go back to the flagged ones                            │
+│    • Eliminate 2 clearly wrong options                      │
+│    • Choose between the remaining 2 using service logic     │
 │                                                             │
 │  BUFFER (~20 min):                                          │
-│    • Questões muito difíceis                                │
-│    • Revisão de respostas que ficou inseguro               │
+│    • Very difficult questions                               │
+│    • Review answers you felt unsure about                   │
 │                                                             │
-│  NUNCA deixe questão em branco!                             │
+│  NEVER leave a question blank!                              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## O Que Fazer Após a Certificação
+## What to Do After Certification
 
-| Ação | Benefício |
+| Action | Benefit |
 |------|-----------|
-| Atualizar LinkedIn com badge Credly | Visibilidade profissional |
-| Adicionar ao currículo | Diferencial de mercado |
-| Ingressar em communities (Discord, Reddit r/AWSCertifications) | Networking e novidades |
-| Estudar próxima cert (Developer, SysOps, ou Solutions Architect Pro) | Crescimento de carreira |
-| Explorar AWS re:Post para aprofundamento | Conhecimento além do exame |
-| Explorar AWS re:Invent vídeos (YouTube) | Atualizações de serviços |
+| Update LinkedIn with the Credly badge | Professional visibility |
+| Add it to your resume | Market differentiator |
+| Join communities (Discord, Reddit r/AWSCertifications) | Networking and news |
+| Study the next cert (Developer, SysOps, or Solutions Architect Pro) | Career growth |
+| Explore AWS re:Post to go deeper | Knowledge beyond the exam |
+| Explore AWS re:Invent videos (YouTube) | Service updates |
 
 ---
 
-## Canais e Comunidades
+## Channels and Communities
 
-| Canal/Plataforma | Conteúdo |
+| Channel/Platform | Content |
 |----------------|---------|
 | YouTube: TechWorld with Nana | Containers, Kubernetes, DevOps |
-| YouTube: Stephane Maarek | Cursos AWS completos |
-| YouTube: AWS (canal oficial) | re:Invent, demos, novidades |
-| Reddit: r/AWSCertifications | Dicas, relatos de aprovação, recursos |
-| Discord: AWS Study Group | Estudo colaborativo |
-| AWS re:Post | Fórum oficial AWS |
+| YouTube: Stephane Maarek | Complete AWS courses |
+| YouTube: AWS (official channel) | re:Invent, demos, news |
+| Reddit: r/AWSCertifications | Tips, pass reports, resources |
+| Discord: AWS Study Group | Collaborative study |
+| AWS re:Post | Official AWS forum |
 
 ---
 
-## Dicas de Prova
+## Exam Tips
 
-| Pista na Questão | Resposta Esperada |
+| Clue in the Question | Expected Answer |
 |-----------------|------------------|
-| "melhor simulado de terceiros SAA-C03" | Tutorials Dojo |
-| "curso mais popular Udemy SAA-C03" | Stephane Maarek |
-| "onde agendar exame AWS" | Pearson VUE ou PSI |
-| "validade da certificação SAA" | 3 anos |
-| "desconto para reaplicação" | 50% voucher de recertificação |
-| "ver histórico de certificações" | aws.amazon.com/certification → Transcript |
-| "compartilhar badge certificação" | Credly (LinkedIn) |
-| "score mínimo de aprovação" | 720/1000 |
-| "quantas questões no exame SAA-C03" | 65 (50 válidas + 15 experimentais) |
-| "tempo total do exame" | 130 minutos |
+| "best third-party SAA-C03 practice exams" | Tutorials Dojo |
+| "most popular Udemy SAA-C03 course" | Stephane Maarek |
+| "where to schedule the AWS exam" | Pearson VUE or PSI |
+| "SAA certification validity" | 3 years |
+| "discount for retaking" | 50% recertification voucher |
+| "view certification history" | aws.amazon.com/certification → Transcript |
+| "share certification badge" | Credly (LinkedIn) |
+| "minimum passing score" | 720/1000 |
+| "how many questions on the SAA-C03 exam" | 65 (50 scored + 15 unscored) |
+| "total exam time" | 130 minutes |

@@ -1,88 +1,88 @@
-# Casos de Uso Reais — Monitoramento: CloudWatch, CloudTrail e Config (Módulo 14)
+# Real-World Use Cases — Monitoring: CloudWatch, CloudTrail, and Config (Module 14)
 
-## Caso 1 — Observabilidade Full Stack de Aplicação Crítica
+## Case 1 — Full-Stack Observability of a Critical Application
 
-**Contexto:** Plataforma de pagamentos precisa de monitoramento 360° — infraestrutura, aplicação e negócio — com alertas proativos e dashboards executivos. SLA de 99,95% de disponibilidade.
+**Context:** A payments platform needs 360° monitoring — infrastructure, application, and business — with proactive alerts and executive dashboards. 99.95% availability SLA.
 
-**Requisitos:**
-- Alertas em < 5 minutos para qualquer degradação
-- Correlacionar erros de aplicação com métricas de infraestrutura
-- Dashboard em tempo real para NOC (Network Operations Center)
-- Post-mortem automatizado após cada incidente
+**Requirements:**
+- Alerts in < 5 minutes for any degradation
+- Correlate application errors with infrastructure metrics
+- Real-time dashboard for the NOC (Network Operations Center)
+- Automated post-mortem after each incident
 
-**Arquitetura:**
+**Architecture:**
 ```
-CAMADA INFRAESTRUTURA:
+INFRASTRUCTURE LAYER:
 EC2/ECS → CloudWatch Agent → CW Metrics
-  (CPU, mem, disco, conexões ativas)
+  (CPU, mem, disk, active connections)
 
-CAMADA APLICAÇÃO:
+APPLICATION LAYER:
 Lambda/ECS → CloudWatch Logs
-           → Embedded Metrics Format (métricas a partir de logs)
-           → X-Ray (rastreamento distribuído)
+           → Embedded Metrics Format (metrics from logs)
+           → X-Ray (distributed tracing)
 
-CAMADA NEGÓCIO:
+BUSINESS LAYER:
 Lambda → PutMetricData → CW Custom Metrics
-  (pedidos/min, valor transacionado, taxa de aprovação)
+  (orders/min, transacted amount, approval rate)
 
-ALERTAS:
+ALERTS:
 CW Alarms (composite) → SNS → PagerDuty + Slack + Email
-  └── Composite Alarm: CPU > 80% AND Latência > 2s AND Error Rate > 5%
+  └── Composite Alarm: CPU > 80% AND Latency > 2s AND Error Rate > 5%
 
 DASHBOARDS:
-CloudWatch Dashboard (NOC — métricas técnicas)
-QuickSight (executivos — métricas de negócio)
+CloudWatch Dashboard (NOC — technical metrics)
+QuickSight (executives — business metrics)
 
 POST-MORTEM:
-CloudTrail → S3 → Athena (quem fez o quê durante o incidente)
-X-Ray Service Map (onde a latência apareceu primeiro)
-CloudWatch Logs Insights (query logs do período do incidente)
+CloudTrail → S3 → Athena (who did what during the incident)
+X-Ray Service Map (where latency appeared first)
+CloudWatch Logs Insights (query logs from the incident period)
 ```
 
-**Composite Alarm (não aciona sem coocorrência de condições):**
+**Composite Alarm (does not trigger without co-occurring conditions):**
 ```
 ALARM IF:
   (CPUAlarm = ALARM)
   AND (LatencyAlarm = ALARM)
-  → Evita falsos positivos isolados
+  → Avoids isolated false positives
 ```
 
 ---
 
-## Caso 2 — Auditoria de Segurança e Compliance com CloudTrail
+## Case 2 — Security Auditing and Compliance with CloudTrail
 
-**Contexto:** Empresa de saúde (HIPAA) precisa rastrear todas as ações de usuários e serviços sobre dados de pacientes. Auditoria externa anual exige evidências de 365 dias de logs imutáveis.
+**Context:** A healthcare company (HIPAA) needs to track all actions by users and services on patient data. The annual external audit requires evidence of 365 days of immutable logs.
 
-**Requisitos:**
-- Log de 100% das ações de API AWS
-- Logs imutáveis (não podem ser alterados nem deletados)
-- Alertas em tempo real para ações de alto risco (deletar EC2, alterar IAM)
-- Query de logs para investigações: "quem deletou o bucket S3 na sexta?"
+**Requirements:**
+- Log 100% of AWS API actions
+- Immutable logs (cannot be altered or deleted)
+- Real-time alerts for high-risk actions (deleting EC2, changing IAM)
+- Log queries for investigations: "who deleted the S3 bucket on Friday?"
 
-**Arquitetura:**
+**Architecture:**
 ```
-FONTE:
-CloudTrail (trail multi-região habilitado)
-├── Management Events (ações de controle — sempre habilitado)
-├── Data Events (S3 GetObject/PutObject para buckets PHI)
-└── Insights Events (atividade incomum de API)
+SOURCE:
+CloudTrail (multi-region trail enabled)
+├── Management Events (control actions — always enabled)
+├── Data Events (S3 GetObject/PutObject for PHI buckets)
+└── Insights Events (unusual API activity)
 
-ARMAZENAMENTO IMUTÁVEL:
+IMMUTABLE STORAGE:
 CloudTrail → S3 (cloudtrail-logs-hipaa)
-               └── Object Lock (COMPLIANCE mode, 365 dias)
-               └── SSE-KMS (criptografia com CMK)
-               └── MFA Delete habilitado
+               └── Object Lock (COMPLIANCE mode, 365 days)
+               └── SSE-KMS (encryption with CMK)
+               └── MFA Delete enabled
 
-ANÁLISE:
-S3 (logs CloudTrail) → Athena (queries de investigação)
+ANALYSIS:
+S3 (CloudTrail logs) → Athena (investigation queries)
 
-ALERTAS TEMPO REAL:
+REAL-TIME ALERTS:
 CloudTrail → CloudWatch Logs → CW Metric Filters
   ├── Filter: "DeleteBucket" → CW Alarm → SNS → PagerDuty
-  ├── Filter: "CreateUser" ou "AttachUserPolicy" → Alarm
+  ├── Filter: "CreateUser" or "AttachUserPolicy" → Alarm
   └── Filter: "ConsoleLoginFailures" > 5/min → Alarm
 
-EXEMPLO DE QUERY ATHENA (investigação):
+ATHENA QUERY EXAMPLE (investigation):
 SELECT eventtime, useridentity.arn, sourceIPAddress, requestParameters
 FROM cloudtrail_logs
 WHERE eventname = 'DeleteBucket'
@@ -92,116 +92,116 @@ ORDER BY eventtime DESC;
 
 ---
 
-## Caso 3 — Governança de EC2 com AWS Config + Systems Manager
+## Case 3 — EC2 Governance with AWS Config + Systems Manager
 
-**Contexto:** Empresa com 500 instâncias EC2 em múltiplas contas precisa garantir que todas as instâncias seguem padrões de segurança: sem IP público direto, patches aplicados, AMI aprovada, tags obrigatórias.
+**Context:** A company with 500 EC2 instances across multiple accounts needs to ensure that all instances follow security standards: no direct public IP, patches applied, approved AMI, required tags.
 
-**Requisitos:**
-- Detectar automaticamente instâncias não-conformes
-- Remediar automaticamente quando possível (ex: aplicar patch)
-- Relatório mensal de compliance para o CISO
-- Impedir criação de recursos não conformes (preventivo)
+**Requirements:**
+- Automatically detect non-compliant instances
+- Automatically remediate when possible (e.g., apply a patch)
+- Monthly compliance report for the CISO
+- Prevent creation of non-compliant resources (preventive)
 
-**Arquitetura:**
+**Architecture:**
 ```
-AWS Config (habilitado em todas as contas via Organizations)
+AWS Config (enabled in all accounts via Organizations)
   Managed Rules:
-  ├── ec2-no-amazon-key-pair ✓ (sem key pair = SSH hardcoded)
-  ├── ec2-instance-no-public-ip ✓ (sem IP público direto)
-  ├── approved-amis-by-id ✓ (apenas AMIs do catálogo interno)
+  ├── ec2-no-amazon-key-pair ✓ (no key pair = hardcoded SSH)
+  ├── ec2-instance-no-public-ip ✓ (no direct public IP)
+  ├── approved-amis-by-id ✓ (only AMIs from the internal catalog)
   ├── required-tags ✓ (Environment, Owner, CostCenter)
   └── ec2-managedinstance-patch-compliance-status-check ✓
 
   NON-COMPLIANT:
-  Config → EventBridge → Lambda (remediação automática)
-    ├── Tag faltando → Lambda adiciona tag padrão
-    └── Patch desatualizado → SSM Automation (patch group)
+  Config → EventBridge → Lambda (automatic remediation)
+    ├── Missing tag → Lambda adds default tag
+    └── Outdated patch → SSM Automation (patch group)
 
   SSM Patch Manager:
-  ├── Patch Baseline (aprovação automática patches críticos em 7 dias)
-  ├── Maintenance Window (janela: domingos 02h-06h)
-  └── Patch Group por tag: Environment=Production
+  ├── Patch Baseline (automatic approval of critical patches within 7 days)
+  ├── Maintenance Window (window: Sundays 2am-6am)
+  └── Patch Group by tag: Environment=Production
 
-RELATÓRIO:
-AWS Config → Conformance Pack → S3 (relatório conformidade)
-Security Hub (agrega findings de Config + GuardDuty + Inspector)
+REPORT:
+AWS Config → Conformance Pack → S3 (compliance report)
+Security Hub (aggregates findings from Config + GuardDuty + Inspector)
 ```
 
 ---
 
-## Caso 4 — Detecção de Ameaças com GuardDuty + Security Hub
+## Case 4 — Threat Detection with GuardDuty + Security Hub
 
-**Contexto:** Startup atacada por crypto mining em instâncias EC2 comprometidas. Precisam de sistema proativo que detecte e responda automaticamente a ameaças.
+**Context:** A startup was attacked by crypto mining on compromised EC2 instances. They need a proactive system that automatically detects and responds to threats.
 
-**Requisitos:**
-- Detectar comportamento anômalo (exfiltração, mineração, comunicação C2)
-- Resposta automática em < 1 minuto (isolar instância comprometida)
-- Centralizar findings de múltiplas fontes de segurança
-- Notificar time de segurança imediatamente
+**Requirements:**
+- Detect anomalous behavior (exfiltration, mining, C2 communication)
+- Automatic response in < 1 minute (isolate the compromised instance)
+- Centralize findings from multiple security sources
+- Notify the security team immediately
 
-**Arquitetura:**
+**Architecture:**
 ```
-DETECÇÃO:
-GuardDuty (analisa VPC Flow Logs + DNS Logs + CloudTrail)
-  Findings de alto risco:
-  ├── CryptoCurrency:EC2/BitcoinTool.B (comunicação para pool mining)
-  ├── Backdoor:EC2/Spambot (envio de spam)
-  ├── Trojan:EC2/BlackholeTraffic (conexão a domínio malicioso)
-  └── UnauthorizedAccess:IAMUser/ConsoleLoginSuccess.B (login suspeito)
+DETECTION:
+GuardDuty (analyzes VPC Flow Logs + DNS Logs + CloudTrail)
+  High-risk findings:
+  ├── CryptoCurrency:EC2/BitcoinTool.B (communication to a mining pool)
+  ├── Backdoor:EC2/Spambot (sending spam)
+  ├── Trojan:EC2/BlackholeTraffic (connection to a malicious domain)
+  └── UnauthorizedAccess:IAMUser/ConsoleLoginSuccess.B (suspicious login)
 
-RESPOSTA AUTOMÁTICA:
+AUTOMATIC RESPONSE:
 GuardDuty Finding → EventBridge Rule (severity >= HIGH)
        │
        ▼
   Lambda (incident-responder)
-  ├── EC2: RemoveFromLoadBalancer (tira do tráfego)
-  ├── EC2: CreateSecurityGroup (bloqueia toda entrada/saída)
-  ├── EC2: ModifyInstanceAttribute (isola na SG quarentena)
-  ├── IAM: DetachUserPolicies (se usuário IAM comprometido)
-  └── SNS → PagerDuty (alerta time segurança)
+  ├── EC2: RemoveFromLoadBalancer (takes it out of traffic)
+  ├── EC2: CreateSecurityGroup (blocks all inbound/outbound)
+  ├── EC2: ModifyInstanceAttribute (isolates in the quarantine SG)
+  ├── IAM: DetachUserPolicies (if an IAM user is compromised)
+  └── SNS → PagerDuty (alerts the security team)
 
-CENTRALIZAÇÃO:
-Security Hub (agrega GuardDuty + Config + Inspector + Macie)
-     └── Findings padronizados (ASFF format)
-     └── Dashboard executivo (compliance score por conta)
+CENTRALIZATION:
+Security Hub (aggregates GuardDuty + Config + Inspector + Macie)
+     └── Standardized findings (ASFF format)
+     └── Executive dashboard (compliance score per account)
 ```
 
 ---
 
-## Caso 5 — Rastreamento de Requisições com X-Ray em Microsserviços
+## Case 5 — Request Tracing with X-Ray in Microservices
 
-**Contexto:** Plataforma de e-commerce com 12 microsserviços nota que algumas compras levam 8 segundos (objetivo: < 2s). Sem visibilidade de qual serviço está causando a lentidão.
+**Context:** An e-commerce platform with 12 microservices notices that some purchases take 8 seconds (goal: < 2s). There is no visibility into which service is causing the slowness.
 
-**Requisitos:**
-- Identificar gargalo exato (qual serviço, qual chamada)
-- Ver dependências entre serviços
-- Alertar quando p99 latência > 3s
-- Correlacionar com erros (quais requests lentos também têm erro)
+**Requirements:**
+- Identify the exact bottleneck (which service, which call)
+- See dependencies between services
+- Alert when p99 latency > 3s
+- Correlate with errors (which slow requests also have errors)
 
-**Arquitetura:**
+**Architecture:**
 ```
-API Gateway (X-Ray habilitado)
-     │ X-Ray Trace ID propagado nos headers
+API Gateway (X-Ray enabled)
+     │ X-Ray Trace ID propagated in headers
      ▼
 Lambda order-service (X-Ray SDK)
   Segments/Subsegments:
   ├── DynamoDB GetItem (products) — 15ms ✓
   ├── DynamoDB PutItem (order) — 12ms ✓
-  ├── HTTP call → payment-service — 6.800ms ⚠️ GARGALO
+  ├── HTTP call → payment-service — 6,800ms ⚠️ BOTTLENECK
   └── SNS Publish — 8ms ✓
 
-payment-service (ECS/Lambda com X-Ray)
+payment-service (ECS/Lambda with X-Ray)
   ├── HTTP call → fraud-checker — 200ms
-  ├── HTTP call → external-card-processor — 6.400ms ← ROOT CAUSE
+  ├── HTTP call → external-card-processor — 6,400ms ← ROOT CAUSE
   └── DynamoDB PutItem — 10ms
 
 X-Ray Service Map:
-  → Visualização gráfica de todas as dependências
-  → Latência média por conexão destacada
+  → Graphical visualization of all dependencies
+  → Average latency per connection highlighted
 
-CloudWatch Insights (correlação):
+CloudWatch Insights (correlation):
   filter @duration > 5000
   | stats avg(@duration), count(*) by service
 ```
 
-**Descoberta:** `external-card-processor` com timeout de 6s sem retry configurado e sem circuit breaker. Solução: cache de resultados + timeout reduzido + fallback local.
+**Finding:** `external-card-processor` has a 6s timeout with no retry configured and no circuit breaker. Solution: result caching + reduced timeout + local fallback.

@@ -1,85 +1,85 @@
-# Flashcards — Introdução SAA-C03
+# Flashcards — Introduction to SAA-C03
 
 ---
-**P:** Qual domínio tem maior peso no SAA-C03?  
-**R:** Design Resilient Architectures, com 30%.
+**Q:** Which domain has the highest weight on the SAA-C03?  
+**A:** Design Resilient Architectures, at 30%.
 
 ---
-**P:** Qual domínio tem o menor peso formal?  
-**R:** Design Cost-Optimized Architectures, com 18%.
+**Q:** Which domain has the lowest formal weight?  
+**A:** Design Cost-Optimized Architectures, at 18%.
 
 ---
-**P:** O SAA-C03 cobra mais catálogo de serviços ou decisão arquitetural?  
-**R:** Decisão arquitetural com contexto e trade-offs.
+**Q:** Does the SAA-C03 test more of the service catalog or architectural decisions?  
+**A:** Architectural decisions with context and trade-offs.
 
 ---
-**P:** O que diferencia mais o SAA-C03 do CLF-C02?  
-**R:** A profundidade nas escolhas técnicas e justificativa entre alternativas plausíveis.
+**Q:** What most differentiates the SAA-C03 from the CLF-C02?  
+**A:** The depth of technical choices and the justification between plausible alternatives.
 
 ---
-**P:** “Least operational overhead” costuma apontar para quê?  
-**R:** Serviços gerenciados, se atenderem ao requisito.
+**Q:** What does "Least operational overhead" usually point to?  
+**A:** Managed services, if they meet the requirement.
 
 ---
-**P:** Multi-AZ substitui Multi-Region?  
-**R:** Não. Multi-AZ trata falhas de AZ; Multi-Region trata desastre regional.
+**Q:** Does Multi-AZ replace Multi-Region?  
+**A:** No. Multi-AZ handles AZ failures; Multi-Region handles regional disaster.
 
 ---
-**P:** CloudFront vs Global Accelerator em uma frase?  
-**R:** CloudFront é CDN com cache; Global Accelerator acelera tráfego global sem ser cache edge.
+**Q:** CloudFront vs Global Accelerator in one sentence?  
+**A:** CloudFront is a CDN with caching; Global Accelerator accelerates global traffic without being an edge cache.
 
 ---
-**P:** RDS vs DynamoDB no raciocínio inicial?  
-**R:** RDS para relacional/transacional; DynamoDB para chave-valor/documento com escala horizontal.
+**Q:** RDS vs DynamoDB in initial reasoning?  
+**A:** RDS for relational/transactional; DynamoDB for key-value/document with horizontal scale.
 
 ---
-**P:** SQS vs SNS em uma frase?  
-**R:** SQS desacopla com fila; SNS distribui mensagens para múltiplos assinantes.
+**Q:** SQS vs SNS in one sentence?  
+**A:** SQS decouples with a queue; SNS distributes messages to multiple subscribers.
 
 ---
-**P:** Secrets Manager vs Parameter Store?  
-**R:** Secrets Manager é mais forte para segredos com rotação nativa.
+**Q:** Secrets Manager vs Parameter Store?  
+**A:** Secrets Manager is stronger for secrets with native rotation.
 
 ---
-**P:** CloudTrail registra o quê?  
-**R:** Chamadas de API e eventos de auditoria na conta AWS.
+**Q:** What does CloudTrail record?  
+**A:** API calls and audit events in the AWS account.
 
 ---
-**P:** Qual bloco de serviços aparece em grande parte do exame?  
-**R:** EC2, ELB, ASG, S3, VPC, IAM, RDS, DynamoDB, Lambda, Route 53 e KMS.
+**Q:** Which block of services appears in a large part of the exam?  
+**A:** EC2, ELB, ASG, S3, VPC, IAM, RDS, DynamoDB, Lambda, Route 53, and KMS.
 
 ---
-**P:** “Minimal changes to the application” indica o quê?  
-**R:** Evitar alternativas que exigem refatoração grande.
+**Q:** What does "Minimal changes to the application" indicate?  
+**A:** Avoid alternatives that require major refactoring.
 
 ---
-**P:** Near real-time analytics tende a apontar para quê?  
-**R:** Streaming ou processamento orientado a eventos, não batch tardio.
+**Q:** What does near real-time analytics tend to point to?  
+**A:** Streaming or event-driven processing, not late batch.
 
 ---
-**P:** O exame prefere mais controle ou menos operação?  
-**R:** Menos operação, desde que o requisito funcional e não funcional seja atendido.
+**Q:** Does the exam prefer more control or less operations?  
+**A:** Less operations, as long as the functional and non-functional requirements are met.
 
 ---
-**P:** O que a prova mede além de conhecimento técnico?  
-**R:** Capacidade de ler contexto e priorizar trade-offs corretos.
+**Q:** What does the exam measure beyond technical knowledge?  
+**A:** The ability to read context and prioritize the right trade-offs.
 
 ---
-**P:** Qual é a região padrão recomendada para labs deste repositório?  
-**R:** us-east-1.
+**Q:** What is the recommended default region for this repository's labs?  
+**A:** us-east-1.
 
 ---
-**P:** O que significa “cost-effective” em questão da AWS?  
-**R:** Melhor equilíbrio entre custo total e requisito, não apenas menor preço bruto.
+**Q:** What does "cost-effective" mean in an AWS question?  
+**A:** The best balance between total cost and the requirement, not just the lowest raw price.
 
 ---
-**P:** Qual erro comum de preparação para o SAA-C03?  
-**R:** Estudar serviços raros demais e negligenciar os blocos centrais.
+**Q:** What is a common mistake when preparing for the SAA-C03?  
+**A:** Studying overly rare services and neglecting the core blocks.
 
 ---
-**P:** Como revisar melhor ao longo de 8 semanas?  
-**R:** Alternar teoria densa, questões, revisão curta e simulados na reta final.
+**Q:** How can you best review over 8 weeks?  
+**A:** Alternate dense theory, questions, short review, and practice exams in the final stretch.
 
 ---
-**P:** O que fazer quando duas alternativas parecem corretas?  
-**R:** Releia requisito principal, restrições e palavras qualificadoras do enunciado.
+**Q:** What should you do when two alternatives seem correct?  
+**A:** Re-read the main requirement, constraints, and qualifying words in the question statement.

@@ -1,17 +1,17 @@
-# Lab Prático — Serverless: Lambda + API Gateway + DynamoDB (Módulo 11)
+# Hands-On Lab — Serverless: Lambda + API Gateway + DynamoDB (Module 11)
 
-> **Região:** us-east-1 | **Custo estimado:** < $0.10 (Free Tier cobre toda a parte Lambda/DynamoDB)  
-> **Pré-requisitos:** AWS CLI configurado, SAM CLI instalado, Python 3.12
-
----
-
-## Objetivo
-
-Criar uma API REST serverless completa com autenticação, que permite **criar** e **consultar pedidos** usando Lambda + API Gateway + DynamoDB + Cognito.
+> **Region:** us-east-1 | **Estimated cost:** < $0.10 (Free Tier covers the entire Lambda/DynamoDB part)  
+> **Prerequisites:** AWS CLI configured, SAM CLI installed, Python 3.12
 
 ---
 
-## Parte 1 — Infraestrutura com Terraform
+## Objective
+
+Build a complete serverless REST API with authentication that lets you **create** and **query orders** using Lambda + API Gateway + DynamoDB + Cognito.
+
+---
+
+## Part 1 — Infrastructure with Terraform
 
 ```hcl
 # main.tf
@@ -29,7 +29,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# DynamoDB — tabela de pedidos
+# DynamoDB — orders table
 resource "aws_dynamodb_table" "pedidos" {
   name         = "lab-pedidos"
   billing_mode = "PAY_PER_REQUEST"
@@ -51,7 +51,7 @@ resource "aws_dynamodb_table" "pedidos" {
   }
 }
 
-# IAM Role para Lambda
+# IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
   name = "lab-lambda-pedidos-role"
 
@@ -89,7 +89,7 @@ resource "aws_iam_role_policy" "lambda_dynamo" {
   })
 }
 
-# Lambda — criar pedido
+# Lambda — create order
 resource "aws_lambda_function" "criar_pedido" {
   function_name = "lab-criar-pedido"
   role          = aws_iam_role.lambda_role.arn
@@ -106,7 +106,7 @@ resource "aws_lambda_function" "criar_pedido" {
   }
 }
 
-# Lambda — consultar pedido
+# Lambda — query order
 resource "aws_lambda_function" "consultar_pedido" {
   function_name = "lab-consultar-pedido"
   role          = aws_iam_role.lambda_role.arn
@@ -141,7 +141,7 @@ resource "aws_apigatewayv2_stage" "default" {
   auto_deploy = true
 }
 
-# Integrações Lambda ↔ API GW
+# Lambda ↔ API GW integrations
 resource "aws_apigatewayv2_integration" "criar" {
   api_id             = aws_apigatewayv2_api.pedidos_api.id
   integration_type   = "AWS_PROXY"
@@ -168,7 +168,7 @@ resource "aws_apigatewayv2_route" "consultar_route" {
   target    = "integrations/${aws_apigatewayv2_integration.consultar.id}"
 }
 
-# Permissão Lambda para API GW invocar
+# Permission for API GW to invoke Lambda
 resource "aws_lambda_permission" "criar_apigw" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.criar_pedido.function_name
@@ -190,7 +190,7 @@ output "api_url" {
 
 ---
 
-## Parte 2 — Código Lambda
+## Part 2 — Lambda Code
 
 ```python
 # criar_pedido.py
@@ -209,7 +209,7 @@ def lambda_handler(event, context):
     if not body.get('produto') or not body.get('quantidade'):
         return {
             'statusCode': 400,
-            'body': json.dumps({'erro': 'produto e quantidade são obrigatórios'})
+            'body': json.dumps({'erro': 'produto and quantidade are required'})
         }
     
     pedido_id = str(uuid.uuid4())
@@ -250,7 +250,7 @@ def lambda_handler(event, context):
     if 'Item' not in response:
         return {
             'statusCode': 404,
-            'body': json.dumps({'erro': 'pedido não encontrado'})
+            'body': json.dumps({'erro': 'order not found'})
         }
     
     return {
@@ -262,35 +262,35 @@ def lambda_handler(event, context):
 
 ---
 
-## Parte 3 — Deploy e Teste
+## Part 3 — Deploy and Test
 
 ```bash
-# 1. Empacotar Lambda
+# 1. Package Lambda
 zip -j lambda_package.zip criar_pedido.py consultar_pedido.py
 
-# 2. Deploy infraestrutura
+# 2. Deploy infrastructure
 terraform init
 terraform plan
 terraform apply -auto-approve
 
-# 3. Capturar URL da API
+# 3. Capture the API URL
 API_URL=$(terraform output -raw api_url)
 
-# 4. Criar pedido
+# 4. Create an order
 curl -X POST "${API_URL}/pedidos" \
   -H "Content-Type: application/json" \
   -d '{"produto": "Notebook", "quantidade": 2}'
 
-# Esperado: {"pedidoId": "uuid-xxx", "status": "pendente"}
+# Expected: {"pedidoId": "uuid-xxx", "status": "pendente"}
 
-# 5. Consultar pedido
-PEDIDO_ID="uuid-do-passo-anterior"
+# 5. Query the order
+PEDIDO_ID="uuid-from-previous-step"
 curl "${API_URL}/pedidos/${PEDIDO_ID}"
 
-# 6. Verificar logs
+# 6. Check logs
 aws logs tail /aws/lambda/lab-criar-pedido --since 5m
 
-# 7. Verificar DynamoDB
+# 7. Check DynamoDB
 aws dynamodb scan --table-name lab-pedidos \
   --query 'Items[*].[pedidoId.S, produto.S, status.S]' \
   --output table
@@ -298,11 +298,11 @@ aws dynamodb scan --table-name lab-pedidos \
 
 ---
 
-## Parte 4 — Teste de Concorrência e Escalonamento
+## Part 4 — Concurrency and Scaling Test
 
 ```bash
-# Enviar 100 pedidos simultâneos (requer 'ab' ou wrk)
-# Com curl em loop:
+# Send 100 simultaneous orders (requires 'ab' or wrk)
+# With curl in a loop:
 for i in $(seq 1 20); do
   curl -s -X POST "${API_URL}/pedidos" \
     -H "Content-Type: application/json" \
@@ -310,7 +310,7 @@ for i in $(seq 1 20); do
 done
 wait
 
-# Ver métricas de concorrência Lambda no CloudWatch
+# View Lambda concurrency metrics in CloudWatch
 aws cloudwatch get-metric-statistics \
   --namespace AWS/Lambda \
   --metric-name ConcurrentExecutions \
@@ -323,26 +323,26 @@ aws cloudwatch get-metric-statistics \
 
 ---
 
-## Limpeza
+## Cleanup
 
 ```bash
-# Destruir TODOS os recursos (evita custos)
+# Destroy ALL resources (avoids costs)
 terraform destroy -auto-approve
 
-# Verificar que DynamoDB foi removido
+# Verify that DynamoDB was removed
 aws dynamodb list-tables --query 'TableNames[?contains(@, `lab`)]'
 
-# Verificar que Lambdas foram removidas
+# Verify that the Lambdas were removed
 aws lambda list-functions --query 'Functions[?contains(FunctionName, `lab`)].FunctionName'
 ```
 
 ---
 
-## O Que Você Aprendeu
+## What You Learned
 
-- Lambda executa código sem servidor, cobrando apenas por invocação
-- API Gateway HTTP API é mais barato e simples que REST API para Lambda
-- DynamoDB PAY_PER_REQUEST: sem capacidade provisionada, paga por requisição
-- IAM Role de Lambda precisa ser explicitamente autorizada (princípio menor privilégio)
-- TTL no DynamoDB expira itens automaticamente (gratuito, sem cobrança extra)
-- `terraform destroy` remove tudo — sempre fazer ao final do lab
+- Lambda runs code without servers, charging only per invocation
+- API Gateway HTTP API is cheaper and simpler than REST API for Lambda
+- DynamoDB PAY_PER_REQUEST: no provisioned capacity, you pay per request
+- A Lambda IAM Role must be explicitly authorized (least privilege principle)
+- DynamoDB TTL expires items automatically (free, no extra charge)
+- `terraform destroy` removes everything — always run it at the end of the lab

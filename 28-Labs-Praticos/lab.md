@@ -1,20 +1,20 @@
-# Lab Prático — Diagnóstico e Debugging: Ambientes Quebrados (Módulo 18)
+# Hands-On Lab — Diagnosis and Debugging: Broken Environments (Module 18)
 
-> **Região:** us-east-1 | **Custo estimado:** ~$0.02  
-> **Pré-requisitos:** AWS CLI configurado, Docker (opcional), Python 3.8+
-
----
-
-## Objetivo
-
-Praticar diagnóstico de problemas comuns em ambientes AWS: Lambda com timeout em VPC, S3 com erro 403, DynamoDB com throttling, e ECS com task que para imediatamente.
+> **Region:** us-east-1 | **Estimated cost:** ~$0.02  
+> **Prerequisites:** AWS CLI configured, Docker (optional), Python 3.8+
 
 ---
 
-## Parte 1 — Lambda Timeout em VPC (Problema Clássico)
+## Goal
+
+Practice diagnosing common problems in AWS environments: Lambda timing out in a VPC, S3 returning a 403 error, DynamoDB throttling, and an ECS task that stops immediately.
+
+---
+
+## Part 1 — Lambda Timeout in a VPC (Classic Problem)
 
 ```bash
-# Criar VPC sem NAT Gateway (causa comum de timeout Lambda → internet)
+# Create a VPC without a NAT Gateway (common cause of Lambda → internet timeouts)
 VPC_ID=$(aws ec2 create-vpc \
   --cidr-block 10.20.0.0/16 \
   --query 'Vpc.VpcId' --output text)
@@ -32,7 +32,7 @@ SG_ID=$(aws ec2 create-security-group \
   --vpc-id "$VPC_ID" \
   --query 'GroupId' --output text)
 
-# IAM Role para Lambda
+# IAM Role for Lambda
 LAMBDA_ROLE=$(aws iam create-role \
   --role-name "lab-debug-lambda-role" \
   --assume-role-policy-document '{
@@ -45,22 +45,22 @@ aws iam attach-role-policy \
   --role-name "lab-debug-lambda-role" \
   --policy-arn "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 
-sleep 10  # propagar IAM
+sleep 10  # wait for IAM propagation
 
-# Criar Lambda DENTRO da VPC sem NAT — vai dar timeout ao tentar chamar APIs externas
+# Create a Lambda INSIDE the VPC without a NAT — it will time out when calling external APIs
 zip -j /tmp/lambda_debug.zip - << 'PYTHON'
 import urllib.request
 import json
 
 def handler(event, context):
-    print("Tentando acessar API externa...")
+    print("Trying to reach external API...")
     try:
-        # Isso vai dar timeout em Lambda na VPC sem NAT Gateway
+        # This will time out in a Lambda in a VPC without a NAT Gateway
         req = urllib.request.urlopen("https://httpbin.org/get", timeout=5)
         data = json.loads(req.read())
-        print(f"Sucesso: {data}")
+        print(f"Success: {data}")
     except Exception as e:
-        print(f"ERRO: {type(e).__name__}: {e}")
+        print(f"ERROR: {type(e).__name__}: {e}")
         raise e
     return {"status": "ok"}
 PYTHON
@@ -74,8 +74,8 @@ aws lambda create-function \
   --timeout 15 \
   --vpc-config "SubnetIds=${SUBNET_PRIV},SecurityGroupIds=${SG_ID}"
 
-# Invocar para reproduzir o problema
-echo "Invocando Lambda (vai dar timeout)..."
+# Invoke to reproduce the problem
+echo "Invoking Lambda (it will time out)..."
 aws lambda invoke \
   --function-name "lab-debug-vpc-timeout" \
   --payload '{}' \
@@ -83,43 +83,43 @@ aws lambda invoke \
   /tmp/debug_output.json
 cat /tmp/debug_output.json
 
-# DIAGNÓSTICO: Verificar logs para confirmar o problema
+# DIAGNOSIS: Check the logs to confirm the problem
 sleep 5
 aws logs filter-log-events \
   --log-group-name "/aws/lambda/lab-debug-vpc-timeout" \
-  --filter-pattern "ERRO" \
+  --filter-pattern "ERROR" \
   --query 'events[*].message' \
   --output text
 
 echo ""
-echo "=== SOLUÇÃO ==="
-echo "Lambda em VPC privada sem NAT Gateway não consegue acessar a internet."
-echo "Soluções:"
-echo "  1. Adicionar NAT Gateway na subnet pública + route table"
-echo "  2. Usar VPC Endpoints para serviços AWS (S3, DynamoDB, SQS)"
-echo "  3. Remover Lambda da VPC se não precisar de recursos privados"
+echo "=== SOLUTION ==="
+echo "A Lambda in a private VPC without a NAT Gateway cannot reach the internet."
+echo "Solutions:"
+echo "  1. Add a NAT Gateway in the public subnet + route table"
+echo "  2. Use VPC Endpoints for AWS services (S3, DynamoDB, SQS)"
+echo "  3. Remove the Lambda from the VPC if it does not need private resources"
 ```
 
 ---
 
-## Parte 2 — S3 403 Forbidden: Diagnóstico
+## Part 2 — S3 403 Forbidden: Diagnosis
 
 ```bash
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 BUCKET_403="lab-debug-403-${ACCOUNT_ID}"
 
-# Criar bucket com Block Public Access habilitado
+# Create a bucket with Block Public Access enabled
 aws s3api create-bucket --bucket "$BUCKET_403"
 aws s3api put-public-access-block \
   --bucket "$BUCKET_403" \
   --public-access-block-configuration \
     "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
 
-# Subir objeto de teste
-echo "Conteúdo secreto de diagnóstico" > /tmp/teste_403.txt
-aws s3 cp /tmp/teste_403.txt "s3://${BUCKET_403}/teste_403.txt"
+# Upload a test object
+echo "Secret diagnostic content" > /tmp/test_403.txt
+aws s3 cp /tmp/test_403.txt "s3://${BUCKET_403}/test_403.txt"
 
-# Bucket Policy RESTRITIVA — simula acesso negado
+# RESTRICTIVE Bucket Policy — simulates denied access
 aws s3api put-bucket-policy \
   --bucket "$BUCKET_403" \
   --policy "{
@@ -138,12 +138,12 @@ aws s3api put-bucket-policy \
     }]
   }"
 
-# Tentar acessar — vai dar 403
-echo "Tentando acessar objeto (esperado: 403)..."
-aws s3 cp "s3://${BUCKET_403}/teste_403.txt" /tmp/download_403.txt 2>&1 || true
+# Try to access — it will return 403
+echo "Trying to access the object (expected: 403)..."
+aws s3 cp "s3://${BUCKET_403}/test_403.txt" /tmp/download_403.txt 2>&1 || true
 
 echo ""
-echo "=== DIAGNÓSTICO 403 S3 ==="
+echo "=== S3 403 DIAGNOSIS ==="
 echo "Checklist:"
 
 # 1. Block Public Access
@@ -154,22 +154,22 @@ aws s3api get-public-access-block --bucket "$BUCKET_403" 2>/dev/null
 echo "2. Bucket Policy:"
 aws s3api get-bucket-policy --bucket "$BUCKET_403" 2>/dev/null | python3 -m json.tool 2>/dev/null
 
-# 3. ACL do objeto
-echo "3. ACL do objeto:"
-aws s3api get-object-acl --bucket "$BUCKET_403" --key "teste_403.txt" 2>/dev/null
+# 3. Object ACL
+echo "3. Object ACL:"
+aws s3api get-object-acl --bucket "$BUCKET_403" --key "test_403.txt" 2>/dev/null
 
-# 4. Encryption (necessária pemissão kms:Decrypt?)
-echo "4. Encryption do objeto:"
-aws s3api head-object --bucket "$BUCKET_403" --key "teste_403.txt" \
+# 4. Encryption (is kms:Decrypt permission required?)
+echo "4. Object encryption:"
+aws s3api head-object --bucket "$BUCKET_403" --key "test_403.txt" \
   --query '[ServerSideEncryption, SSEKMSKeyId]' 2>/dev/null
 
-# CORREÇÃO: ajustar policy para permitir conta atual
+# FIX: adjust the policy to allow the current account
 aws s3api put-bucket-policy \
   --bucket "$BUCKET_403" \
   --policy "{
     \"Version\": \"2012-10-17\",
     \"Statement\": [{
-      \"Sid\": \"PermitirContaAtual\",
+      \"Sid\": \"AllowCurrentAccount\",
       \"Effect\": \"Allow\",
       \"Principal\": {\"AWS\": \"arn:aws:iam::${ACCOUNT_ID}:root\"},
       \"Action\": \"s3:GetObject\",
@@ -177,57 +177,57 @@ aws s3api put-bucket-policy \
     }]
   }"
 
-echo "Policy corrigida. Tentando acessar novamente..."
-aws s3 cp "s3://${BUCKET_403}/teste_403.txt" /tmp/download_403_ok.txt && cat /tmp/download_403_ok.txt
+echo "Policy fixed. Trying to access again..."
+aws s3 cp "s3://${BUCKET_403}/test_403.txt" /tmp/download_403_ok.txt && cat /tmp/download_403_ok.txt
 ```
 
 ---
 
-## Parte 3 — DynamoDB Throttling
+## Part 3 — DynamoDB Throttling
 
 ```bash
-# Criar tabela com capacidade mínima
-TABELA="lab-debug-throttle"
+# Create a table with minimum capacity
+TABLE="lab-debug-throttle"
 aws dynamodb create-table \
-  --table-name "$TABELA" \
+  --table-name "$TABLE" \
   --attribute-definitions "AttributeName=pk,AttributeType=S" \
   --key-schema "AttributeName=pk,KeyType=HASH" \
   --billing-mode PROVISIONED \
   --provisioned-throughput "ReadCapacityUnits=1,WriteCapacityUnits=1"
 
-aws dynamodb wait table-exists --table-name "$TABELA"
+aws dynamodb wait table-exists --table-name "$TABLE"
 
-# Script Python de carga (provoca throttle)
-cat > /tmp/carga_dynamo.py << 'PYTHON'
+# Python load script (triggers throttling)
+cat > /tmp/dynamo_load.py << 'PYTHON'
 import boto3
 from botocore.exceptions import ClientError
 import time
 import json
 
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
-TABELA = 'lab-debug-throttle'
+TABLE = 'lab-debug-throttle'
 
-erros_throttle = 0
-sucesso = 0
+throttle_errors = 0
+success = 0
 
-print("Enviando 50 escritas rápidas (WCU=1, vai throttle)...")
+print("Sending 50 rapid writes (WCU=1, will be throttled)...")
 for i in range(50):
     try:
         dynamodb.put_item(
-            TableName=TABELA,
-            Item={'pk': {'S': f'item-{i}'}, 'valor': {'N': str(i)}}
+            TableName=TABLE,
+            Item={'pk': {'S': f'item-{i}'}, 'value': {'N': str(i)}}
         )
-        sucesso += 1
+        success += 1
     except ClientError as e:
         if e.response['Error']['Code'] in ['ProvisionedThroughputExceededException', 'RequestLimitExceeded']:
-            erros_throttle += 1
+            throttle_errors += 1
         else:
             raise
 
-print(f"Resultados: {sucesso} sucessos, {erros_throttle} throttling")
+print(f"Results: {success} successes, {throttle_errors} throttled")
 
-# Verificar métricas de throttle
-print("\nPara ver throttle no CloudWatch:")
+# Check throttle metrics
+print("\nTo see throttling in CloudWatch:")
 print("aws cloudwatch get-metric-statistics \\")
 print("  --namespace AWS/DynamoDB \\")
 print("  --metric-name WriteThrottleEvents \\")
@@ -237,32 +237,32 @@ print("  --end-time $(date --utc +%FT%TZ) \\")
 print("  --period 60 --statistics Sum")
 PYTHON
 
-python3 /tmp/carga_dynamo.py
+python3 /tmp/dynamo_load.py
 
 echo ""
-echo "=== SOLUÇÕES PARA THROTTLE DYNAMODB ==="
-echo "1. Aumentar WCU/RCU provisionado"
-echo "2. Habilitar Auto Scaling (recomendado)"
-echo "3. Mudar para PAY_PER_REQUEST (on-demand)"
-echo "4. Implementar exponential backoff no cliente"
-echo "5. Usar DAX para reads repetidos"
+echo "=== SOLUTIONS FOR DYNAMODB THROTTLING ==="
+echo "1. Increase provisioned WCU/RCU"
+echo "2. Enable Auto Scaling (recommended)"
+echo "3. Switch to PAY_PER_REQUEST (on-demand)"
+echo "4. Implement exponential backoff in the client"
+echo "5. Use DAX for repeated reads"
 
-# Demonstrar: mudar para on-demand
+# Demonstrate: switch to on-demand
 aws dynamodb update-table \
-  --table-name "$TABELA" \
+  --table-name "$TABLE" \
   --billing-mode PAY_PER_REQUEST
-echo "Tabela migrada para PAY_PER_REQUEST."
+echo "Table migrated to PAY_PER_REQUEST."
 ```
 
 ---
 
-## Parte 4 — ECS Task Stopped: Diagnóstico
+## Part 4 — ECS Task Stopped: Diagnosis
 
 ```bash
-# Criar cluster ECS
+# Create an ECS cluster
 aws ecs create-cluster --cluster-name "lab-debug-cluster"
 
-# IAM Role para ECS Task Execution
+# IAM Role for ECS Task Execution
 EXEC_ROLE=$(aws iam create-role \
   --role-name "lab-ecs-exec-role" \
   --assume-role-policy-document '{
@@ -275,7 +275,7 @@ aws iam attach-role-policy \
   --role-name "lab-ecs-exec-role" \
   --policy-arn "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 
-# Registrar task com imagem inexistente (vai falhar com EssentialTaskExited)
+# Register a task with a nonexistent image (will fail with EssentialTaskExited)
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 aws ecs register-task-definition \
   --family "lab-debug-task" \
@@ -286,7 +286,7 @@ aws ecs register-task-definition \
   --execution-role-arn "$EXEC_ROLE" \
   --container-definitions "[{
     \"name\": \"app\",
-    \"image\": \"${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/nao-existe:latest\",
+    \"image\": \"${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/does-not-exist:latest\",
     \"essential\": true,
     \"logConfiguration\": {
       \"logDriver\": \"awslogs\",
@@ -299,77 +299,77 @@ aws ecs register-task-definition \
   }]"
 
 echo ""
-echo "=== DIAGNÓSTICO ECS TASK STOPPED ==="
+echo "=== ECS TASK STOPPED DIAGNOSIS ==="
 echo ""
-echo "Causas comuns de stoppedReason:"
+echo "Common causes of stoppedReason:"
 echo ""
 echo "  CannotPullContainerError:"
-echo "    - Imagem não existe no ECR"
-echo "    - Sem acesso ao ECR (IAM ou VPC Endpoint)"
-echo "    - Task na subnet privada sem NAT"
+echo "    - Image does not exist in ECR"
+echo "    - No access to ECR (IAM or VPC Endpoint)"
+echo "    - Task in a private subnet without a NAT"
 echo ""
 echo "  EssentialTaskExited:"
-echo "    - Container saiu com código não-zero"
-echo "    - Comando entrypoint inválido"
-echo "    - Out of Memory (subir memory limit)"
+echo "    - Container exited with a non-zero code"
+echo "    - Invalid entrypoint command"
+echo "    - Out of Memory (raise the memory limit)"
 echo ""
 echo "  ResourceInitializationError:"
-echo "    - Secrets Manager/Parameter Store inacessível"
-echo "    - VPC Endpoint ausente para secrets"
+echo "    - Secrets Manager/Parameter Store unreachable"
+echo "    - Missing VPC Endpoint for secrets"
 echo ""
-echo "Comandos de diagnóstico:"
+echo "Diagnostic commands:"
 echo "aws ecs describe-tasks --cluster <cluster> --tasks <task-arn>"
-echo "  → olhar: stoppedReason, containers[0].reason, exitCode"
+echo "  → look at: stoppedReason, containers[0].reason, exitCode"
 echo ""
 echo "aws logs get-log-events --log-group-name /ecs/<task> --log-stream-name <stream>"
-echo "  → logs do container antes de morrer"
+echo "  → container logs before it died"
 echo ""
 echo "aws ecs describe-task-definition --task-definition <name>"
-echo "  → verificar image, environment, secrets"
+echo "  → check image, environment, secrets"
 ```
 
 ---
 
-## Limpeza
+## Cleanup
 
 ```bash
-# Deletar recursos DynamoDB
-aws dynamodb delete-table --table-name "$TABELA"
+# Delete DynamoDB resources
+aws dynamodb delete-table --table-name "$TABLE"
 
-# Deletar recursos ECS
+# Delete ECS resources
 aws ecs delete-cluster --cluster "lab-debug-cluster"
 aws iam detach-role-policy \
   --role-name "lab-ecs-exec-role" \
   --policy-arn "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 aws iam delete-role --role-name "lab-ecs-exec-role"
 
-# Deletar Lambda e VPC
+# Delete Lambda and VPC
 aws lambda delete-function --function-name "lab-debug-vpc-timeout"
 aws iam detach-role-policy \
   --role-name "lab-debug-lambda-role" \
   --policy-arn "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 aws iam delete-role --role-name "lab-debug-lambda-role"
 
-# Deletar Security Group, Subnet e VPC
+# Delete Security Group, Subnet, and VPC
 aws ec2 delete-security-group --group-id "$SG_ID"
 aws ec2 delete-subnet --subnet-id "$SUBNET_PRIV"
 aws ec2 delete-vpc --vpc-id "$VPC_ID"
 
-# Deletar resources S3
+# Delete S3 resources
 aws s3 rm "s3://${BUCKET_403}" --recursive
 aws s3api delete-bucket --bucket "$BUCKET_403"
 
-# Arquivos temporários
-rm -f /tmp/lambda_debug.zip /tmp/teste_403.txt /tmp/download_403.txt \
-      /tmp/download_403_ok.txt /tmp/carga_dynamo.py /tmp/debug_output.json
+# Temporary files
+rm -f /tmp/lambda_debug.zip /tmp/test_403.txt /tmp/download_403.txt \
+      /tmp/download_403_ok.txt /tmp/dynamo_load.py /tmp/debug_output.json
 ```
 
 ---
 
-## O Que Você Aprendeu
+## What You Learned
 
-- **Lambda + VPC timeout:** subnet privada sem NAT = sem internet; usar VPC Endpoints para AWS APIs
+- **Lambda + VPC timeout:** private subnet without a NAT = no internet; use VPC Endpoints for AWS APIs
 - **S3 403 checklist:** Block Public Access → Bucket Policy → Object ACL → KMS permissions → IAM Policy
-- **DynamoDB throttle:** WCU/RCU excedido → logs CloudWatch `WriteThrottleEvents`; solução: on-demand ou Auto Scaling
-- **ECS stoppedReason:** fonte primária de diagnóstico; sempre checar `exitCode` e CloudWatch Logs do container
-- **Debugging mindset:** reproduzir → confirmar nos logs → identificar causa raiz → aplicar menor mudança → validar
+- **DynamoDB throttling:** WCU/RCU exceeded → CloudWatch `WriteThrottleEvents` metric; solution: on-demand or Auto Scaling
+- **ECS stoppedReason:** the primary source of diagnosis; always check `exitCode` and the container's CloudWatch Logs
+- **Debugging mindset:** reproduce → confirm in the logs → identify the root cause → apply the smallest change → validate

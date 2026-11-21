@@ -1,229 +1,229 @@
-# Questões — Módulo 13: Machine Learning e Inteligência Artificial
+# Questions — Module 13: Machine Learning and Artificial Intelligence
 
-> **Domínio SAA-C03**: Design de Arquiteturas de Alta Performance  
-> **Dificuldade**: Média
+> **SAA-C03 Domain**: Design High-Performing Architectures  
+> **Difficulty**: Medium
 
 ---
 
-**1.** Uma empresa de e-commerce quer exibir produtos recomendados personalizados para cada usuário com base em seu histórico de compras, sem ter uma equipe de ML. Qual serviço AWS usar?
+**1.** An e-commerce company wants to display personalized recommended products to each user based on their purchase history, without having an ML team. Which AWS service should it use?
 
-- A) Amazon SageMaker com algoritmo de collaborative filtering
-- B) Amazon Personalize (serviço gerenciado de recomendações)
+- A) Amazon SageMaker with a collaborative filtering algorithm
+- B) Amazon Personalize (managed recommendation service)
 - C) Amazon Forecast
 - D) Amazon Comprehend
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Amazon Personalize: recomendações personalizadas totalmente gerenciadas sem expertise em ML. Você fornece dados históricos de interações (visualizações, compras), o serviço treina o modelo e fornece API de recomendação em tempo real. Mesmo motor do Amazon.com.
+**B** — Amazon Personalize: fully managed personalized recommendations without ML expertise. You provide historical interaction data (views, purchases), the service trains the model and provides a real-time recommendation API. Same engine as Amazon.com.
 
 </details>
 
 ---
 
-**2.** Uma empresa de mídia precisa moderar automaticamente imagens enviadas por usuários, identificando conteúdo adulto e violento. Qual serviço AWS usar?
+**2.** A media company needs to automatically moderate images uploaded by users, identifying adult and violent content. Which AWS service should it use?
 
 - A) Amazon Rekognition Content Moderation
-- B) Amazon Comprehend para análise de imagens
-- C) Amazon Textract para extrair texto das imagens
-- D) Amazon SageMaker com modelo customizado de classificação
+- B) Amazon Comprehend for image analysis
+- C) Amazon Textract to extract text from the images
+- D) Amazon SageMaker with a custom classification model
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**A** — Amazon Rekognition detecta conteúdo inapropriado (nudez, violência, drogas) em imagens e vídeos com um API call. Retorna labels com confidence scores e categorias hierárquicas de moderação. Sem necessidade de treinar modelo customizado.
+**A** — Amazon Rekognition detects inappropriate content (nudity, violence, drugs) in images and videos with a single API call. It returns labels with confidence scores and hierarchical moderation categories. No need to train a custom model.
 
 </details>
 
 ---
 
-**3.** Uma central de atendimento recebe 10.000 chamadas por dia. A empresa quer analisar o sentimento dos clientes e detectar palavras-chave em todas as chamadas. Qual combinação de serviços AWS usar?
+**3.** A call center receives 10,000 calls per day. The company wants to analyze customer sentiment and detect keywords in all calls. Which combination of AWS services should it use?
 
 - A) Amazon Rekognition + Amazon Comprehend
 - B) Amazon Transcribe Call Analytics + Amazon Comprehend
 - C) Amazon Lex + Amazon Polly
 - D) Amazon Connect + Amazon Kendra
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Transcribe Call Analytics: STT especializado para call center (identifica locutor, silêncios, interrupções, sentimento por speaker). A transcrição é enviada ao Comprehend para análise de entidades, sentimento e palavras-chave. Pipeline completo de análise de chamadas.
+**B** — Transcribe Call Analytics: STT specialized for call centers (identifies speaker, silences, interruptions, sentiment per speaker). The transcript is sent to Comprehend for entity, sentiment, and keyword analysis. A complete call analysis pipeline.
 
 </details>
 
 ---
 
-**4.** Uma empresa financeira precisa prever a demanda de um produto nos próximos 30 dias com base em 3 anos de dados históricos de vendas, incluindo variáveis externas (feriados, promoções). Qual serviço usar?
+**4.** A financial company needs to forecast demand for a product over the next 30 days based on 3 years of historical sales data, including external variables (holidays, promotions). Which service should it use?
 
 - A) Amazon Personalize
 - B) Amazon Forecast
-- C) Amazon SageMaker com Autopilot
+- C) Amazon SageMaker with Autopilot
 - D) Amazon Lookout for Metrics
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Amazon Forecast: previsão de séries temporais gerenciada. Aceita dados históricos e "related time series" (variáveis externas como feriados, promoções, temperatura). Mais simples que treinar um modelo no SageMaker para casos de previsão de demanda/inventário.
+**B** — Amazon Forecast: managed time series forecasting. Accepts historical data and "related time series" (external variables such as holidays, promotions, temperature). Simpler than training a model in SageMaker for demand/inventory forecasting use cases.
 
 </details>
 
 ---
 
-**5.** Uma empresa quer implementar um chatbot no seu site para atender perguntas frequentes. O chatbot deve entender linguagem natural e integrar com sistemas back-end via Lambda. Qual serviço usar?
+**5.** A company wants to implement a chatbot on its website to answer frequently asked questions. The chatbot must understand natural language and integrate with back-end systems via Lambda. Which service should it use?
 
 - A) Amazon Polly
-- B) Amazon Lex v2 com Lambda fulfillment
+- B) Amazon Lex v2 with Lambda fulfillment
 - C) Amazon Comprehend
 - D) Amazon Kendra
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Amazon Lex v2: cria chatbots conversacionais (mesma tecnologia do Alexa). Define Intents (ações), Slots (dados a coletar), Utterances (frases). Para cada intent, uma Lambda fulfillment executa a lógica de negócio (consultar BD, criar pedido, etc.) e retorna a resposta.
+**B** — Amazon Lex v2: builds conversational chatbots (same technology as Alexa). You define Intents (actions), Slots (data to collect), Utterances (phrases). For each intent, a fulfillment Lambda runs the business logic (query a DB, create an order, etc.) and returns the response.
 
 </details>
 
 ---
 
-**6.** Uma empresa de saúde precisa extrair automaticamente dados estruturados (diagnósticos, medicamentos, dosagens) de relatórios médicos em PDF. Qual serviço usar?
+**6.** A healthcare company needs to automatically extract structured data (diagnoses, medications, dosages) from medical reports in PDF. Which service should it use?
 
 - A) Amazon Rekognition
 - B) Amazon Comprehend Medical + Amazon Textract
 - C) Amazon Transcribe Medical
 - D) Amazon Kendra
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Textract: extrai texto e estrutura (tabelas, forms) de PDFs/imagens. Comprehend Medical: analisa texto médico extraído e identifica entidades clínicas (diagnósticos, medicamentos, dosagens), condições e relações entre elas. Pipeline: Textract → texto → Comprehend Medical → dados estruturados.
+**B** — Textract: extracts text and structure (tables, forms) from PDFs/images. Comprehend Medical: analyzes the extracted medical text and identifies clinical entities (diagnoses, medications, dosages), conditions, and relationships between them. Pipeline: Textract → text → Comprehend Medical → structured data.
 
 </details>
 
 ---
 
-**7.** Uma empresa de logística tem uma frota de veículos e quer detectar automaticamente quando um motorista está com sinais de fadiga (olhos fechados, bocejo) usando câmeras a bordo. Qual serviço usar?
+**7.** A logistics company has a vehicle fleet and wants to automatically detect when a driver shows signs of fatigue (closed eyes, yawning) using onboard cameras. Which service should it use?
 
-- A) Amazon Rekognition Video com análise de faces em streaming
+- A) Amazon Rekognition Video with streaming face analysis
 - B) Amazon Lookout for Vision
-- C) Amazon SageMaker com modelo customizado de detecção
+- C) Amazon SageMaker with a custom detection model
 - D) Amazon Comprehend
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**A** — Rekognition Video: analisa streams de vídeo em tempo real (via Kinesis Video Streams). Face Analysis detecta atributos como olhos abertos/fechados, estado emocional. Para detecção de fadiga em tempo real, Rekognition Video + alertas SNS é a solução mais simples.
+**A** — Rekognition Video: analyzes real-time video streams (via Kinesis Video Streams). Face Analysis detects attributes such as eyes open/closed and emotional state. For real-time fatigue detection, Rekognition Video + SNS alerts is the simplest solution.
 
 </details>
 
 ---
 
-**8.** Um time de Data Science precisa treinar um modelo de classificação com 100 GB de dados no S3, otimizando automaticamente os hiperparâmetros, sem gerenciar a infraestrutura de treinamento. Qual serviço e feature usar?
+**8.** A Data Science team needs to train a classification model with 100 GB of data in S3, automatically optimizing the hyperparameters, without managing the training infrastructure. Which service and feature should it use?
 
-- A) SageMaker Training Job com Hyperparameter Tuning Job
-- B) Amazon Forecast com AutoML
+- A) SageMaker Training Job with Hyperparameter Tuning Job
+- B) Amazon Forecast with AutoML
 - C) SageMaker Autopilot
 - D) AWS Glue ML Transforms
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**A** — SageMaker Training Job: treina modelo em instâncias gerenciadas com seus dados S3. Hyperparameter Tuning Job (HPO): executa múltiplos training jobs em paralelo com diferentes combinações de hiperparâmetros usando Bayesian Optimization. Autopilot (C) é mais automático mas menos controlável.
+**A** — SageMaker Training Job: trains the model on managed instances with your S3 data. Hyperparameter Tuning Job (HPO): runs multiple training jobs in parallel with different hyperparameter combinations using Bayesian Optimization. Autopilot (C) is more automatic but less controllable.
 
 </details>
 
 ---
 
-**9.** Uma empresa quer usar um modelo de linguagem grande (LLM) para gerar sumários de documentos, sem treinar o modelo do zero e sem gerenciar GPUs. Qual serviço usar?
+**9.** A company wants to use a large language model (LLM) to generate document summaries, without training the model from scratch and without managing GPUs. Which service should it use?
 
-- A) Amazon SageMaker com modelo HuggingFace
-- B) Amazon Bedrock com Foundation Models via API
-- C) Amazon Comprehend com análise de sentimento
+- A) Amazon SageMaker with a HuggingFace model
+- B) Amazon Bedrock with Foundation Models via API
+- C) Amazon Comprehend with sentiment analysis
 - D) Amazon Kendra
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Amazon Bedrock: acesso a Foundation Models (Claude, Titan, etc.) via API serverless, sem provisionar ou gerenciar instâncias GPU. Paga por token processado. Para Sumarização com LLM, é o caminho mais simples e custo-efetivo comparado a gerenciar SageMaker endpoints com modelos grandes.
+**B** — Amazon Bedrock: access to Foundation Models (Claude, Titan, etc.) via a serverless API, without provisioning or managing GPU instances. Pay per token processed. For LLM summarization, it is the simplest and most cost-effective path compared to managing SageMaker endpoints with large models.
 
 </details>
 
 ---
 
-**10.** Uma empresa quer implementar um sistema de busca empresarial em que funcionários possam fazer perguntas em linguagem natural e receber respostas precisas de documentos internos (PDFs, Word, wikis). Qual serviço usar?
+**10.** A company wants to implement an enterprise search system in which employees can ask questions in natural language and receive precise answers from internal documents (PDFs, Word, wikis). Which service should it use?
 
 - A) Amazon OpenSearch Service
-- B) Amazon Kendra com conectores de conteúdo
+- B) Amazon Kendra with content connectors
 - C) Amazon Comprehend Entity Recognition
 - D) Amazon Lex
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Amazon Kendra: enterprise search com NLP que responde perguntas em linguagem natural a partir de documentos corporativos. Conectores nativos para SharePoint, S3, Confluence, ServiceNow, etc. Diferente do OpenSearch (search por keywords/relevância), Kendra entende a intenção da pergunta.
+**B** — Amazon Kendra: enterprise search with NLP that answers natural language questions from corporate documents. Native connectors for SharePoint, S3, Confluence, ServiceNow, etc. Unlike OpenSearch (keyword/relevance search), Kendra understands the intent of the question.
 
 </details>
 
 ---
 
-**11.** Uma empresa quer detectar anomalias automaticamente em suas métricas de negócio (receita, conversão, NPS) sem configurar thresholds manuais. Qual serviço usar?
+**11.** A company wants to automatically detect anomalies in its business metrics (revenue, conversion, NPS) without configuring manual thresholds. Which service should it use?
 
 - A) CloudWatch Anomaly Detection
 - B) Amazon Lookout for Metrics
 - C) Amazon Forecast
 - D) Amazon Comprehend
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Amazon Lookout for Metrics: detecta anomalias em métricas de negócio (não só infraestrutura como CloudWatch) usando ML. Conecta a RDS, Redshift, S3, CloudWatch, SaaS (Salesforce, Marketo). Envia alertas com contexto (por que a anomalia ocorreu, quais dimensões foram afetadas). CloudWatch Anomaly Detection (A) é para métricas técnicas de infraestrutura.
+**B** — Amazon Lookout for Metrics: detects anomalies in business metrics (not just infrastructure like CloudWatch) using ML. Connects to RDS, Redshift, S3, CloudWatch, SaaS (Salesforce, Marketo). Sends alerts with context (why the anomaly occurred, which dimensions were affected). CloudWatch Anomaly Detection (A) is for technical infrastructure metrics.
 
 </details>
 
 ---
 
-**12.** Um desenvolvedor quer garantir que imagens viesadas para treinamento de ML (sub-representação de gênero ou etnia) sejam identificadas antes do treinamento do modelo. Qual serviço usar?
+**12.** A developer wants to ensure that biased training data for ML (under-representation of gender or ethnicity) is identified before the model is trained. Which service should it use?
 
 - A) Amazon Rekognition Face Analysis
-- B) SageMaker Clarify para detecção de bias nos dados
-- C) Amazon Macie para análise de dados sensíveis
+- B) SageMaker Clarify for bias detection in the data
+- C) Amazon Macie for sensitive data analysis
 - D) Amazon GuardDuty
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — SageMaker Clarify: analisa datasets e modelos para detectar bias (pré-treino e pós-treino). Mede métricas de bias como DPPL (Difference in Positive Proportions in Labels) e CI (Class Imbalance), e gera relatórios. Também oferece explainability (SHAP values) para explicar previsões do modelo.
-
-</details>
-
----
-
-**13.** Uma empresa quer transcrever automaticamente reuniões gravadas em vídeo, identificando quem falou cada trecho. Qual serviço e feature usar?
-
-- A) Amazon Transcribe com Speaker Diarization habilitado
-- B) Amazon Rekognition para identificar rostos nos vídeos
-- C) Amazon Connect para gravações de reuniões
-- D) Amazon Comprehend para identificar locutores
-
-<details><summary>Resposta</summary>
-
-**A** — Amazon Transcribe com Speaker Diarization (ShowSpeakerLabels = true): identifica automaticamente diferentes locutores no áudio e etiqueta cada trecho transcrito com o ID do locutor (Speaker_0, Speaker_1, etc.). Suporta até 10 locutores por transcrição.
+**B** — SageMaker Clarify: analyzes datasets and models to detect bias (pre-training and post-training). Measures bias metrics such as DPPL (Difference in Positive Proportions in Labels) and CI (Class Imbalance), and generates reports. It also offers explainability (SHAP values) to explain model predictions.
 
 </details>
 
 ---
 
-**14.** Uma empresa quer traduzir automaticamente documentos do inglês para 20 idiomas diferentes, respeitando terminologia técnica específica do setor. Qual serviço e feature usar?
+**13.** A company wants to automatically transcribe recorded video meetings, identifying who spoke each segment. Which service and feature should it use?
 
-- A) Amazon Polly com Multi-Language support
-- B) Amazon Translate com Custom Terminology
-- C) Amazon Comprehend com Detect Language
-- D) Amazon Bedrock com Claude para tradução contextual
+- A) Amazon Transcribe with Speaker Diarization enabled
+- B) Amazon Rekognition to identify faces in the videos
+- C) Amazon Connect for meeting recordings
+- D) Amazon Comprehend to identify speakers
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Amazon Translate com Custom Terminology: você fornece um glossário de termos que devem ser traduzidos de forma específica (ex: "load balancer" → sempre "balanceador de carga", nunca "equilibrador"). Garante consistência de terminologia técnica em todas as traduções.
+**A** — Amazon Transcribe with Speaker Diarization (ShowSpeakerLabels = true): automatically identifies different speakers in the audio and labels each transcribed segment with the speaker ID (Speaker_0, Speaker_1, etc.). Supports up to 10 speakers per transcription.
 
 </details>
 
 ---
 
-**15.** Uma empresa treina modelos SageMaker com jobs de treinamento que levam 8 horas cada. Os custos estão altos. Qual é a estratégia mais efetiva para reduzir custos de treinamento?
+**14.** A company wants to automatically translate documents from English into 20 different languages, respecting industry-specific technical terminology. Which service and feature should it use?
 
-- A) Usar instâncias menores para reduzir custo horário
-- B) Habilitar SageMaker Managed Spot Training com checkpoints em S3
-- C) Treinar localmente no AWS Cloud9
-- D) Usar SageMaker Serverless Inference ao invés de training
+- A) Amazon Polly with Multi-Language support
+- B) Amazon Translate with Custom Terminology
+- C) Amazon Comprehend with Detect Language
+- D) Amazon Bedrock with Claude for contextual translation
 
-<details><summary>Resposta</summary>
+<details><summary>Answer</summary>
 
-**B** — Spot Training: SageMaker pode usar Spot Instances (até 90% de desconto) para training jobs. Como Spot pode ser interrompida, checkpoints salvos em S3 permitem retomar o treinamento de onde parou. Para jobs longos de 8 horas, a economia pode ser de 70-90% com pequena complexidade adicional.
+**B** — Amazon Translate with Custom Terminology: you provide a glossary of terms that must be translated in a specific way (e.g., "load balancer" → always "balanceador de carga" in Portuguese, never "equilibrador"). Ensures consistency of technical terminology across all translations.
+
+</details>
+
+---
+
+**15.** A company trains SageMaker models with training jobs that take 8 hours each. Costs are high. What is the most effective strategy to reduce training costs?
+
+- A) Use smaller instances to reduce the hourly cost
+- B) Enable SageMaker Managed Spot Training with checkpoints in S3
+- C) Train locally in AWS Cloud9
+- D) Use SageMaker Serverless Inference instead of training
+
+<details><summary>Answer</summary>
+
+**B** — Spot Training: SageMaker can use Spot Instances (up to 90% discount) for training jobs. Since Spot can be interrupted, checkpoints saved in S3 allow training to resume from where it stopped. For long 8-hour jobs, savings can be 70-90% with little additional complexity.
 
 </details>

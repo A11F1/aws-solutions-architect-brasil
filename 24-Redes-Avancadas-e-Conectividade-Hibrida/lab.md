@@ -1,25 +1,25 @@
-# Lab - TGW + VPN (conceitual guiado)
+# Lab - TGW + VPN (guided, conceptual)
 
-## Objetivo
-Montar conectividade centralizada entre VPCs e preparar conectividade hibrida.
+## Objective
+Set up centralized connectivity between VPCs and prepare hybrid connectivity.
 
-## Passos
+## Steps
 
-1. Crie duas VPCs (App e Shared).
-2. Crie um Transit Gateway.
-3. Anexe as duas VPCs ao TGW.
-4. Ajuste route tables das subnets para trafego inter-VPC via TGW.
-5. Valide comunicacao privada entre instancias.
-6. (Opcional) Crie VPN connection simulada com Customer Gateway para estudo de parametros.
-7. Revise metricas e logs de conectividade.
+1. Create two VPCs (App and Shared).
+2. Create a Transit Gateway.
+3. Attach both VPCs to the TGW.
+4. Adjust the subnet route tables for inter-VPC traffic via the TGW.
+5. Validate private communication between instances.
+6. (Optional) Create a simulated VPN connection with a Customer Gateway to study the parameters.
+7. Review connectivity metrics and logs.
 
-## Validacao
+## Validation
 
-- comunicacao entre VPCs via rotas do TGW
-- isolamento por route tables quando necessario
-- entendimento do fluxo de failover em VPN
+- communication between VPCs via TGW routes
+- isolation via route tables when necessary
+- understanding of the VPN failover flow
 
-## Limpeza
+## Cleanup
 
-- remover attachments e TGW
-- remover VPCs e recursos auxiliares
+- remove attachments and the TGW
+- remove VPCs and auxiliary resources

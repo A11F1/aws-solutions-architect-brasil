@@ -1,51 +1,51 @@
-# Questoes - Criptografia, KMS e Gestao de Segredos
+# Questions - Encryption, KMS, and Secrets Management
 
 ## 1)
-Uma aplicacao precisa rotacionar senha de banco automaticamente sem refatoracao grande. Melhor opcao?
+An application needs to rotate a database password automatically without major refactoring. Best option?
 
 A. Parameter Store Standard
 B. Secrets Manager
 C. ACM
 D. CloudHSM
 
-Resposta: B
+Answer: B
 
 ## 2)
-Qual opcao oferece maior controle sobre politica e ciclo de vida da chave?
+Which option offers the most control over the key's policy and lifecycle?
 
 A. AWS-owned key
 B. AWS-managed key
 C. Customer-managed KMS key
-D. S3-managed key apenas
+D. S3-managed key only
 
-Resposta: C
+Answer: C
 
 ## 3)
-Para usar certificado com CloudFront, em qual regiao o ACM publico deve ser criado?
+To use a certificate with CloudFront, in which region must the public ACM certificate be created?
 
 A. sa-east-1
 B. us-west-2
 C. us-east-1
 D. eu-west-1
 
-Resposta: C
+Answer: C
 
 ## 4)
-Qual servico e mais indicado para armazenar parametros de configuracao com custo reduzido e opcao de SecureString?
+Which service is best suited for storing configuration parameters at reduced cost with a SecureString option?
 
 A. Secrets Manager
 B. Parameter Store
 C. IAM
 D. CloudTrail
 
-Resposta: B
+Answer: B
 
 ## 5)
-No KMS, qual elemento e obrigatorio para controle principal de acesso a chave?
+In KMS, which element is mandatory for primary access control to the key?
 
 A. Security Group
 B. Key policy
 C. NACL
 D. S3 bucket policy
 
-Resposta: B
+Answer: B

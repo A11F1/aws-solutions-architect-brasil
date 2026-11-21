@@ -1,46 +1,46 @@
-# Flashcards - Recuperacao de Desastres e Continuidade
+# Flashcards - Disaster Recovery and Continuity
 
-1. RTO significa?
-- Tempo maximo para restaurar o servico.
+1. What does RTO stand for?
+- Maximum time to restore the service.
 
-2. RPO significa?
-- Janela maxima de perda de dados.
+2. What does RPO stand for?
+- Maximum window of data loss.
 
-3. Multi-AZ cobre desastre regional?
-- Nao.
+3. Does Multi-AZ cover a regional disaster?
+- No.
 
-4. Menor custo de DR?
+4. Lowest-cost DR?
 - Backup and Restore.
 
-5. Estrategia com ambiente minimo ativo em segunda regiao?
+5. Strategy with a minimal environment active in a second region?
 - Pilot Light.
 
-6. Estrategia com ambiente reduzido sempre ativo?
+6. Strategy with a scaled-down environment always active?
 - Warm Standby.
 
-7. Menor RTO/RPO em geral?
+7. Generally the lowest RTO/RPO?
 - Active/Active multi-region.
 
-8. Servico de DR de servidores AWS?
+8. AWS server DR service?
 - AWS Elastic Disaster Recovery.
 
-9. Protecao de objetos contra exclusao acidental?
+9. Protection of objects against accidental deletion?
 - S3 Versioning.
 
-10. Replicacao de objetos entre regioes?
+10. Replicating objects between regions?
 - S3 CRR.
 
-11. Failover DNS gerenciado?
-- Route 53 com health checks.
+11. Managed DNS failover?
+- Route 53 with health checks.
 
-12. RDS Multi-AZ e para?
-- Alta disponibilidade regional, nao DR multi-region.
+12. RDS Multi-AZ is for?
+- Regional high availability, not multi-region DR.
 
-13. DynamoDB para DR global?
+13. DynamoDB for global DR?
 - Global Tables.
 
-14. O que testar periodicamente em DR?
-- Runbook de failover e failback.
+14. What to test periodically in DR?
+- Failover and failback runbook.
 
-15. Frase de prova: "regional disaster"?
-- Exige desenho multi-region.
+15. Exam phrase: "regional disaster"?
+- Requires a multi-region design.

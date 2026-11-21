@@ -1,51 +1,51 @@
-# Questoes - AWS Organizations, Governanca e Custos
+# Questions - AWS Organizations, Governance, and Costs
 
 ## 1)
-Qual recurso impede que contas membro desativem o CloudTrail?
+Which feature prevents member accounts from disabling CloudTrail?
 
 A. IAM Policy
 B. Security Group
 C. SCP
 D. NACL
 
-Resposta: C
+Answer: C
 
 ## 2)
-Uma empresa quer onboarding rapido de novas contas com baseline de seguranca. Melhor opcao?
+A company wants fast onboarding of new accounts with a security baseline. Best option?
 
-A. Criar contas manualmente
+A. Create accounts manually
 B. AWS Control Tower
-C. Apenas AWS Config
-D. Apenas Budgets
+C. AWS Config only
+D. Budgets only
 
-Resposta: B
+Answer: B
 
 ## 3)
-Para visao detalhada de custo por tag e consulta SQL, qual combinacao e indicada?
+For a detailed view of cost by tag and SQL querying, which combination is recommended?
 
 A. Budgets + SNS
-B. Cost Explorer apenas
+B. Cost Explorer only
 C. CUR + Athena
 D. Trusted Advisor
 
-Resposta: C
+Answer: C
 
 ## 4)
-SCP tem qual comportamento?
+What is the behavior of an SCP?
 
-A. Concede permissao automaticamente
-B. Limita permissao maxima
-C. Cria usuarios IAM
-D. Substitui role trust policy
+A. Grants permission automatically
+B. Limits the maximum permission
+C. Creates IAM users
+D. Replaces the role trust policy
 
-Resposta: B
+Answer: B
 
 ## 5)
-Workload estavel de longo prazo em EC2. Melhor estrategia de economia?
+Stable long-term workload on EC2. Best savings strategy?
 
-A. On-Demand fixo
-B. Savings Plans ou RI
-C. Spot apenas
-D. Sem autoscaling
+A. Fixed On-Demand
+B. Savings Plans or RI
+C. Spot only
+D. No autoscaling
 
-Resposta: B
+Answer: B
